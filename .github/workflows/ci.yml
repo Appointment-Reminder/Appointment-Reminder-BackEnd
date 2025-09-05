@@ -30,4 +30,6 @@ jobs:
       # 4️⃣ Run FastAPI tests
       - name: Run backend tests
         run: |
+          echo "Setting PYTHONPATH"
+          export PYTHONPATH=$PWD
           pytest -v tests
