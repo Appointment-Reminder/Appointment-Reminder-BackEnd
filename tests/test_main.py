@@ -1,9 +1,9 @@
 from fastapi.testclient import TestClient
-from app.main import app  # adjust if your main.py is inside app/
+from app.main import app
 
 client = TestClient(app)
 
-def test_root():
+def test_root_endpoint():
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"message": "Hello Photo Reminder"}
