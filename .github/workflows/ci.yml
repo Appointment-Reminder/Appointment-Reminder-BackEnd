@@ -2,28 +2,32 @@ name: Backend CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "staging", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev", "staging" ]
 
 jobs:
   test:
-    runs-on: self-hosted   # since you set up a local runner
+    runs-on: self-hosted   # your Dockerized runner
 
     steps:
-      - name: Checkout repo
+      # 1️⃣ Checkout the code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      # 2️⃣ Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
+      # 4️⃣ Run FastAPI tests
+      - name: Run backend tests
         run: |
-          pytest tests
+          pytest -v tests
