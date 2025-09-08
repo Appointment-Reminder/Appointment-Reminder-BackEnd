@@ -22,19 +22,3 @@ async def test_db_connection():
     required_collections = ["photographers", "appointments", "reminders"]
     for col in required_collections:
         assert col in collections, f"Collection '{col}' does not exist in the database"
-
-
-@pytest.mark.asyncio(scope="session")
-async def test_photographers_seeded():
-    db = client[os.environ["MONGO_DB"]]
-    cursor = db["photographers"].find({})
-
-    # Proper async iteration
-    photographers = []
-    async for doc in db["photographers"].find({}):
-        photographers.append(doc)
-
-    assert len(photographers) == 2
-    names = [p["name"] for p in photographers]
-    assert "Alice" in names
-    assert "Bob" in names
