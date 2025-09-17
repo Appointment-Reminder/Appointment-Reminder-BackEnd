@@ -1,5 +1,5 @@
 from app.routes.appointments import Appointment
-from app.models.reminder import ReminderRequest
+from app.models.reminder import ReminderRequest, Reminder
 from app.models.photographer import Photographer
 
 DUMMY_APPOINTMENTS = [
@@ -10,6 +10,9 @@ DUMMY_APPOINTMENTS = [
 ]
 
 
+DUMMY_REMINDERS = [
+    Reminder(id= "r1", appointment_id= "1", template= "Hello {Client}", status= "pending"),
+]
 
 DUMMY_PHOTOGRAPHERS = [
     Photographer(id="1", name="Eve", email="eve@example.com"),
@@ -17,28 +20,96 @@ DUMMY_PHOTOGRAPHERS = [
 ]
 
 class MockPhotographersCollection:
+    def __init__(self):
+        self.data = DUMMY_PHOTOGRAPHERS.copy()
+
     def find(self):
         class Cursor:
-            async def to_list(self, length):
-                return [p.dict() for p in DUMMY_PHOTOGRAPHERS]
+            async def to_list(_, length):
+                return self.data
         return Cursor()
 
     async def find_one(self, query):
-        for p in DUMMY_PHOTOGRAPHERS:
-            if p.id == query["_id"]:
-                return p.dict()
+        for r in self.data:
+            if r.id == query["_id"]:
+                return r
         return None
+    async def insert_one(self, doc):
+        self.data.append(doc)
+
+    async def replace_one(self, query, doc):
+        for i, r in enumerate(self.data):
+            if r.id == query["_id"]:
+                self.data[i] = doc
+                return type("obj", (), {"matched_count": 1})
+        return type("obj", (), {"matched_count": 0})
+
+    async def delete_one(self, query):
+        before = len(self.data)
+        self.data = [r for r in self.data if r.id != query["_id"]]
+        deleted = before - len(self.data)
+        return type("obj", (), {"deleted_count": deleted})
 
 class MockAppointmentsCollection:
+    def __init__(self):
+        self.data = DUMMY_APPOINTMENTS.copy()
+
     def find(self):
         class Cursor:
-            async def to_list(self, length):
-                return [appt.dict() for appt in DUMMY_APPOINTMENTS]
+            async def to_list(_, length):
+                return self.data
         return Cursor()
 
     async def find_one(self, query):
-        for appt in DUMMY_APPOINTMENTS:
-            if appt.id == query["_id"]:
-                return appt.dict()
+        for r in self.data:
+            if r.id == query["_id"]:
+                return r
         return None
+    async def insert_one(self, doc):
+        self.data.append(doc)
+
+    async def replace_one(self, query, doc):
+        for i, r in enumerate(self.data):
+            if r.id == query["_id"]:
+                self.data[i] = doc
+                return type("obj", (), {"matched_count": 1})
+        return type("obj", (), {"matched_count": 0})
+
+    async def delete_one(self, query):
+        before = len(self.data)
+        self.data = [r for r in self.data if r.id != query["_id"]]
+        deleted = before - len(self.data)
+        return type("obj", (), {"deleted_count": deleted})
+
+
+class MockRemindersCollection:
+    def __init__(self):
+        self.data = DUMMY_REMINDERS.copy()
+
+    def find(self):
+        class Cursor:
+            async def to_list(_, length):
+                return self.data
+        return Cursor()
+
+    async def find_one(self, query):
+        for r in self.data:
+            if r.id == query["_id"]:
+                return r
+        return None
+    async def insert_one(self, doc):
+        self.data.append(doc)
+
+    async def replace_one(self, query, doc):
+        for i, r in enumerate(self.data):
+            if r.id == query["_id"]:
+                self.data[i] = doc
+                return type("obj", (), {"matched_count": 1})
+        return type("obj", (), {"matched_count": 0})
+
+    async def delete_one(self, query):
+        before = len(self.data)
+        self.data = [r for r in self.data if r.id != query["_id"]]
+        deleted = before - len(self.data)
+        return type("obj", (), {"deleted_count": deleted})
 

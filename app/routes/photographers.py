@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 from typing import List
+
+from app.models import photographer
 from app.models.photographer import Photographer
 from app.Database.client import photographers_col
 from fastapi import HTTPException
@@ -18,3 +20,21 @@ async def get_photographer(photographer_id: str):
         raise HTTPException(status_code=404, detail="Photographer not found")
     return doc
 
+@router.post("/", response_model=Photographer)
+async def create_photographer(photographer: Photographer):
+    await photographers_col.insert_one(photographer.dict())
+    return photographer
+
+@router.put("/{photographer_id}", response_model=Photographer)
+async def update_photographer(photographer_id: str, photographer: Photographer):
+    result = await photographers_col.replace_one({"_id": photographer_id}, photographer.dict())
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Photographer not found")
+    return photographer
+
+@router.delete("/{photographer_id}")
+async def delete_photographer(photographer_id: str):
+    result = await photographers_col.delete_one({"_id": photographer_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Photographer not found")
+    return {"status": "deleted"}

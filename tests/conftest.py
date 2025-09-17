@@ -5,7 +5,7 @@ from httpx import AsyncClient
 from app.main import app
 from app.Database.client import client
 from fastapi.testclient import TestClient
-from MockTestData import  MockPhotographersCollection, MockAppointmentsCollection
+from MockTestData import MockPhotographersCollection, MockAppointmentsCollection, MockRemindersCollection
 from unittest.mock import AsyncMock, patch
 
 
@@ -48,7 +48,8 @@ def appointment_client():
 @pytest.fixture
 def reminders_client():
     with patch("app.routes.reminders.appointments_col", new=MockAppointmentsCollection()):
-        yield TestClient(app)
+        with patch("app.routes.reminders.reminders_col", new=MockRemindersCollection()):
+            yield TestClient(app)
 
 @pytest.fixture
 def photographers_client():
