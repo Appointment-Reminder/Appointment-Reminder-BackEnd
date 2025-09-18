@@ -54,9 +54,9 @@ async def preview_reminder(req: ReminderRequest):
         raise HTTPException(status_code=404, detail="Appointment not found")
 
     message = req.template.format(
-        Client=f"{appointment['name']} {appointment['surname']}",
-        Time = appointment['time'],
-        Location=appointment['location']
+        Client=f"{appointment.name} {appointment.surname}",
+        Time = appointment.time,
+        Location=appointment.location
     )
 
     return ReminderResponse(status="preview", message=message)
@@ -68,12 +68,12 @@ async def send_reminder(req: ReminderRequest):
         raise HTTPException(status_code=404, detail="Appointment not found")
 
     message = req.template.format(
-        Client=f"{appointment['name']} {appointment['surname']}",
-        Time = appointment['time'],
-        Location=appointment['location']
+        Client=f"{appointment.name} {appointment.surname}",
+        Time = appointment.time,
+        Location=appointment.location
     )
 
     # TODO: integrate real sending (WhatsApp/SMS/email)
-    print(f"Sending message to {appointment['name']} {appointment['surname']}: {message}")
+    print(f"Sending message to {appointment.name} {appointment.surname}: {message}")
 
     return ReminderResponse(status="sent", message=message)

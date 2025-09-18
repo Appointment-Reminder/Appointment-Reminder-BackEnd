@@ -1,3 +1,4 @@
+import pytest
 
 def test_list_appointments(appointment_client):
     response = appointment_client.get("/appointments/")
@@ -41,6 +42,7 @@ def test_delete_nonexistent_appointment(appointment_client):
     response = appointment_client.delete("/appointments/4")
     assert response.status_code == 404
 
+@pytest.mark.asyncio
 def test_create_appointment(appointment_client):
     payload = {"id": "4", "name": "John", "surname": "Smith", "phone": "+123456789",
                "email": "alice@example.com", "time": "2025-09-10 15:00", "location": "Central Park"}

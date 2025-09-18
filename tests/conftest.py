@@ -1,6 +1,7 @@
 import os
 import pytest
 import asyncio
+import pytest_asyncio
 from httpx import AsyncClient
 from app.main import app
 from app.Database.client import client
@@ -12,7 +13,7 @@ from unittest.mock import AsyncMock, patch
 # Use a test DB
 os.environ["MONGO_DB"] = "PhotoReminder_Test"
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 async def seed_test_db():
     db = client[os.environ["MONGO_DB"]]
 
@@ -32,13 +33,6 @@ async def seed_test_db():
     ])
 
     yield  # test runs here
-
-@pytest.fixture
-def event_loop():
-    yield asyncio.get_event_loop()
-
-def pytest_sessionfinish(session, exitstatus):
-    asyncio.get_event_loop().close()
 
 @pytest.fixture
 def appointment_client():

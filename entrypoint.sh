@@ -22,7 +22,7 @@ mongod --dbpath "$MONGO_DATA_DIR" \
 echo "MongoDB started"
 
 # Optional: Seed test DB
-mongosh --eval 'db = db.getSiblingDB("PhotoReminder_Test"); db.createCollection("photographers"); db.createCollection("appointments"); db.createCollection("reminders");'
+mongosh --eval 'db = db.getSiblingDB("PhotoReminder_Test"); db.dropDatabase(); db.createCollection("photographers"); db.createCollection("appointments"); db.createCollection("reminders");'
 
 
 echo "Test DB seeded"
