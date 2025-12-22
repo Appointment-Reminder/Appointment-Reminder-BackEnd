@@ -1,14 +1,9 @@
-import uvicorn
 from fastapi import FastAPI
-from app.routes import appointments, reminders, photographers
 
-app = FastAPI(title="Photo Reminder API")
+from app.core.config import config
 
-# Include routers
-app.include_router(appointments.router)
-app.include_router(reminders.router)
-app.include_router(photographers.router)
+app = FastAPI(title=config.app_name)
 
 @app.get("/")
-def root():
-    return {"message": "Hello Photo Reminder"}
+def read_root():
+    return {"Hello": "World"}
