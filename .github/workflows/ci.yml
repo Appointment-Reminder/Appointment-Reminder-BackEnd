@@ -27,9 +27,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Run FastAPI tests
-      - name: Run backend tests
+      - name: LogLocation
         run: |
-          echo "Setting PYTHONPATH"
-          export PYTHONPATH=$PWD
+          pwd
+          ls -R
+          python --version
+
+      - name: Run backend tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip list
           pytest -v tests
