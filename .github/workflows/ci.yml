@@ -8,7 +8,8 @@ on:
 
 jobs:
   test:
-    runs-on: self-hosted, PythonBackEnd   # your Dockerized runner
+    runs-on:
+      group: PythonBackEnd   # your Dockerized runner
 
     steps:
       # 1️⃣ Checkout the code
