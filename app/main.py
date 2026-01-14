@@ -4,7 +4,11 @@ from starlette.responses import JSONResponse
 
 from app.core.config import config
 
+from app.api.v1.userRoutes import userRouter
+
 app = FastAPI(title=config.app_name)
+
+app.include_router(userRouter)
 
 app.add_middleware(
     CORSMiddleware,

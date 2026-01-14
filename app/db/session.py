@@ -1,6 +1,5 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
+import sqlmodel
+from sqlmodel import create_engine, SQLModel, Session
 from app.core.config import config
 
 engine = create_engine(
@@ -9,9 +8,9 @@ engine = create_engine(
     future=True,
 )
 
-SessionLocal = sessionmaker(
-    bind=engine,
-    autoflush=False,
-    autocommit=False,
-    )
+SQLModel.metadata.create_all(bind=engine)
 
+
+def get_session() -> SQLModel:
+    with Session(engine) as session:
+        yield session

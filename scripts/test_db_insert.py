@@ -1,17 +1,18 @@
 from app.db.models.role import Role
-from app.db.session import SessionLocal
+from app.db.session import get_session, engine, Session
 from app.db.models.user import User
 
-db = SessionLocal()
+db = get_session
 
 addedUser = User(
-    email="test@example",
-    role_id=1,
+    email="test2@example.com",
     name="test User",
-    password_hash="jfhadsf",
+    hashed_password="jfhadsf",
 )
 
-db.add(addedUser)
-db.commit()
+# Create a real session
+with Session(engine) as db:
+    db.add(addedUser)
+    db.commit()
 
 print("user inserted sucessfully")

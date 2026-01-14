@@ -1,10 +1,10 @@
-from sqlalchemy import String, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.db.base import Base
+from typing import Optional
 
-class Role(Base):
-    __tablename__ = 'roles'
+from sqlmodel import SQLModel, create_engine, Field
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+
+class Role(SQLModel, table=True):
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(index=True, unique=True)
 
