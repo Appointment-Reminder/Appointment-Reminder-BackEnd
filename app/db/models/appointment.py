@@ -7,3 +7,10 @@ class Appointment(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
+    client_name: str
+    client_email: str
+    client_phone: Optional[str] = None
+
+    appointment_date: datetime
+
+

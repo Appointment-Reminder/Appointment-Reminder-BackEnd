@@ -4,16 +4,20 @@ from starlette.responses import JSONResponse
 
 from app.core.config import config
 
+from app.api.v1.jotform_Webhook import jotform_router
 from app.api.v1.userRoutes import userRouter
 
 app = FastAPI(title=config.app_name)
 
 app.include_router(userRouter)
-
+app.include_router(jotform_router)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[ "http://localhost:5173",   # Flutter web dev TODO Add the localhost flutter address
-        "https://app.yourdomain.com"], #Production frontend], TODO Add the production frontend domain
+    allow_origins=[
+        "http://localhost:56779",     # Flutter web current port
+        "http://localhost:5173",
+        "https://app.yourdomain.com"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -5,6 +5,8 @@ from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import false
 from sqlmodel import Session, select
+
+from app.db.session import get_session
 from app.models.userModel import UserRead, UserCreate
 from app.db.models.user import User
 from app.services.Security import hash_password, verify_password
@@ -51,7 +53,7 @@ def create_access_token(username: str, user_id:int, expires_delta: timedelta):
     encode.update({'exp': expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+def get_current_user(token: Annotated[str, Depends(oauth2_bearer)],db: Session = Depends(get_session)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get('sub')
@@ -59,6 +61,10 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         if username is None or user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
 
-        return {'username': username, 'id': user_id}
+        user = db.query(User).filter(User.id == user_id).first()
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user;
+
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
