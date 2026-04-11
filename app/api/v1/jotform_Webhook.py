@@ -69,22 +69,31 @@ async def receive_jotform_webhook(
         if not jotform_service.JotformService.validate_photographer(session, photographer_id):
             raise HTTPException(status_code=404, detail="Photographer not found")
 
-        payload = await request.json()
+        print("processing jotform webhook")
+        ##payload = await request.json()
 
-        appointment = jotform_service.JotformService.process_webhook(db= session, payload= payload, photographer_id= photographer_id)
+        form_data = await request.form()
+        form_dict = dict(form_data)
+
+        print("=" * 50)
+        print("📝 RECEIVED FORM DATA:")
+        for key, value in form_dict.items():
+            print(f"{key}: {value}")
+        print("=" * 50)
+        if 'rawRequest' not in form_dict or not form_dict['rawRequest']:
+            print("❌ rawRequest is missing or empty!")
+            return {"error": "rawRequest field is missing or empty"}
+
+        appointment = jotform_service.JotformService.process_webhook(db= session, payload= form_dict, photographer_id= photographer_id)
 
         return JotformProcessingResult(
             success=True,
-            appointment_id=appointment.appointment_id,
-            submission_id=appointment.jotform_submission_id,
-            photographer_id=photographer_id,
+            appointment_id=appointment.id,
+            submission_id="0",
+            photographer_id=str(photographer_id),
         )
     except HTTPException as err:
         raise err
     except Exception as e:
         print(f" Jotform webhook error: {str(e)} ")
         raise HTTPException(status_code=500, detail=f"Failed to process webhook: {str(e)}")
-
-
-
-

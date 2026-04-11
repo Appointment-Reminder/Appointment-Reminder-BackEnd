@@ -1,6 +1,14 @@
 
 # scripts/create_tables.py
 from app.db.session import engine
-from app.db.base import Base
+from sqlmodel import SQLModel
 
-Base.metadata.create_all(bind=engine)
+# scripts/create_tables.py
+
+from app.db.session import engine
+
+
+# 👇 IMPORTANT: import models so they register
+from app.db.models.appointment import Appointment  # adjust path as needed
+
+SQLModel.metadata.create_all(bind=engine)

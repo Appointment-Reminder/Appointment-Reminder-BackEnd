@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from app.db.models.appointment import Appointment
+from app.models.appointment_model import AppointmentCreate
 
 
 def create_appointment(db: Session, appointment_data: AppointmentCreate, photographer_id: Optional[int]) -> Appointment:
