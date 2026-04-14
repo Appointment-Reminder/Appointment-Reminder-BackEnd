@@ -16,9 +16,10 @@ class AppointmentRead(BaseModel):
     client_email: str
     client_phone: Optional[str]
     appointment_date: datetime
-    photographer_id: Optional[int]
+    user_id: Optional[int]
     status: str
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True

@@ -9,7 +9,7 @@ from app.models.appointment_model import AppointmentCreate
 def create_appointment(db: Session, appointment_data: AppointmentCreate, photographer_id: Optional[int]) -> Appointment:
     appointment = Appointment(
         **appointment_data.dict(),
-        photographer_id=photographer_id
+        user_id=photographer_id
     )
     db.add(appointment)
     db.commit()
