@@ -55,16 +55,20 @@ def create_access_token(username: str, user_id:int, expires_delta: timedelta):
 
 def get_current_user(token: Annotated[str, Depends(oauth2_bearer)],db: Session = Depends(get_session)):
     try:
+        print("Get current user launched")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get('sub')
         user_id: int = payload.get('id')
         if username is None or user_id is None:
+            print("Current user has invalid token")
             raise HTTPException(status_code=401, detail="Invalid token")
 
         user = db.query(User).filter(User.id == user_id).first()
         if user is None:
+            print("Currrent user is not found in db")
             raise HTTPException(status_code=404, detail="User not found")
         return user;
 
     except JWTError:
+        print("Current user has invalid token")
         raise HTTPException(status_code=401, detail="Invalid token")

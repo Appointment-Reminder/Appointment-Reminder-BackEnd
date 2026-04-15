@@ -60,6 +60,7 @@ def get_users(
 
 @userRouter.get("/", status_code=200)
 async def user( current_user: Annotated[User, Depends(get_current_user)]):
+    print("Get current user")
     if current_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return {"User": current_user}

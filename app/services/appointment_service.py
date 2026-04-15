@@ -26,10 +26,26 @@ def get_appointments(db: Session, photographer_id: Optional[int] = None, status:
     if status:
         query = query.where(Appointment.status == status)
 
-    return db.execute(query).all()
+    return db.exec(query).all()
 
-def get_appointment_by_id(db: Session, appointment_id: int) -> Optional[Appointment]:
-    return db.get(Appointment, appointment_id)
+def get_appointments_by_photographer(db: Session, photographer_id: int, status: Optional[str] = None) -> List[Appointment]:
+    """Get all appointments for a specific photographer"""
+    query = select(Appointment).where(Appointment.user_id == photographer_id)
+
+    if status:
+        query = query.where(Appointment.status == status)
+
+    query = query.order_by(Appointment.appointment_date.desc())
+
+    return db.exec(query).all()
+
+def get_appointment_by_id(db: Session, appointment_id: int, photographer_id: Optional[int] = None ) -> Optional[Appointment]:
+    query = select(Appointment).where(Appointment.id == appointment_id)
+
+    if photographer_id:
+        query = query.where(Appointment.user_id == photographer_id)
+
+    return db.exec(query).first()
 
 def update_appointment(db: Session, appointment_id: int, appointment_data: Appointment) -> Optional[Appointment]:
     """Update an appointment"""
