@@ -5,6 +5,7 @@ from app.db.models import appointment
 from app.db.models.user import User
 from app.db.session import Session
 from app.models.appointment_model import AppointmentCreate
+from app.repositories.appointment_repositories import AppointmentRepository
 from app.services import appointment_service
 
 
@@ -12,46 +13,32 @@ class JotformService:
     """Service for processing Jotform webhooks"""
 
     @staticmethod
-    def process_webhook(db: Session, payload: Dict[str, Any], photographer_id: int):
+    def process_webhook(repository: AppointmentRepository, payload: Dict[str, Any], photographer_id: int):
         """
         Process Jotform webhook payload and create appointment
 
-        :param db: Database session
+        :param repository:
         :param payload: Raw webhook payload from jotform
         :param photographer_id: ID of photographer receiving the submission
         :return: Create appointment object
         """
 
-        print(f"📝 Processing submission {payload.get('submissionID')}")
+
         raw_request_str = payload.get('rawRequest', {})
-        print(f"🔍 Raw request string: {raw_request_str[0:200] if raw_request_str else 'Empty'}...")
 
         try:
             raw_request = json.loads(raw_request_str)
-            print(f" Parsed raw request: succesfully")
-            print(f" Keys in raw_request: {list(raw_request.keys())[:10]}")
+
         except json.decoder.JSONDecodeError as e:
-            print(f" Failed to parse raw request: {e}")
             raise ValueError(f"Failed to parse raw request: {e}")
 
         try:
-            print("Extracting name...")
+
             client_name = JotformService._extract_name(raw_request)
-            print(f" Extracted name: {client_name}")
-
-            print("Extracting email...")
             client_email = JotformService._extract_email(raw_request)
-            print(f"Extracting email done {client_email}")
-
-            print("🔍 Extracting phone...")
             client_phone = JotformService._extract_phone(raw_request)
-            print(f"✅ Phone: {client_phone}")
-
-            print("🔍 Extracting appointment date...")
             appointment_date = JotformService._extract_date(raw_request)
-            print(f"✅ Date: {appointment_date}")
         except Exception as e:
-            print(f"Failed during extraction: {e}")
             import traceback
             traceback.print_exc()
             raise
@@ -64,21 +51,18 @@ class JotformService:
             appointment_date=appointment_date,
         )
 
-        # Create appointment using appointment service
-        appointment = appointment_service.create_appointment(db = db, appointment_data = appointment_data, photographer_id = photographer_id)
+        created_appointment = appointment_service.create_appointment(repository= repository, appointment_data = appointment_data, photographer_id = photographer_id)
 
-        #add jotform metadata
-        db.commit()
-        db.refresh(appointment)
+        if not created_appointment:
+            raise ValueError("Appointment not created")
 
-        return appointment
+        return created_appointment
 
     @staticmethod
     def find_field_by_name(
             data: Dict[str, Any],
             field_name: str,
     ) -> Optional[Any]:
-        """ Find a field by searching for a name pattern in the keys"""
         find_name_lower = field_name.lower()
 
         for key in data.keys():
@@ -168,10 +152,11 @@ class JotformService:
             return datetime.utcnow()
 
     @staticmethod
-    def validate_photographer(db: Session, photographer_id: int) -> bool:
+    def validate_photographer(repository : AppointmentRepository, photographer_id: int) -> bool:
         """Verify photographer exists (if you have Photographer model)"""
         # TODO: Implement when Photographer model exists
         photographer = db.get(User, photographer_id)
+        repository.get
         if photographer is not  None:
             return True
 

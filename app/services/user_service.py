@@ -3,12 +3,9 @@ from datetime import timedelta, datetime
 from typing import Annotated
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import false
-from sqlmodel import Session, select
-
-from app.db.session import get_session
 from app.models.userModel import UserRead, UserCreate
 from app.db.models.user import User
+from app.repositories.user_repository import UserRepository
 from app.services.Security import hash_password, verify_password
 from jose import jwt, JWTError
 
@@ -18,7 +15,7 @@ SECRET_KEY = '1293482109740489759sdkfhgsd'
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='users/token')
 
-def create_user( user_in : UserCreate, session: Session) -> User:
+def create_user( user_in : UserCreate, repository: UserRepository) -> User:
     print("Add user")
     print(user_in.password)
     user = User(
@@ -28,47 +25,38 @@ def create_user( user_in : UserCreate, session: Session) -> User:
         is_active = True
     )
 
-    session.add(user)
-    session.commit()
-    session.refresh(user)
+    repository.create(user)
     return user
 
-def get_user_by_id(session: Session, id: int) -> User | None:
-    return session.get(User, id)
-def get_user_by_email(session: Session, email: str) -> User:
-    stmt = select(User).where(User.email == email)
-    return session.exec(stmt).first()
 
-def authenticate_user(username: str, password: str, db: Session) -> User:
-    user = db.query(User).filter(User.email == username).first()
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
+def get_user_by_id(user_id: int, repo: UserRepository) -> User | None:
+    return repo.get_by_id(user_id)
+def get_user_by_email(email: str, repo: UserRepository) -> User | None:
+    return repo.get_by_email(email)
+
+def authenticate_user(email: str, password: str, repo: UserRepository) -> User | None:
+    user = repo.get_by_email(email)
+    if not user or not verify_password(password, user.hashed_password):
+        return None
     return user
 
-def create_access_token(username: str, user_id:int, expires_delta: timedelta):
-    encode = {'sub': username, 'id':user_id}
-    expires = datetime.utcnow() + expires_delta
-    encode.update({'exp': expires})
-    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_current_user(token: Annotated[str, Depends(oauth2_bearer)],db: Session = Depends(get_session)):
+def create_access_token(username: str, user_id: int, expires_delta: timedelta) -> str:
+    payload = {
+        "sub": username,
+        "id": user_id,
+        "exp": datetime.utcnow() + expires_delta,
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def decode_token(token: str) -> tuple[str, int]:
+    """Decode JWT and return (email, user_id). Raises HTTPException on failure."""
     try:
-        print("Get current user launched")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get('sub')
-        user_id: int = payload.get('id')
-        if username is None or user_id is None:
-            print("Current user has invalid token")
+        email: str = payload.get("sub")
+        user_id: int = payload.get("id")
+        if email is None or user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-
-        user = db.query(User).filter(User.id == user_id).first()
-        if user is None:
-            print("Currrent user is not found in db")
-            raise HTTPException(status_code=404, detail="User not found")
-        return user;
-
+        return email, user_id
     except JWTError:
-        print("Current user has invalid token")
         raise HTTPException(status_code=401, detail="Invalid token")

@@ -1,12 +1,9 @@
-from fastapi import APIRouter, Query, Depends, HTTPException
-from typing import Optional, List, Annotated
-from sqlmodel import Session
+from fastapi import APIRouter, Query, HTTPException
+from typing import Optional, List
 
-from app.db.models.user import User
-from app.db.session import get_session
 from app.models.appointment_model import AppointmentRead
 from app.services import appointment_service
-from app.services.user_service import get_current_user
+from app.dependencies import APPOINTMENT_REPOSITORY_DEPENDENCY, CURRENT_USER_DEPENDENCY
 
 appointment_router = APIRouter(
     prefix="/appointments",
@@ -16,35 +13,24 @@ appointment_router = APIRouter(
 @appointment_router.get("/me", response_model=List[AppointmentRead], status_code=200)
 def get_my_appointments(
         status: Optional[str] = Query(None, description="Filter by status: pending confirmed etc"),
-        session: Session = Depends(get_session),
-        current_user= Depends(get_current_user)
+        appointment_repository = APPOINTMENT_REPOSITORY_DEPENDENCY,
+        current_user= CURRENT_USER_DEPENDENCY
 ):
     """Get all appointments for the currently logged in photographer"""
-    #TODO: Get photographer_id from authenticated user
     photographer_id = current_user.id
-    print(f"Logged in photographer id {photographer_id}")
-
-    appointments = appointment_service.get_appointments_by_photographer(db =session, photographer_id=photographer_id, status = status)
-
+    appointments = appointment_service.get_appointments_by_photographer(repo= appointment_repository, photographer_id=photographer_id, status = status)
     return appointments
 
 @appointment_router.get("/me/{appointment_id}", response_model=AppointmentRead, status_code=200)
 def get_my_appointment(
         appointment_id: int,
-        session: Session = Depends(get_session),
-        current_user = Depends(get_current_user)
+        appointment_repository = APPOINTMENT_REPOSITORY_DEPENDENCY,
+        current_user = CURRENT_USER_DEPENDENCY
 ):
-    """
-    Get a specific appointment for the currently loggedin photographer
-    :param appointment_id:
-    :param session:
-    :param current_user:
-    :return:
-    """
 
     photographer_id = current_user.id
     appointment = appointment_service.get_appointment_by_id(
-        db = session,
+        repo = appointment_repository,
         appointment_id = appointment_id,
         photographer_id = photographer_id,
     )

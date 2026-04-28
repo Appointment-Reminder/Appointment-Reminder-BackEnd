@@ -1,74 +1,31 @@
-from sqlmodel import Session, select
+
 from datetime import datetime
 from typing import List, Optional
 
 from app.db.models.appointment import Appointment
 from app.models.appointment_model import AppointmentCreate
+from app.repositories.appointment_repositories import AppointmentRepository
 
 
-def create_appointment(db: Session, appointment_data: AppointmentCreate, photographer_id: Optional[int]) -> Appointment:
+def create_appointment(repository: AppointmentRepository, appointment_data: AppointmentCreate, photographer_id: Optional[int]) -> Appointment:
     appointment = Appointment(
         **appointment_data.dict(),
         user_id=photographer_id
     )
-    db.add(appointment)
-    db.commit()
-    db.refresh(appointment)
-    return appointment
+    return repository.create(appointment)
 
-
-def get_appointments(db: Session, photographer_id: Optional[int] = None, status: Optional[str] = None) -> Appointment:
-    """Get appointments with optional filters"""
-    query = select(Appointment)
-
-    if photographer_id:
-        query = query.where(Appointment.photographer_id == photographer_id)
-    if status:
-        query = query.where(Appointment.status == status)
-
-    return db.exec(query).all()
-
-def get_appointments_by_photographer(db: Session, photographer_id: int, status: Optional[str] = None) -> List[Appointment]:
+def get_appointments_by_photographer(repository: AppointmentRepository, photographer_id: int, status: Optional[str] = None) -> List[Appointment]:
     """Get all appointments for a specific photographer"""
-    query = select(Appointment).where(Appointment.user_id == photographer_id)
+    return repository.get_appointments_by_photographer(photographer_id, status)
 
-    if status:
-        query = query.where(Appointment.status == status)
+def get_appointment_by_id(repository: AppointmentRepository, appointment_id: int, photographer_id: Optional[int] = None ) -> Optional[Appointment]:
+    return repository.get_appointments_by_id(appointment_id, photographer_id)
 
-    query = query.order_by(Appointment.appointment_date.desc())
-
-    return db.exec(query).all()
-
-def get_appointment_by_id(db: Session, appointment_id: int, photographer_id: Optional[int] = None ) -> Optional[Appointment]:
-    query = select(Appointment).where(Appointment.id == appointment_id)
-
-    if photographer_id:
-        query = query.where(Appointment.user_id == photographer_id)
-
-    return db.exec(query).first()
-
-def update_appointment(db: Session, appointment_id: int, appointment_data: Appointment) -> Optional[Appointment]:
+def update_appointment(repository: AppointmentRepository, appointment_id: int, appointment_data: Appointment) -> Optional[Appointment]:
     """Update an appointment"""
-    appointment = db.get(Appointment, appointment_id)
-    if not appointment:
-        return None
-
-    update_data = appointment_data.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(appointment, key, value)
-
-    appointment.updated_at = datetime.utcnow()
-    db.commit()
-    db.refresh(appointment)
-    return appointment
+    return repository.update(appointment_data, appointment_id)
 
 
-def delete_appointment(db: Session, appointment_id: int) -> bool:
+def delete_appointment(repository: AppointmentRepository, appointment_id: int) -> bool:
     """Delete an appointment"""
-    appointment = db.get(Appointment, appointment_id)
-    if not appointment:
-        return False
-
-    db.delete(appointment)
-    db.commit()
-    return True
+    return repository.delete(repository, appointment_id)
