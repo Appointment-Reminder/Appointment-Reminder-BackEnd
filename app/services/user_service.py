@@ -16,8 +16,6 @@ SECRET_KEY = '1293482109740489759sdkfhgsd'
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='users/token')
 
 def create_user( user_in : UserCreate, repository: UserRepository) -> User:
-    print("Add user")
-    print(user_in.password)
     user = User(
         email=user_in.email,
         name=user_in.name,
@@ -27,7 +25,6 @@ def create_user( user_in : UserCreate, repository: UserRepository) -> User:
 
     repository.create(user)
     return user
-
 
 def get_user_by_id(user_id: int, repo: UserRepository) -> User | None:
     return repo.get_by_id(user_id)

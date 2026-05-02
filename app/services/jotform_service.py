@@ -38,6 +38,7 @@ class JotformService:
             client_email = JotformService._extract_email(raw_request)
             client_phone = JotformService._extract_phone(raw_request)
             appointment_date = JotformService._extract_date(raw_request)
+
         except Exception as e:
             import traceback
             traceback.print_exc()

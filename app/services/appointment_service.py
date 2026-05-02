@@ -7,10 +7,12 @@ from app.models.appointment_model import AppointmentCreate
 from app.repositories.appointment_repositories import AppointmentRepository
 
 
-def create_appointment(repository: AppointmentRepository, appointment_data: AppointmentCreate, photographer_id: Optional[int]) -> Appointment:
+def create_appointment(repository: AppointmentRepository, appointment_data: AppointmentCreate) -> Appointment:
+    if appointment_data.business_id is None:
+        return None
+
     appointment = Appointment(
-        **appointment_data.dict(),
-        user_id=photographer_id
+        **appointment_data.dict()
     )
     return repository.create(appointment)
 
