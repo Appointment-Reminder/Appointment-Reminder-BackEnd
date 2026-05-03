@@ -12,19 +12,18 @@ jotform_router = APIRouter(
     tags=["jotform-webhooks"]
 )
 
-@jotform_router.post("/{photographer_id}", status_code=201, response_model=JotformProcessingResult)
+@jotform_router.post("/webhook/{webhook_token}", status_code=201, response_model=JotformProcessingResult)
 async def receive_jotform_webhook(
-        photographer_id: int,
+        webhook_token: str,
         request: Request,
         session: Session = Depends(get_session),
 ):
     """Receive Jotform webhook submission for a specific photographer
-    //TODO Do a secure id for photographer webhook so you can t create appointment for other people
     Each photographer gets a unique webhook URL:
     POST /webhooks/jotform/123"""
 
     try:
-        if not jotform_service.JotformService.validate_photographer(session, photographer_id):
+        if not jotform_service.JotformService.validate_photographer(session, webhook_token):
             raise HTTPException(status_code=404, detail="Photographer not found")
 
         form_data = await request.form()

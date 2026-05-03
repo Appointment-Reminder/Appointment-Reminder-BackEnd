@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
-
 from pydantic import BaseModel, EmailStr
+from app.db.models.business_member import MemberRole
 
 
 class BusinessMemberRead(BaseModel):
@@ -23,4 +23,12 @@ class BusinessMemberRead(BaseModel):
 class BusinessMemberInvite(BaseModel):
     email: EmailStr
     role: str = "Photographer"
+
+class BusinessMemberUpdate(BaseModel):
+    role:str
+    is_active:bool
+
+class BusinessMemberInvite(BaseModel):
+    user_email: EmailStr
+    role: str = MemberRole.PHOTOGRAPHER
 

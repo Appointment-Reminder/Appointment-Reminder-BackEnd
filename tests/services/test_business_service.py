@@ -2,12 +2,14 @@ from datetime import datetime
 from unittest.mock import Mock
 
 import pytest
+from sqlalchemy.sql.functions import current_user
 
 from app.models.business_model import BusinessCreate
 from app.repositories.business_repository import BusinessRepository
 from app.db.models.business import Business
 from app.services import business_service
 from app.db.models.business_member import BusinessMember, MemberRole
+from app.db.models.user import User
 
 
 @pytest.fixture
@@ -33,10 +35,12 @@ def test_create_business(business_repo, member_repo, fake_business):
     business_repo.find_by_name.return_value = None
     business_repo.create.return_value = fake_business
 
+    current_user = User(id=42, name="Test")
+    member_repo.create.return_value = fake_business
     result = business_service.create_business(
         business_repo=business_repo,
         member_repo=member_repo,
-        user_id=42,
+        current_user=current_user,
         business_data = BusinessCreate(name="Test"),
     )
 

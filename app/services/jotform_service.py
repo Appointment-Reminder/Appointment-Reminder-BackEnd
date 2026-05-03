@@ -6,23 +6,26 @@ from app.db.models.user import User
 from app.db.session import Session
 from app.models.appointment_model import AppointmentCreate
 from app.repositories.appointment_repositories import AppointmentRepository
+from app.repositories.business_member_repository import BusinessMemberRepository
 from app.services import appointment_service
+from app.db.models.business_member import BusinessMember
 
 
 class JotformService:
     """Service for processing Jotform webhooks"""
 
     @staticmethod
-    def process_webhook(repository: AppointmentRepository, payload: Dict[str, Any], photographer_id: int):
-        """
-        Process Jotform webhook payload and create appointment
+    def process_webhook(
+            appointment_repository: AppointmentRepository,
+            business_member_repository: BusinessMemberRepository,
+            payload: Dict[str, Any],
+            business_member_token: str):
 
-        :param repository:
-        :param payload: Raw webhook payload from jotform
-        :param photographer_id: ID of photographer receiving the submission
-        :return: Create appointment object
-        """
-
+        business_member = JotformService.validate_photographer(
+                business_member_repo=business_member_repository,
+                business_member_token= business_member_token)
+        if not business_member:
+            raise
 
         raw_request_str = payload.get('rawRequest', {})
 
@@ -44,15 +47,18 @@ class JotformService:
             traceback.print_exc()
             raise
 
+        print(business_member.business_id)
 
         appointment_data = AppointmentCreate(
             client_name=client_name,
             client_email=client_email,
             client_phone=client_phone,
             appointment_date=appointment_date,
+            business_id=business_member.business_id,
+            user_id=business_member.user_id
         )
 
-        created_appointment = appointment_service.create_appointment(repository= repository, appointment_data = appointment_data, photographer_id = photographer_id)
+        created_appointment = appointment_service.create_appointment(repository= appointment_repository, appointment_data = appointment_data)
 
         if not created_appointment:
             raise ValueError("Appointment not created")
@@ -153,14 +159,13 @@ class JotformService:
             return datetime.utcnow()
 
     @staticmethod
-    def validate_photographer(repository : AppointmentRepository, photographer_id: int) -> bool:
+    def validate_photographer( business_member_repo: BusinessMemberRepository, business_member_token: str) -> Optional[BusinessMember]:
         """Verify photographer exists (if you have Photographer model)"""
-        # TODO: Implement when Photographer model exists
-        photographer = db.get(User, photographer_id)
-        repository.get
-        if photographer is not  None:
-            return True
+        business_member = business_member_repo.get_member_by_token(token=business_member_token)
 
-        print(f"Photographer not valid id : {photographer_id}")
-        return False
+        if business_member is not  None:
+            return business_member
+
+        print(f"Photographer not valid token : {business_member_token}")
+        return None
 

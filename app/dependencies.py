@@ -14,16 +14,17 @@ from app.services import user_service
 from app.services.user_service import oauth2_bearer
 
 
-def get_user_repository(db: Session = Depends(get_session)) -> UserRepository:
+def get_user_repository(db:  Annotated[Session, Depends(get_session)]) -> UserRepository:
     return UserRepository(db)
 
-def get_appointment_repository(db: Session = Depends(get_session)) -> AppointmentRepository:
+def get_appointment_repository(db:  Annotated[Session, Depends(get_session)]) -> AppointmentRepository:
     return AppointmentRepository(db)
 
-def get_business_member_repository(db: Session = Depends(get_session)) -> BusinessMemberRepository:
+def get_business_member_repository(db:  Annotated[Session, Depends(get_session)]) -> BusinessMemberRepository:
     return BusinessMemberRepository(db)
-def get_business_repository(db: Session = Depends(get_session)) -> BusinessRepository:
+def get_business_repository(db:  Annotated[Session, Depends(get_session)]) -> BusinessRepository:
     return BusinessRepository(db)
+
 
 def get_current_user(
     token: Annotated[str, Depends(oauth2_bearer)],
@@ -35,10 +36,13 @@ def get_current_user(
     user = repo.get_by_id(user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
+
+    assert user.id is not None, "Database user must have an id"
+
     return user
 
 USER_REPOSITORY_DEPENDENCY = Annotated[UserRepository, Depends(get_user_repository)]
 APPOINTMENT_REPOSITORY_DEPENDENCY = Annotated[AppointmentRepository, Depends(get_appointment_repository)]
 BUSINESS_MEMBER_REPO_DEP = Annotated[BusinessMemberRepository, Depends(get_business_member_repository)]
-BUSINESS_REPO_DEP = Annotated[BusinessMemberRepository, Depends(get_business_repository)]
+BUSINESS_REPO_DEP = Annotated[BusinessRepository, Depends(get_business_repository)]
 CURRENT_USER_DEPENDENCY = Annotated[User, Depends(get_current_user)]
