@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Query, HTTPException
 from typing import Optional, List
 
+from sqlalchemy.sql.annotation import Annotated
+
 from app.models.appointment_model import AppointmentRead
 from app.services import appointment_service
 from app.dependencies import APPOINTMENT_REPOSITORY_DEPENDENCY, CURRENT_USER_DEPENDENCY
@@ -12,9 +14,9 @@ appointment_router = APIRouter(
 
 @appointment_router.get("/me", response_model=List[AppointmentRead], status_code=200)
 def get_my_appointments(
+        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
+        current_user: CURRENT_USER_DEPENDENCY,
         status: Optional[str] = Query(None, description="Filter by status: pending confirmed etc"),
-        appointment_repository = APPOINTMENT_REPOSITORY_DEPENDENCY,
-        current_user= CURRENT_USER_DEPENDENCY
 ):
     """Get all appointments for the currently logged in photographer"""
     photographer_id = current_user.id
@@ -24,8 +26,8 @@ def get_my_appointments(
 @appointment_router.get("/me/{appointment_id}", response_model=AppointmentRead, status_code=200)
 def get_my_appointment(
         appointment_id: int,
-        appointment_repository = APPOINTMENT_REPOSITORY_DEPENDENCY,
-        current_user = CURRENT_USER_DEPENDENCY
+        appointment_repository : APPOINTMENT_REPOSITORY_DEPENDENCY,
+        current_user : CURRENT_USER_DEPENDENCY
 ):
 
     photographer_id = current_user.id

@@ -56,17 +56,6 @@ def get_my_businesses(business_repo: BusinessRepository, current_user: User, is_
         raise Exception("Business not found or you are not a member")
     return result
 
-
-
-def get_business_by_user(
-        business_repo: BusinessRepository,
-        user_id: int,
-        is_active: Optional[bool] = True
-) -> List[dict]:
-    """ Get All Businesses a user is part of (owner or member) return list with business info + user's role"""
-    results = business_repo.find_by_user(user_id, is_active)
-    return [_to_dict(business, role) for business, role in results]
-
 def get_business_by_id(business_repo: BusinessRepository, business_id: int, current_user: User) -> Business | None:
     """  Get a specific business if user is a member (not just owner)
     Returns business + user's role"""
@@ -85,7 +74,7 @@ def update_business(business_repo: BusinessRepository, member_repo: BusinessMemb
 
     return business_repo.update(business_id = business_id, business_data= business_data)
 
-def delete_member_for_business_id(member_repo: BusinessMemberRepository, business_id: int, current_user: User) -> None:
+def delete_all_members_for_business_id(member_repo: BusinessMemberRepository, business_id: int, current_user: User) -> None:
     """Delete all members of a business"""
     check_user_is_admin_or_owner_for_business(business_id=business_id, business_member_repo=member_repo, current_user=current_user)
     members = member_repo.get_by_business_id(business_id)
@@ -96,7 +85,7 @@ def delete_member_for_business_id(member_repo: BusinessMemberRepository, busines
 def delete_business(business_repo: BusinessRepository, member_repo: BusinessMemberRepository, business_id: int, current_user: User) -> bool:
     check_if_business_exist(business_id=business_id, business_repo=business_repo)
     check_user_is_admin_or_owner_for_business(business_id=business_id,business_member_repo=member_repo, current_user=current_user)
-    delete_member_for_business_id(member_repo=member_repo, business_id=business_id, current_user=current_user)
+    delete_all_members_for_business_id(member_repo=member_repo, business_id=business_id, current_user=current_user)
     return business_repo.delete(business_id)
 
 def check_if_business_exist(business_id: int, business_repo: BusinessRepository):

@@ -12,4 +12,4 @@ class JotformProcessingResult(BaseModel):
     success: bool
     appointment_id: int
     submission_id: str
-    photographer_id: str
+    photographer_id: int

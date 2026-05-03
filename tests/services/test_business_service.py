@@ -51,3 +51,107 @@ def test_create_business(business_repo, member_repo, fake_business):
     assert created_member.role == MemberRole.OWNER
     assert created_member.user_id == 42
     assert result.name == "Test"
+
+def test_get_my_business(business_repo, member_repo, fake_business):
+    pass
+
+def test_get_my_business_without_business(business_repo, member_repo, fake_business):
+    pass
+
+def test_get_business_by_id(business_repo, member_repo, fake_business):
+    pass
+
+def test_get_business_by_id_without_business(business_repo, member_repo, fake_business):
+    pass
+
+def test_update_business(business_repo, member_repo, fake_business):
+    pass
+
+def test_update_business_call_check_business_exist(business_repo, member_repo, fake_business):
+    pass
+
+def test_update_business_call_check_is_user_admin_or_owner(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_business_member(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_business_member_call_check_business_exist(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_all_members_for_business_id_call_is_user_admin_or_owner(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_business(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_business_call_check_business_exist(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_business_call_is_user_admin_or_owner(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_busines_call_delete_all_business_members_for_business_id(business_repo, member_repo, fake_business):
+    pass
+
+def tes_delete_business_call_business_repo_delete():
+    pass
+
+def test_if_business_exist_return_true_if_business_exist_for_user(business_repo, member_repo, fake_business):
+    pass
+
+def test_if_business_exist_raise_exception_if_business_dont_exist_for_user(business_repo, member_repo, fake_business):
+    pass
+
+def test_check_if_user_is_admin_or_owne_raise_exception_if_user_is_not_adming_or_owner(business_repo, member_repo, fake_business):
+    pass
+
+def test_check_if_user_is_admin_or_owner_dont_raise_exception_if_user_is_not_admin_or_owner(business_repo, member_repo, fake_business):
+    pass
+
+def test_invite_business_member():
+    pass
+
+def test_get_business_member_list_check_if_business_exist_for_user(business_repo, member_repo, fake_business):
+    pass
+
+def test_get_business_member_list_return_member_list(business_repo, member_repo, fake_business):
+    pass
+
+def test_get_business_member_list_return_empty_list_if_no_member(business_repo, member_repo, fake_business):
+    pass
+
+def test_update_business_member_check_if_business_exist(business_repo, member_repo, fake_business):
+    pass
+
+def test_update_business_member_check_if_user_is_admin_or_owner(business_repo, member_repo, fake_business):
+    pass
+
+def test_update_business_member_raise_exception_if_user_update_to_owner_by_admin(business_repo, member_repo, fake_business):
+    pass
+
+def test_update_business_member_raise_exception_if_change_owner_role(business_repo, member_repo, fake_business):
+    pass
+
+def test_update_business_member_call_business_member_repo_update(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_business_member_check_if_business_exist(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_business_member_check_if_user_is_admin_or_owner(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_business_member_raise_exception_if_business_member_dont_exist(business_repo, member_repo, fake_business):
+    pass
+
+def test_delete_business_member_raise_exception_if_deleting_owner():
+    pass
+
+def test_delete_business_member_raise_exception_if_deleting_self():
+    pass
+
+def test_delete_business_member_call_business_member_repo_delete(business_repo, member_repo, fake_business):
+    pass
+
+

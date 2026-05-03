@@ -34,13 +34,13 @@ async def receive_jotform_webhook(
 
         appointment_repository = AppointmentRepository(session)
 
-        appointment = jotform_service.JotformService.process_webhook(repository= appointment_repository, payload= form_dict, photographer_id= photographer_id)
+        appointment = jotform_service.JotformService.process_webhook(repository= appointment_repository, payload= form_dict, business_member_token=webhook_token)
 
         return JotformProcessingResult(
             success=True,
             appointment_id=appointment.id,
             submission_id="0",
-            photographer_id=str(photographer_id),
+            photographer_id=appointment.user_id,
         )
     except HTTPException as err:
         raise err
