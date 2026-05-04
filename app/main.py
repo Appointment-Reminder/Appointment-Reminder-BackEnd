@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from sqlmodel import SQLModel
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
@@ -8,6 +9,7 @@ from app.api.v1.jotform_Webhook import jotform_router
 from app.api.v1.userRoutes import userRouter
 from app.api.v1.appointment_routes import appointment_router
 from app.api.v1.business_routes import business_router
+from session import engine
 
 app = FastAPI(title=config.app_name)
 
@@ -27,6 +29,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+def startup_event():
+    SQLModel.metadata.create_all(bind=engine)
 @app.get("/")
 def read_root():
     return {"Hello": "World"}

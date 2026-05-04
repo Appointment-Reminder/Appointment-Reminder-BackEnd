@@ -53,7 +53,7 @@ def get_my_businesses(business_repo: BusinessRepository, current_user: User, is_
     result = business_repo.find_by_user(current_user.id, is_active)
 
     if not result:
-        raise Exception("Business not found or you are not a member")
+        raise HTTPException(status_code=404,detail="Business not found or you are not a member")
     return result
 
 def get_business_by_id(business_repo: BusinessRepository, business_id: int, current_user: User) -> Business | None:
@@ -63,7 +63,7 @@ def get_business_by_id(business_repo: BusinessRepository, business_id: int, curr
 
     result = business_repo.find_by_id_and_user(business_id, current_user.id)
     if not result:
-        raise Exception("Business not found or you are not a member")
+        raise HTTPException(status_code=404,detail="Business not found or you are not a member")
 
     return result
 

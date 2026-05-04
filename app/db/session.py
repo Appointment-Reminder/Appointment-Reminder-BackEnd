@@ -9,9 +9,6 @@ engine = create_engine(
     future=True,
 )
 
-SQLModel.metadata.create_all(bind=engine)
-
-
 def get_session() -> SQLModel:
     with Session(engine) as session:
         yield session
