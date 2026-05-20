@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 from app.db.models.business_member import MemberRole
+from app.models.userModel import UserRead
 
 
 class BusinessMemberRead(BaseModel):
@@ -16,6 +17,9 @@ class BusinessMemberRead(BaseModel):
     joined_at: Optional[datetime]
     is_active: bool
     created_at: datetime
+
+    user: Optional[UserRead]
+    invited_by_user: Optional[UserRead]
 
     class Config:
         from_attributes = True

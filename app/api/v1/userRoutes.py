@@ -23,7 +23,7 @@ def login(
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
 
-    token = user_service.create_access_token(user.email, user.id, timedelta(minutes=20))
+    token = user_service.create_access_token(user.email, user.id, timedelta(days=60))
     return {"access_token": token, "token_type": "bearer", "user": user}
 
 @userRouter.post("", response_model=UserRead, status_code=201)

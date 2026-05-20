@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from pyasn1.type.univ import Boolean
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.db.models.business_member import BusinessMember, MemberRole
@@ -25,10 +26,20 @@ class BusinessMemberRepository:
             .where(BusinessMember.is_active == True)
         ).first()
 
+    def get_member_by_id(self, business_id: int, member_id: int) -> Optional[BusinessMember]:
+        return self.db.exec(
+            select(BusinessMember)
+            .where(BusinessMember.business_id == business_id)
+            .where(BusinessMember.id == member_id)
+            .where(BusinessMember.is_active == True)
+        ).first()
+
     def get_by_business_id(self, business_id: int) -> List[BusinessMember]:
         return self.db.exec(
             select(BusinessMember)
             .where(BusinessMember.business_id == business_id)
+            .options(selectinload(BusinessMember.user))
+            .options(selectinload(BusinessMember.invited_by_user))
         ).all()
 
     def get_member_by_token(self, token:str) -> Optional[BusinessMember]:
@@ -42,7 +53,7 @@ class BusinessMemberRepository:
         return bool(member and member.role in [MemberRole.OWNER, MemberRole.ADMIN])
 
     def update(self, member: BusinessMember) -> BusinessMember:
-        business_member = self.db.get(BusinessMember, member.business_id)
+        business_member = self.db.get(BusinessMember, member.id)
         if not business_member:
             return None
 

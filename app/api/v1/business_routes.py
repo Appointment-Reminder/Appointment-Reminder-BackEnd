@@ -103,7 +103,7 @@ def get_business_member_for_business(
         business_id=business_id
     )
 
-@business_router.post("/businesses/{business_id/members}", response_model=BusinessMemberRead, status_code=201)
+@business_router.post("/businesses/{business_id}/invite", response_model=BusinessMemberRead, status_code=201)
 def invite_user_to_join_business(
         business_id: int,
         invite_data: BusinessMemberInvite,
@@ -113,6 +113,7 @@ def invite_user_to_join_business(
         current_user: CURRENT_USER_DEPENDENCY
 ):
     """Invite a user to join the business"""
+    print('Receive invite member')
     return business_service.invite_business_member(
         business_repo=business_repo,
         business_member_repo=business_member_repo,

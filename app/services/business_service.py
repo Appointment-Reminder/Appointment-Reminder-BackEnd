@@ -178,9 +178,12 @@ def update_business_member(
         business_id=business_id,
         user_id=current_user.id
     )
+
+    print(f'Try to get the business member for user is {member_id} business id {business_id}')
     # Get member to update
-    member = business_member_repo.get_member(business_id=business_id, user_id=member_id)
-    if not member or member.business_id != business_id:
+    member = business_member_repo.get_member_by_id(business_id=business_id, member_id=member_id)
+    print(f"found member {member}")
+    if not member:
         raise HTTPException(
             status_code=404,
             detail="Member not found in this business"
