@@ -1,0 +1,44 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main", "staging", "dev" ]
+  pull_request:
+    branches: [ "main", "dev", "staging" ]
+
+jobs:
+  test:
+    runs-on:
+      group: PythonBackEnd   # your Dockerized runner
+
+    steps:
+      # 1️⃣ Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Set up Python
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3️⃣ Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: LogLocation
+        run: |
+          pwd
+          ls -R
+          python --version
+
+      - name: Run backend tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip list
+          pytest -v tests
