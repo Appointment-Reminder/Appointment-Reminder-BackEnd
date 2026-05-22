@@ -1,0 +1,15 @@
+services:
+  runner:
+    build: .
+    container_name: github-runner
+    environment:
+      RUNNER_TOKEN: APW4GFE3MGMJVQLQEWUZZNDJJESF4   # short-lived token from GitHub
+      REPO_URL: https://github.com/Appointment-Reminder
+      RUNNER_NAME: backend-test-runner             # optional
+      RUNNER_LABELS: docker,linux        # optional
+    volumes:
+      - runner-data:/home/runner          # persists runner registration & _work
+    restart: always
+
+volumes:
+  runner-data:
