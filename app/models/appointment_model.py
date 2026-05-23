@@ -33,3 +33,11 @@ class AppointmentRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+class AppointmentUpdate(BaseModel):
+    client_name: str
+    client_email: EmailStr
+    client_phone: Optional[str]
+    appointment_date: datetime
+    user_id: Optional[int]
+

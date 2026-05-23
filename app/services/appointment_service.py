@@ -3,8 +3,10 @@ from datetime import datetime
 from typing import List, Optional
 
 from app.db.models.appointment import Appointment
-from app.models.appointment_model import AppointmentCreate
+from app.models.appointment_model import AppointmentCreate, AppointmentUpdate
 from app.repositories.appointment_repositories import AppointmentRepository
+from app.repositories.business_member_repository import BusinessMemberRepository
+from models.user import User
 
 
 def create_appointment(repository: AppointmentRepository, appointment_data: AppointmentCreate) -> Appointment:
@@ -16,18 +18,50 @@ def create_appointment(repository: AppointmentRepository, appointment_data: Appo
     )
     return repository.create(appointment)
 
-def get_appointments_by_photographer(repository: AppointmentRepository, photographer_id: int, status: Optional[str] = None) -> List[Appointment]:
-    """Get all appointments for a specific photographer"""
-    return repository.get_appointments_by_photographer(photographer_id, status)
+def get_appointments_by_business(current_user: User,
+                                 appointment_repository: AppointmentRepository,
+                                 business_member_repository: BusinessMemberRepository,
+                                 business_id: int,
+                                 status: Optional[str] = None) -> List[Appointment]:
+    """Check the role of the current user in busines {business id}"""
+    """Get list of appointment for business {business id} depending on role"""
+    """if role is photographer only get the current user assigned appointment"""
+    """if role is admin get all the appointment for the business"""
+    """if status is set get the appointment for the business and status higher than the status"""
+    return None
 
-def get_appointment_by_id(repository: AppointmentRepository, appointment_id: int, photographer_id: Optional[int] = None ) -> Optional[Appointment]:
-    return repository.get_appointments_by_id(appointment_id, photographer_id)
+def get_single_appointment(
+        current_user: User,
+        appointment_repository: AppointmentRepository,
+        business_member_repository: BusinessMemberRepository,
+        business_id: int,
+        appointment_id: int) -> Appointment:
+    """Check the role of the current user in business {business id}"""
+    """check that the appointment is either assigned to the user or user is owner or admin of the business"""
+    """return the appointment"""
+    return None;
 
-def update_appointment(repository: AppointmentRepository, appointment_id: int, appointment_data: Appointment) -> Optional[Appointment]:
-    """Update an appointment"""
-    return repository.update(appointment_data, appointment_id)
+def update_single_appointment(
+        current_user: User,
+        appointment_repository: AppointmentRepository,
+        business_member_repository: BusinessMemberRepository,
+        business_id: int,
+        appointment_id: int,
+        appointment_data: AppointmentUpdate
+) -> Appointment:
+    """ update a single appointment"""
+    """check if the current user can update that appointment (is assigned or admin/owner)"""
+    """update the appointment data"""
+    """update the appointment updated date"""
+    """return the updated appointment"""
+    return None;
 
-
-def delete_appointment(repository: AppointmentRepository, appointment_id: int) -> bool:
-    """Delete an appointment"""
-    return repository.delete(repository, appointment_id)
+def delete_single_appointment(
+        current_user: User,
+        appointment_repository: AppointmentRepository,
+        business_member_repository: BusinessMemberRepository,
+        appointment_id: int
+):
+    """delete a single appointment"""
+    """check if the current user is owner or admin"""
+    """delete the appointment"""
