@@ -28,6 +28,7 @@ class AppointmentRead(BaseModel):
     client_phone: Optional[str]
     appointment_date: datetime
     user_id: Optional[int]
+    business_id: Optional[int]
     created_at: datetime
     updated_at: datetime
 

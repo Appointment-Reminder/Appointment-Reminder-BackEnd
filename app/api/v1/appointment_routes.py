@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from sqlalchemy.sql.annotation import Annotated
 
-from app.models.appointment_model import AppointmentRead, AppointmentUpdate
+from app.models.appointment_model import AppointmentRead, AppointmentUpdate, AppointmentCreate
 from app.repositories import business_member_repository
 from app.repositories.business_member_repository import BusinessMemberRepository
 from app.services import appointment_service
@@ -13,6 +13,31 @@ appointment_router = APIRouter(
     prefix="/appointments",
     tags=["appointments"],
 )
+
+@appointment_router.post("/appointments", response_model=AppointmentRead, status_code=200)
+def create_appointment(
+        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
+        current_user: CURRENT_USER_DEPENDENCY,
+        business_member_repo: BUSINESS_MEMBER_REPO_DEP,
+        appointment_data: AppointmentCreate,
+):
+    return appointment_service.create_appointment_by_business_member(
+        appointment_repository=appointment_repository,
+        business_member_repo=business_member_repo,
+        current_user=current_user,
+        appointment_data=appointment_data,
+    )
+
+@appointment_router.get("/me", response_model=List[AppointmentRead], status_code=200)
+def get_my_appointments(
+        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
+        current_user: CURRENT_USER_DEPENDENCY,
+        status: Optional[str] = Query(None, description="Filter by status: pending confirmed etc"),
+):
+    """Get all appointments for the currently logged in photographer"""
+    photographer_id = current_user.id
+    appointments = appointment_service.get_assigned_appointments(current_user= current_user, appointment_repository=appointment_repository, status = status)
+    return appointments
 
 @appointment_router.get("/appointments/business/{business_id}", response_model=List[AppointmentRead], status_code=200)
 def get_appointment_for_business(
@@ -47,7 +72,7 @@ def get_single_appointment(
         appointment_id=appointment_id,
     )
 
-@appointment_router.patch("appointments/business/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
+@appointment_router.patch("/appointments/business/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
 def update_single_appointment(
         appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
         business_member_repo: BUSINESS_MEMBER_REPO_DEP,
@@ -74,41 +99,11 @@ def delete_single_appointment(
         appointment_id: int,
 ):
     """delete an appointment for the admin or owner only of a business"""
-    
-
-
-
-
-
-
-
-
-@appointment_router.get("/me", response_model=List[AppointmentRead], status_code=200)
-def get_my_appointments(
-        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
-        current_user: CURRENT_USER_DEPENDENCY,
-        status: Optional[str] = Query(None, description="Filter by status: pending confirmed etc"),
-):
-    """Get all appointments for the currently logged in photographer"""
-    photographer_id = current_user.id
-    appointments = appointment_service.get_appointments_by_photographer(repo= appointment_repository, photographer_id=photographer_id, status = status)
-    return appointments
-
-@appointment_router.get("/me/{appointment_id}", response_model=AppointmentRead, status_code=200)
-def get_my_appointment(
-        appointment_id: int,
-        appointment_repository : APPOINTMENT_REPOSITORY_DEPENDENCY,
-        current_user : CURRENT_USER_DEPENDENCY
-):
-
-    photographer_id = current_user.id
-    appointment = appointment_service.get_appointment_by_id(
-        repo = appointment_repository,
-        appointment_id = appointment_id,
-        photographer_id = photographer_id,
+    appointment_service.delete_single_appointment(
+        current_user=current_user,
+        appointment_repository=appointment_repository,
+        business_member_repository=business_member_repo,
+        appointment_id=appointment_id,
     )
 
-    if not appointment:
-        raise HTTPException(status_code=404, detail="Appointment not found")
 
-    return appointment

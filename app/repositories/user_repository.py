@@ -1,4 +1,4 @@
-from requests import Session
+from sqlmodel import Session
 from sqlmodel import select
 
 from app.db.models.user import User
