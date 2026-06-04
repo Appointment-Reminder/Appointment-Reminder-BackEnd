@@ -6,7 +6,7 @@ from sqlmodel import Session
 
 from app.db.models.user import User
 from app.db.session import get_session
-from app.repositories.appointment_repositories import AppointmentRepository
+from app.repositories.appointments.appointment_repositories import AppointmentRepository
 from app.repositories.business_member_repository import BusinessMemberRepository
 from app.repositories.business_repository import BusinessRepository
 from app.repositories.user_repository import UserRepository

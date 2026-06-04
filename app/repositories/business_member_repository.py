@@ -75,3 +75,17 @@ class BusinessMemberRepository:
         self.db.commit()
         return True
 
+    #TODO BusinessMemberForm Implementation
+    #TODO Create form
+    #TODO Update form
+    #TODO deleteForm
+    #TODO get_form_by_Token
+    #TODO get forms for member
+
+    ##TODO BusinessMemeberCommision
+    #TODO create commision
+    #TODO update commision
+    #TODO Delete commision
+    #TODO get commission at date
+
+
