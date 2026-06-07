@@ -7,10 +7,17 @@ from app.dependencies import BUSINESS_MEMBER_REPO_DEP, BUSINESS_REPO_DEP, USER_R
 
 
 from app.dependencies import CURRENT_USER_DEPENDENCY
+from app.models.Member.business_member_commissions import BusinessMemberCommissionsCreate, BusinessMemberCommissionsRead
+from app.models.Member.busioness_member_form_model import BusinessMemberFormRead, BusinessMemberFormCreate, \
+    BusinessMemberFormUpdate
 from app.models.business_member_model import BusinessMemberRead, BusinessMemberInvite, BusinessMemberUpdate
 from app.models.business_model import BusinessRead, BusinessCreate, BusinessUpdate
+from app.models.package.package_alias_model import PackageAliasCreate, PackageAliasRead
+from app.models.package.package_category_model import PackageCategoryRead, PackageCategoryCreate
+from app.models.package.package_model import PackageCreate, PackageRead, PackageUpdate
+from app.models.package.package_price_model import PackagePriceRead, PackagePriceCreate
 from app.services import business_service
-
+from models.package.package_price import PackagePrice
 
 business_router = APIRouter(
     prefix="/business",
@@ -159,3 +166,103 @@ def remove_a_member_from_business(
         current_user=current_user
     )
     return None
+
+##Category
+@business_router.post("/categories", status_code=201, response_model=PackageCategoryRead)
+def create_package_category(package_category: PackageCategoryCreate):
+    """Create a new package category for business owner and admin"""
+    pass
+
+@business_router.get("/{business_id}/categories",response_model=List[PackageCategoryRead], status_code=200)
+def get_package_categories_for_business(
+        business_id: int,
+):
+    """Get the list of all package categories for business"""
+    pass
+
+@business_router.delete("/categories/{category_id}", status_code=204)
+def delete_package_category(business_id: int, category_id: int):
+    """Delete a package category for business, owner and admin only"""
+    pass
+
+##Package
+@business_router.post("/packages", response_model=PackageRead, status_code=201)
+def create_package(package: PackageCreate):
+    """Create a new package for business, owner and admin only"""
+    pass
+
+@business_router.get("/businesses/{business_id}/packages", response_model=List[PackageRead], status_code=200)
+def get_packages_for_business(business_id: int):
+    """Get the list of all packages for business"""
+    pass
+
+@business_router.get("/packages/{package_id}", response_model=PackageRead, status_code=200)
+def get_package(package_id: int):
+    """Get a package for business, for business_member_ only"""
+    pass
+
+@business_router.put("/packages", response_model=PackageRead)
+def update_package(package: PackageUpdate):
+    """Update a package for business, for admin and owner only"""
+    pass
+
+@business_router.delete("/packages/{package_id}", status_code=200)
+def delete_package(package_id: int):
+    """Delete a package for business, for admin and owner only"""
+    pass
+
+##package price route
+@business_router.post("/businesses/{business_id}/packages/{package_id}/prices}", status_code=201, response_model=PackagePriceRead)
+def create_price(price: PackagePriceCreate, business_id:int, package_id:int):
+    """Create a new package for business and package, owner and admin only"""
+    pass
+
+@business_router.get("/businesses/{business_id}/packages/{package_id}/prices", status_code=200, response_model=List[PackagePrice])
+def get_prices_history(business_id:int, package_id:int):
+    """Get the history of package prices for business, owner and admin only"""
+    pass
+
+@business_router.get("/businesses/{business_id}/packages/{package_id}/prices/current", response_model=PackagePriceRead, status_code=200)
+def get_current_price_of_package(business_id:int, package_id:int):
+    """Get the current price of package, owner and admin only"""
+    pass
+
+
+## BusinessMemberForm
+@business_router.post("/businesses/{business_id}/members/{member_id}/forms", status_code=201, response_model=BusinessMemberFormRead)
+def create_business_member_form(member: BusinessMemberFormCreate, business_id:int, package_id:int):
+    """Create a new business member form for business, owner and admin only"""
+    pass
+
+@business_router.get("/businesses/{business_id}/members/{member_id}/forms", status_code=200, response_model=List[BusinessMemberFormRead])
+def get_business_member_forms(business_id:int, member_id:int):
+    """Get the business member forms for business, owner and admin only"""
+    pass
+
+@business_router.patch("/businesses/{business_id}/members/{member_id}/forms", status_code=200, response_model=BusinessMemberFormRead)
+def update_business_member_form(business_id:int, member_id:int, form: BusinessMemberFormUpdate):
+    """Update a business member form for business, owner and admin only"""
+    pass
+
+@business_router.delete("/businesses/{business_id}/members/{member_id}/forms/{form_id}", status_code=204)
+def delete_business_member_form(business_id:int, member_id:int, form_id:int):
+    """Delete a business member form for business, owner and admin only"""
+    pass
+
+#member commission route
+@business_router.post("/businesses/{business_id}/members/{member_id}/commissions", response_model=BusinessMemberCommissionsRead, status_code=201)
+def create_member_commission(business_id, member_id:int, commissions:BusinessMemberCommissionsCreate):
+    """Create a new member commission for business, owner and admin only"""
+    pass
+
+@business_router.get("/businesses/{business_id}/members/{member_id}/commissions", response_model=List[BusinessMemberCommissionsRead], status_code=200)
+def get_member_commissions(business_id:int, member_id:int):
+    """Get the commissions for business, owner and admin only"""
+    pass
+
+@business_router.get("/businesses/{business_id}/members/{member_id}/{package_id}/commissions", response_model=BusinessMemberCommissionsRead, status_code=200)
+def get_member_current_commission_on_package(business_id:int, member_id:int, package_id:int):
+    """Get the current commission for package, owner and admin only"""
+    pass
+
+

@@ -65,9 +65,3 @@ class PackagePriceRepository:
                  .order_by(PackagePrice.effective_from.desc()))
 
         return self.db.exec(query).all()
-    ##TODO create new price
-    #TODO update price
-    #TODO Delete price
-
-    #TODO get_price at date
-    #TODO Get current price

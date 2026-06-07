@@ -106,4 +106,24 @@ def delete_single_appointment(
         appointment_id=appointment_id,
     )
 
+@appointment_router.get("/businesses/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
+def get_single_appointment(
+        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
+        business_member_repo: BUSINESS_MEMBER_REPO_DEP,
+        current_user: CURRENT_USER_DEPENDENCY,
+        business_id: int,
+        appointment_id: int,
+):
+    """Get a single appointment for the currently logged in user for business"""
+    pass
+
+@appointment_router.patch("/businesses/{business_id}/appointments/{appointment_id}/payments", response_model=AppointmentRead, status_code=200)
+def update_appointment_payments(business_id: int, appointment_id: int):
+    """Update the payments for the currently logged in user for business"""
+    pass
+
+@appointment_router.get("/businesses/{business_id}/appointments?needs_review=true", response_model=List[AppointmentRead], status_code=200)
+def get_pending_review_appointments(business_id: int,needs_review: bool):
+    """get all the appointments pending a review"""
+    pass
 

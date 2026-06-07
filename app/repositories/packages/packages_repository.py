@@ -90,31 +90,17 @@ class PackagesRepository:
             .where(PackageCategory.business_id == business_id)
         ).all()
 
-    # Jotform package alias
-    def create_package_alias(self, package_alias: JotformPackageAlias) -> JotformPackageAlias:
-        self.db.add(package_alias)
-        self.db.commit()
-        self.db.refresh(package_alias)
-        return package_alias
 
     def find_package_by_alias(self, business_id: int, category_id: int, alias_raw_value: str) -> Package:
         result = self.db.exec(
-            select(JotformPackageAlias)
-            .join(Package, Package.id == JotformPackageAlias.package_id)
+            select(Package)
             .where(Package.business_id == business_id)
             .where(Package.category_id == category_id)
-            .where(JotformPackageAlias.alias == alias_raw_value.strip())
+            .where(Package.jotform_alias == alias_raw_value.strip())
         ).first()
 
         return result
+
     def get_category_by_id(self, category_id: int) -> Optional[PackageCategory]:
         return self.db.get(PackageCategory, category_id)
 
-    #TODO find_by_alias
-
-
-    ## TODO ADD Jotform package alias
-    #TODO create alias
-    #TODO get aliases for package
-    #TODO delete alias
-    #TODO update alias
