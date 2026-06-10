@@ -3,7 +3,7 @@ from typing import Optional, List
 from dns.e164 import query
 from sqlmodel import Session, select
 
-from app.db.models.package.jotform_package_alias import JotformPackageAlias
+
 from app.db.models.package.package import Package
 from app.db.models.package.package_category import PackageCategory
 

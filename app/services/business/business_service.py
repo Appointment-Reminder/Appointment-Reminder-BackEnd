@@ -11,6 +11,9 @@ from app.repositories import business_member_repository
 from app.repositories.business_member_repository import BusinessMemberRepository
 from app.repositories.business_repository import BusinessRepository
 from app.db.models.user import User
+from app.services.errors.BusinessErrors import MemberRemoval, OwnerRoleEditing, InvalidBusinessAuthorization, \
+    UserNotFoundInBusiness, UserAlreadyMemberOfBusiness, InvalidBusiness, BusinessAlreadyExists
+from app.services.errors.user_errors import UserNotFound
 
 
 def _to_dict(business: Business, role: str) -> dict[str, Any]:
@@ -29,7 +32,7 @@ def create_business(business_repo: BusinessRepository, member_repo: BusinessMemb
     """ Create a business for the current user"""
 
     if business_repo.find_by_name(business_data.name):
-        raise Exception("business already exists")
+        raise BusinessAlreadyExists(business_name=business_data.name)
 
     business = Business(
         name=business_data.name,
@@ -53,7 +56,7 @@ def get_my_businesses(business_repo: BusinessRepository, current_user: User, is_
     result = business_repo.find_by_user(current_user.id, is_active)
 
     if not result:
-        raise HTTPException(status_code=404,detail="Business not found or you are not a member")
+        raise InvalidBusiness(business_id=0)
     return result
 
 def get_business_by_id(business_repo: BusinessRepository, business_id: int, current_user: User) -> Business | None:
@@ -63,8 +66,7 @@ def get_business_by_id(business_repo: BusinessRepository, business_id: int, curr
 
     result = business_repo.find_by_id_and_user(business_id, current_user.id)
     if not result:
-        raise HTTPException(status_code=404,detail="Business not found or you are not a member")
-
+        raise InvalidBusiness(business_id)
     return result
 
 def update_business(business_repo: BusinessRepository, member_repo: BusinessMemberRepository, business_id: int, current_user: User, business_data: BusinessUpdate) -> Optional[Business]:
@@ -91,7 +93,7 @@ def delete_business(business_repo: BusinessRepository, member_repo: BusinessMemb
 def check_if_business_exist(business_id: int, business_repo: BusinessRepository):
     business = business_repo.find_by_id(business_id)
     if not business:
-        raise HTTPException(status_code=404, detail="Business not found")
+        raise InvalidBusiness(business_id)
 
 def check_user_is_admin_or_owner_for_business(business_id: int, business_member_repo: BusinessMemberRepository,
                                               current_user: User):
@@ -99,10 +101,8 @@ def check_user_is_admin_or_owner_for_business(business_id: int, business_member_
         business_id=business_id,
         user_id=current_user.id)
     if not current_member or current_member.role not in [MemberRole.OWNER, MemberRole.ADMIN]:
-        raise HTTPException(
-            status_code=403,
-            detail="Only business owners and admins can update members"
-        )
+        raise InvalidBusinessAuthorization(business_id)
+
 def invite_business_member(
         business_repo: BusinessRepository,
         business_member_repo: BusinessMemberRepository,
@@ -118,17 +118,11 @@ def invite_business_member(
 
     invited_user = user_repo.get_by_email(invite_data.user_email)
     if not invited_user:
-        raise HTTPException(
-            status_code=404,
-            detail=f"User with email {invite_data.user_email} not found"
-        )
+        raise UserNotFound(invite_data.user_email)
 
     existing_member = business_member_repo.get_member(business_id=business_id, user_id=invited_user.id)
     if existing_member:
-        raise HTTPException(
-            status_code=404,
-            detail=f"User is already a member of this business"
-        )
+        raise UserAlreadyMemberOfBusiness(existing_member.user_id)
 
     # Create new member
     new_member = BusinessMember(
@@ -157,7 +151,7 @@ def get_business_member_list(
 
     current_member = member_repo.get_member(business_id=business_id, user_id=current_user.id)
     if not current_member:
-        raise HTTPException(status_code=404, detail="You don't have access to this business")
+        raise InvalidBusinessAuthorization(business_id)
 
     members = member_repo.get_by_business_id(business_id)
     return members
@@ -184,25 +178,16 @@ def update_business_member(
     member = business_member_repo.get_member_by_id(business_id=business_id, member_id=member_id)
     print(f"found member {member}")
     if not member:
-        raise HTTPException(
-            status_code=404,
-            detail="Member not found in this business"
-        )
+        raise UserNotFoundInBusiness(current_user.id, business_id)
 
     # Prevent changing owner role
     if member.role == MemberRole.OWNER and business_member_data.role != MemberRole.OWNER:
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot change owner role"
-        )
+        raise OwnerRoleEditing(current_user.id, business_id) ()
 
     # Prevent non-owners from creating new owners
     if (business_member_data.role == MemberRole.OWNER and
             current_member.role != MemberRole.OWNER):
-        raise HTTPException(
-            status_code=403,
-            detail="Only owners can assign owner role"
-        )
+        raise OwnerRoleEditing(current_user.id, business_id)
 
     # Update fields
     if business_member_data.role is not None:
@@ -227,23 +212,14 @@ def delete_business_member(
     # Get member to delete
     member = business_member_repo.get_member(business_id=business_id, user_id=business_member_id)
     if not member or member.business_id != business_id:
-        raise HTTPException(
-            status_code=404,
-            detail="Member not found in this business"
-        )
+        raise InvalidBusinessAuthorization(business_id)
 
     # Prevent deleting owner
     if member.role == MemberRole.OWNER:
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot remove business owner"
-        )
+        raise OwnerRoleEditing(current_user.id, member.business_id)
 
     # Prevent self-deletion (optional - you might want to allow this)
     if member.user_id == current_user.id:
-        raise HTTPException(
-            status_code=400,
-            detail="Cannot remove yourself. Ask another admin to remove you."
-        )
+        raise MemberRemoval(current_user.id, member.user_id, member.business_id)
 
     business_member_repo.delete(member.business_id)

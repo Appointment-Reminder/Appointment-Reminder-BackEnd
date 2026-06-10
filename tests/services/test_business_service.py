@@ -1,17 +1,13 @@
 from datetime import datetime
-from unittest import result
 from unittest.mock import Mock, patch
 
 import pytest
 from fastapi import HTTPException
-from sqlalchemy.sql.functions import current_user
 
-from app.models.business_invitation import BusinessInvitation
 from app.models.business_member_model import BusinessMemberInvite, BusinessMemberUpdate
 from app.models.business_model import BusinessCreate, BusinessUpdate
-from app.repositories.business_repository import BusinessRepository
 from app.db.models.business import Business
-from app.services import business_service
+from app.services.business import business_service
 from app.db.models.business_member import BusinessMember, MemberRole
 from app.db.models.user import User
 
@@ -137,7 +133,7 @@ def test_update_business(business_repo, member_repo, fake_business):
     current_user = User(id=42, name="Test")
     with patch("app.services.business_service.check_if_business_exist", return_value=True):
         with patch("app.services.business_service.check_user_is_admin_or_owner_for_business", return_value=True):
-            result = business_service.update_business(business_repo, member_repo=member_repo,business_id=1, business_data=business_data, current_user=current_user)
+            result = business_service.update_business(business_repo, member_repo=member_repo, business_id=1, business_data=business_data, current_user=current_user)
     business_repo.update.assert_called_once()
     business_repo.update.assert_called_once_with(business_id=1, business_data=business_data)
     assert result.name == "Updated"

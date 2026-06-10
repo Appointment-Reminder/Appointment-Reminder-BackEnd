@@ -6,8 +6,8 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.db.models.business_member import BusinessMember, MemberRole
-from models.Member.business_member_form import BusinessMemberForm
-from models.Member.member_commision import MemberCommission
+from app.db.models.Member.business_member_form import BusinessMemberForm
+from app.db.models.Member.member_commision import MemberCommission
 
 
 class BusinessMemberRepository:
