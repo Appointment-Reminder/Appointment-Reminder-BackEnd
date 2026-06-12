@@ -11,6 +11,7 @@ from app.repositories import business_member_repository
 from app.repositories.business_member_repository import BusinessMemberRepository
 from app.repositories.business_repository import BusinessRepository
 from app.db.models.user import User
+from app.services.business.BusinessGuard import BusinessGuard
 from app.services.errors.BusinessErrors import MemberRemoval, OwnerRoleEditing, InvalidBusinessAuthorization, \
     UserNotFoundInBusiness, UserAlreadyMemberOfBusiness, InvalidBusiness, BusinessAlreadyExists
 from app.services.errors.user_errors import UserNotFound
@@ -223,3 +224,6 @@ def delete_business_member(
         raise MemberRemoval(current_user.id, member.user_id, member.business_id)
 
     business_member_repo.delete(member.business_id)
+
+
+
