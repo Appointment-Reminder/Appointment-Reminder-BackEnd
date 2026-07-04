@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 
 from pyasn1.type.univ import Boolean
@@ -5,6 +6,8 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.db.models.business_member import BusinessMember, MemberRole
+from app.db.models.Member.business_member_form import BusinessMemberForm
+from app.db.models.Member.member_commision import MemberCommission
 
 
 class BusinessMemberRepository:
@@ -26,10 +29,9 @@ class BusinessMemberRepository:
             .where(BusinessMember.is_active == True)
         ).first()
 
-    def get_member_by_id(self, business_id: int, member_id: int) -> Optional[BusinessMember]:
+    def get_member_by_id(self, member_id: int) -> Optional[BusinessMember]:
         return self.db.exec(
             select(BusinessMember)
-            .where(BusinessMember.business_id == business_id)
             .where(BusinessMember.id == member_id)
             .where(BusinessMember.is_active == True)
         ).first()
@@ -74,4 +76,133 @@ class BusinessMemberRepository:
         self.db.delete(business_member)
         self.db.commit()
         return True
+
+    ## Business member form
+
+    def create_form(self, form: BusinessMemberForm) -> BusinessMember:
+        self.db.add(form)
+        self.db.commit()
+        self.db.refresh(form)
+        return form
+
+    def get_form_by_token(self, token: str) -> Optional[BusinessMemberForm]:
+        return self.db.exec(
+            select(BusinessMember)
+            .where(BusinessMember.webhook_token == token)
+            .where(BusinessMemberForm.webhook_token == True)
+        ).first()
+
+    def get_forms_for_member(self, member_id: int) -> List[BusinessMemberForm]:
+        return self.db.exec(
+            select(BusinessMemberForm)
+            .where(BusinessMemberForm.business_member_id == member_id)
+            .where(BusinessMemberForm.is_active == True)
+        ).all()
+
+    def get_form(self, member_form_id: int) -> BusinessMemberForm:
+        return self.db.get(BusinessMemberForm, member_form_id)
+
+    def get_forms_by_business(self, business_id: int) -> List[BusinessMemberForm]:
+        return self.db.exec(
+            select(BusinessMemberForm)
+            .join(BusinessMember, BusinessMemberForm.business_member_id == BusinessMember.id)
+            .where(BusinessMember.business_id == business_id)
+        ).all()
+
+    def update_form(self, form: BusinessMemberForm) -> Optional[BusinessMemberForm]:
+        existing = self.db.get(BusinessMemberForm, form.id)
+        if not existing:
+            return None
+        for key, value in form.dict(exclude_unset=True).items():
+            setattr(existing, key, value)
+        self.db.commit()
+        self.db.refresh(existing)
+        return existing
+    def delete_form(self, form: BusinessMemberForm) -> BusinessMember:
+        self.db.delete( form)
+        self.db.commit()
+        return True
+
+    ##Commission
+    def set_commission(self, commission: MemberCommission) -> MemberCommission:
+        self.db.add(commission)
+        self.db.commit()
+        self.db.refresh(commission)
+        return commission
+
+    def get_commission(self,
+                       member_id: int,):
+        return self.db.exec(
+            select(MemberCommission)
+            .where(MemberCommission.business_member_id == member_id)
+            .order_by(MemberCommission.effective_from.desc())
+            .limit(1)
+        ).first()
+
+    def get_commission_at_date(
+        self,
+        member_id: int,
+        package_id: int,
+        at_date: datetime
+    ) -> Optional[MemberCommission]:
+        return self.db.exec(
+            select(MemberCommission)
+            .where(MemberCommission.business_member_id == member_id)
+            .where(MemberCommission.package_id == package_id)
+            .where(MemberCommission.effective_from <= at_date)
+            .order_by(MemberCommission.effective_from.desc())
+            .limit(1)
+        ).first()
+
+    def get_current_commission(
+        self,
+        member_id: int,
+        package_id: int
+    ) -> Optional[MemberCommission]:
+        return self.db.exec(
+            select(MemberCommission)
+            .where(MemberCommission.business_member_id == member_id)
+            .where(MemberCommission.package_id == package_id)
+            .order_by(MemberCommission.effective_from.desc())
+            .limit(1)
+        ).first()
+
+    def get_current_business_commission(
+        self,
+        business_id: int,
+    ):
+
+
+    def get_commission_history(
+        self,
+        member_id: int,
+        package_id: int
+    ) -> List[MemberCommission]:
+        return self.db.exec(
+            select(MemberCommission)
+            .where(MemberCommission.business_member_id == member_id)
+            .where(MemberCommission.package_id == package_id)
+            .order_by(MemberCommission.effective_from.desc())
+        ).all()
+
+    def update_commission(self, commission: MemberCommission) -> MemberCommission:
+        existing = self.db.get(MemberCommission, commission.id)
+        if not existing:
+            return None
+        for key, value in commission.dict(exclude_unset=True).items():
+            setattr(existing, key, value)
+        self.db.commit()
+        self.db.refresh(existing)
+        return existing
+
+    def delete_commission(self, commission: MemberCommission) -> MemberCommission:
+        commission = self.db.get(MemberCommission, commission.id)
+        if not commission:
+            return False
+
+        self.db.delete(BusinessMemberForm, commission.id)
+        self.db.commit()
+        return True
+
+
 

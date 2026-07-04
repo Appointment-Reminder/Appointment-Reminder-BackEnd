@@ -13,7 +13,8 @@ from sqlmodel import SQLModel
 from app.db.models.user import User
 from app.db.models.role import Role
 from app.db.models.appointment import Appointment
-
+from app.db.models.Member.member_commision import MemberCommission
+import sqlmodel
 
 from app.core.config import config
 
