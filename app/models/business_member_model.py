@@ -10,7 +10,7 @@ class BusinessMemberRead(BaseModel):
     id: int
     business_id: int
     user_id: int
-    role: str
+    role: MemberRole
     webhook_token: str
     invited_by: Optional[int]
     invited_at: datetime
@@ -29,10 +29,10 @@ class BusinessMemberInvite(BaseModel):
     role: str = "Photographer"
 
 class BusinessMemberUpdate(BaseModel):
-    role:str
+    role: MemberRole
     is_active:bool
 
 class BusinessMemberInvite(BaseModel):
     user_email: EmailStr
-    role: str = MemberRole.PHOTOGRAPHER
+    role: MemberRole = MemberRole.PHOTOGRAPHER
 

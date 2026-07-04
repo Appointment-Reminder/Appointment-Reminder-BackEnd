@@ -3,6 +3,7 @@ from sqlmodel import SQLModel
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
+from app.api.v1.exception_handlers import register_exception_handlers
 from app.core.config import config
 
 from app.api.v1.jotform_Webhook import jotform_router
@@ -13,6 +14,7 @@ from session import engine
 
 app = FastAPI(title=config.app_name)
 
+register_exception_handlers(app)
 app.include_router(userRouter)
 app.include_router(jotform_router)
 app.include_router(appointment_router)

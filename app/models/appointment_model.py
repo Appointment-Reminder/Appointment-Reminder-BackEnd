@@ -2,6 +2,9 @@ from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime
 from typing import Optional
 
+from app.models.userModel import UserRead
+
+
 class AppointmentCreate(BaseModel):
     """ Request schema for creating appointment"""
     client_name: str
@@ -31,6 +34,8 @@ class AppointmentRead(BaseModel):
     business_id: Optional[int]
     created_at: datetime
     updated_at: datetime
+
+    user: Optional[UserRead] = None
 
     class Config:
         from_attributes = True

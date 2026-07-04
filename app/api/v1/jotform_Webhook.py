@@ -3,8 +3,7 @@ from sqlmodel import Session
 
 from app.db.session import get_session
 from app.models.jotform_model import JotformProcessingResult
-from app.repositories import appointment_repositories
-from app.repositories.appointment_repositories import AppointmentRepository
+from app.repositories.appointments.appointment_repositories import AppointmentRepository
 from app.services import jotform_service
 
 jotform_router = APIRouter(

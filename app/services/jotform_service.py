@@ -1,11 +1,8 @@
 import json
 from typing import Any, Dict, Optional
 from datetime import datetime
-from app.db.models import appointment
-from app.db.models.user import User
-from app.db.session import Session
 from app.models.appointment_model import AppointmentCreate
-from app.repositories.appointment_repositories import AppointmentRepository
+from app.repositories.appointments.appointment_repositories import AppointmentRepository
 from app.repositories.business_member_repository import BusinessMemberRepository
 from app.services import appointment_service
 from app.db.models.business_member import BusinessMember

@@ -14,7 +14,7 @@ appointment_router = APIRouter(
     tags=["appointments"],
 )
 
-@appointment_router.post("/appointments", response_model=AppointmentRead, status_code=200)
+@appointment_router.post("/", response_model=AppointmentRead, status_code=200)
 def create_appointment(
         appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
         current_user: CURRENT_USER_DEPENDENCY,
@@ -39,7 +39,7 @@ def get_my_appointments(
     appointments = appointment_service.get_assigned_appointments(current_user= current_user, appointment_repository=appointment_repository, status = status)
     return appointments
 
-@appointment_router.get("/appointments/business/{business_id}", response_model=List[AppointmentRead], status_code=200)
+@appointment_router.get("/business/{business_id}", response_model=List[AppointmentRead], status_code=200)
 def get_appointment_for_business(
         appointment_repository : APPOINTMENT_REPOSITORY_DEPENDENCY,
         business_member_repo :  BUSINESS_MEMBER_REPO_DEP,
@@ -55,7 +55,7 @@ def get_appointment_for_business(
         status=status,
     )
 
-@appointment_router.get("/appointments/business/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
+@appointment_router.get("/business/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
 def get_single_appointment(
         appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
         business_member_repo: BUSINESS_MEMBER_REPO_DEP,
@@ -72,7 +72,7 @@ def get_single_appointment(
         appointment_id=appointment_id,
     )
 
-@appointment_router.patch("/appointments/business/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
+@appointment_router.patch("/business/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
 def update_single_appointment(
         appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
         business_member_repo: BUSINESS_MEMBER_REPO_DEP,
@@ -91,7 +91,7 @@ def update_single_appointment(
         appointment_data=appointment_data,
     )
 
-@appointment_router.delete("/appointments/{appointment_id}", status_code=200)
+@appointment_router.delete("/{appointment_id}", status_code=200)
 def delete_single_appointment(
         appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
         business_member_repo: BUSINESS_MEMBER_REPO_DEP,
@@ -106,4 +106,24 @@ def delete_single_appointment(
         appointment_id=appointment_id,
     )
 
+@appointment_router.get("{appointment_id}/businesses/{business_id}/", response_model=AppointmentRead, status_code=200)
+def get_single_appointment(
+        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
+        business_member_repo: BUSINESS_MEMBER_REPO_DEP,
+        current_user: CURRENT_USER_DEPENDENCY,
+        business_id: int,
+        appointment_id: int,
+):
+    """Get a single appointment for the currently logged in user for business"""
+    pass
+
+@appointment_router.patch("{appointment_id}/businesses/{business_id}/payments", response_model=AppointmentRead, status_code=200)
+def update_appointment_payments(business_id: int, appointment_id: int):
+    """Update the payments for the currently logged in user for business"""
+    pass
+
+@appointment_router.get("/businesses/{business_id}/appointments?needs_review=true", response_model=List[AppointmentRead], status_code=200)
+def get_pending_review_appointments(business_id: int,needs_review: bool):
+    """get all the appointments pending a review"""
+    pass
 

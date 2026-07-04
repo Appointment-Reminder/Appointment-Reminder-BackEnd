@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
+from sqlalchemy.orm import selectinload
 from sqlalchemy.orm.sync import update
 from sqlmodel import Session, select
 
@@ -22,6 +23,7 @@ class AppointmentRepository:
 
         if status:
             query = query.where(Appointment.status == status)
+        query = query.options(selectinload(Appointment.user))
         return self.db.exec(query).all()
 
     def get_appointments_by_photographer(self, user_id: int, business_id: Optional[int] = None, status: Optional[str] = None):
@@ -31,6 +33,8 @@ class AppointmentRepository:
             query = query.where(Appointment.business_id == business_id)
         if status:
             query = query.where(Appointment.status == status)
+
+        query = query.options(selectinload(Appointment.user))
         return self.db.exec(query).all()
 
     def get_appointment_by_id(self, appointment_id: int,user_id:Optional[int] = None, status : Optional[str] = None) -> Optional[Appointment]:
@@ -39,6 +43,8 @@ class AppointmentRepository:
             query = query.where(Appointment.user_id == user_id)
         if status:
             query = query.where(Appointment.status == status)
+
+        query = query.options(selectinload(Appointment.user))
 
         return self.db.exec(query).first()
 

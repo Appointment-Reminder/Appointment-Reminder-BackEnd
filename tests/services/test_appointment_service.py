@@ -3,7 +3,6 @@ from unittest.mock import Mock
 import pytest
 
 from app.models.appointment_model import AppointmentCreate
-from app.repositories.appointment_repositories import AppointmentRepository
 from app.services import appointment_service
 from app.db.models.appointment import Appointment
 

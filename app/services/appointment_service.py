@@ -1,12 +1,10 @@
-
-from datetime import datetime
 from typing import List, Optional
 
 from fastapi import HTTPException
 
 from app.db.models.appointment import Appointment
 from app.models.appointment_model import AppointmentCreate, AppointmentUpdate
-from app.repositories.appointment_repositories import AppointmentRepository
+from app.repositories.appointments.appointment_repositories import AppointmentRepository
 from app.repositories.business_member_repository import BusinessMemberRepository
 from app.db.models.business_member import MemberRole
 from app.db.models.user import User
