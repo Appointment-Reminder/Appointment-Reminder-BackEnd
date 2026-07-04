@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from pyasn1.type.univ import Boolean
+from sqlalchemy import func
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
@@ -130,6 +131,9 @@ class BusinessMemberRepository:
         self.db.refresh(commission)
         return commission
 
+    def get_commission_by_id(self, commission_id: int) -> Optional[MemberCommission]:
+        return self.db.get(MemberCommission, commission_id)
+
     def get_commission(self,
                        member_id: int,):
         return self.db.exec(
@@ -171,6 +175,28 @@ class BusinessMemberRepository:
         self,
         business_id: int,
     ):
+        latest_subq = (
+            select(
+                MemberCommission.business_member_id,
+                MemberCommission.package_id,
+                func.max(MemberCommission.effective_from).label("max_effective_from")
+            )
+            .join(BusinessMember, MemberCommission.business_member_id == BusinessMember.id)
+            .where(BusinessMember.business_id == business_id)
+            .where(BusinessMember.is_active == True)
+            .group_by(MemberCommission.business_member_id, MemberCommission.package_id)
+            .subquery()
+        )
+
+        return self.db.exec(
+            select(MemberCommission)
+            .join(
+                latest_subq,
+                (MemberCommission.business_member_id == latest_subq.c.business_member_id)
+                & (MemberCommission.package_id == latest_subq.c.package_id)
+                & (MemberCommission.effective_from == latest_subq.c.max_effective_from)
+            )
+        ).all()
 
 
     def get_commission_history(
