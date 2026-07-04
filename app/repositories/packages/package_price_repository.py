@@ -51,6 +51,11 @@ class PackagePriceRepository:
 
         return self.db.exec(query).one_or_none()
 
+    def get_package_price(self, package_price_id: int) -> PackagePrice:
+        query = select(PackagePrice, package_price_id)
+
+        return self.db.exec(query).one_or_none()
+
     def get_current_price(self, package_id: int, is_personal) -> PackagePrice:
         query = select(PackagePrice)
         query = query.where(PackagePrice.package_id == package_id)

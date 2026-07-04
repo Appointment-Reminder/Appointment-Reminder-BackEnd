@@ -176,7 +176,7 @@ def update_business_member(
 
     print(f'Try to get the business member for user is {member_id} business id {business_id}')
     # Get member to update
-    member = business_member_repo.get_member_by_id(business_id=business_id, member_id=member_id)
+    member = business_member_repo.get_member_by_id( member_id=member_id)
     print(f"found member {member}")
     if not member:
         raise UserNotFoundInBusiness(current_user.id, business_id)

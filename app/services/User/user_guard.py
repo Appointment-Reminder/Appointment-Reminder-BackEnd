@@ -13,7 +13,6 @@ class UserGuard:
 
     def ensure_user_email_exists(self, user_email: str) -> User:
         user = self.user_repo.get_by_email(user_email)
-        if user:
+        if not user:
             raise HTTPException(status_code=404, detail="User doesnt exist")
-
         return user

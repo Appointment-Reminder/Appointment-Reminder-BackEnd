@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Optional, List
 
+
 from app.models.business_member_model import BusinessMemberInvite, BusinessMemberUpdate
 from app.models.business_model import BusinessCreate, BusinessUpdate
 from app.repositories.business_member_repository import BusinessMemberRepository
@@ -10,8 +11,8 @@ from app.services.business.BusinessGuard import BusinessGuard
 from app.db.models.business_member import BusinessMember, MemberRole
 from app.db.models.user import User
 from app.db.models.business import Business
-from app.services.business.business_service import delete_all_members_for_business_id
 from app.services.errors.BusinessErrors import OwnerRoleEditing, MemberRemoval
+
 
 
 class BusinessService:
@@ -85,17 +86,19 @@ class BusinessService:
             invited_by=current_user.id
         )
 
-        created_member = self.member_repo.create(new_member)
+        return  self.member_repo.create(new_member)
 
     def get_members(self, business_id: int, current_user: User) -> List[BusinessMember]:
         self.guard.ensure_exists(business_id=business_id)
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
-        self.member_repo.get_by_business_id(business_id=business_id)
+        return self.member_repo.get_by_business_id(business_id=business_id)
 
-    def update_member(self, data: BusinessMemberUpdate, member_id: int, business_id: int, current_user: User) -> BusinessMember
+    def update_member(self, data: BusinessMemberUpdate, member_id: int, business_id: int, current_user: User) -> BusinessMember:
+
         self.guard.ensure_exists(business_id=business_id)
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
-        member = self.guard.ensure_member(business_id= business_id, user_id=member_id)
+        member = self.guard.ensure_member_exist(member_id)
+        self.guard.ensure_is_a_member(business_id= business_id, user_id=member.user_id)
 
         if member.role == MemberRole.OWNER and data.role != MemberRole.OWNER:
             raise OwnerRoleEditing(current_user.id, business_id)()
@@ -115,7 +118,7 @@ class BusinessService:
     def delete_member(self, business_id: int, member_id: int, current_user: User) -> BusinessMember:
         self.guard.ensure_exists(business_id=business_id)
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
-        member = self.guard.ensure_member(business_id=business_id, user_id=member_id)
+        member = self.guard.ensure_is_a_member(business_id=business_id, user_id=member_id)
 
         if member.role == MemberRole.OWNER:
             raise OwnerRoleEditing(current_user.id, member.business_id)
@@ -124,6 +127,8 @@ class BusinessService:
             raise MemberRemoval(current_user.id, member.user_id, member.business_id)
 
         self.member_repo.delete(member.id)
+
+
 
     def _to_dict(self, data: Business, role: str) -> dict[str, Any]:
         return {
@@ -136,3 +141,4 @@ class BusinessService:
             "updated_at": data.updated_at,
             "my_role": role,
         }
+

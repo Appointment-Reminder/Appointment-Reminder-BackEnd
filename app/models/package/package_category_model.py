@@ -13,4 +13,3 @@ class PackageCategoryRead(SQLModel):
 class PackageCategoryUpdate(SQLModel):
     id: int
     name: str
-    business_id: int

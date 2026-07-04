@@ -29,10 +29,9 @@ class BusinessMemberRepository:
             .where(BusinessMember.is_active == True)
         ).first()
 
-    def get_member_by_id(self, business_id: int, member_id: int) -> Optional[BusinessMember]:
+    def get_member_by_id(self, member_id: int) -> Optional[BusinessMember]:
         return self.db.exec(
             select(BusinessMember)
-            .where(BusinessMember.business_id == business_id)
             .where(BusinessMember.id == member_id)
             .where(BusinessMember.is_active == True)
         ).first()
@@ -100,6 +99,16 @@ class BusinessMemberRepository:
             .where(BusinessMemberForm.is_active == True)
         ).all()
 
+    def get_form(self, member_form_id: int) -> BusinessMemberForm:
+        return self.db.get(BusinessMemberForm, member_form_id)
+
+    def get_forms_by_business(self, business_id: int) -> List[BusinessMemberForm]:
+        return self.db.exec(
+            select(BusinessMemberForm)
+            .join(BusinessMember, BusinessMemberForm.business_member_id == BusinessMember.id)
+            .where(BusinessMember.business_id == business_id)
+        ).all()
+
     def update_form(self, form: BusinessMemberForm) -> Optional[BusinessMemberForm]:
         existing = self.db.get(BusinessMemberForm, form.id)
         if not existing:
@@ -110,11 +119,7 @@ class BusinessMemberRepository:
         self.db.refresh(existing)
         return existing
     def delete_form(self, form: BusinessMemberForm) -> BusinessMember:
-        business_member = self.db.get(BusinessMemberForm, form.id)
-        if not business_member:
-            return False
-
-        self.db.delete(BusinessMemberForm, form.id)
+        self.db.delete( form)
         self.db.commit()
         return True
 
@@ -124,6 +129,15 @@ class BusinessMemberRepository:
         self.db.commit()
         self.db.refresh(commission)
         return commission
+
+    def get_commission(self,
+                       member_id: int,):
+        return self.db.exec(
+            select(MemberCommission)
+            .where(MemberCommission.business_member_id == member_id)
+            .order_by(MemberCommission.effective_from.desc())
+            .limit(1)
+        ).first()
 
     def get_commission_at_date(
         self,
@@ -152,6 +166,12 @@ class BusinessMemberRepository:
             .order_by(MemberCommission.effective_from.desc())
             .limit(1)
         ).first()
+
+    def get_current_business_commission(
+        self,
+        business_id: int,
+    ):
+
 
     def get_commission_history(
         self,
