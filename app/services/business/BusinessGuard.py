@@ -6,6 +6,7 @@ from app.db.models.business import Business
 from app.db.models.business_member import BusinessMember, MemberRole
 from app.services.errors.BusinessErrors import UserNotFoundInBusiness, UnauthorizedBusinessAction, InvalidBusiness
 from app.db.models.Member.business_member_form import BusinessMemberForm
+from app.db.models.Member.member_commision import MemberCommission
 
 
 class BusinessGuard:
@@ -53,3 +54,11 @@ class BusinessGuard:
         if not form:
             raise HTTPException(status_code=404, detail="Form not found")
         return form
+
+    def ensure_commission_Exist(self, commission_id: int) -> MemberCommission:
+        commission = self.business_member_repo.get_commission_by_id(commission_id=commission_id)
+        if not commission:
+            raise HTTPException(status_code=404, detail="Commission not found")
+
+        print(f'commission found {commission}')
+        return commission
