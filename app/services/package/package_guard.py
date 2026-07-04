@@ -5,6 +5,8 @@ from app.repositories.packages.packages_repository import PackagesRepository
 from app.db.models.package.package import Package
 from app.db.models.package.package_category import PackageCategory
 from app.db.models.package.package_price import PackagePrice
+from app.db.models.Member import member_commision
+from app.db.models.Member.member_commision import MemberCommission
 
 
 class PackageGuard:

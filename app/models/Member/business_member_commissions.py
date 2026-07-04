@@ -18,6 +18,4 @@ class BusinessMemberCommissionsRead(BaseModel):
 
 class BusinessMemberCommissionsUpdate(BaseModel):
     id: int
-    business_member_id: int
-    package_id: int
     commission_percent: int

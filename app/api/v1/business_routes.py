@@ -273,15 +273,7 @@ def delete_business_member_form(
 
 #member commission route
 
-@business_router.get("/{business_id}/commissions")
-def get_business_commissions(
-        business_id: int,
-        service: PACKAGE_SERVICE_DEP,
-        current_user: CURRENT_USER_DEPENDENCY
-):
-    """Get the list of all commissions for business, owner and admin only"""
-    ##TODO make a service that get all the commission for a business
-    pass
+
 
 @business_router.post("/members/commissions", response_model=BusinessMemberCommissionsRead, status_code=201, tags=["business - member - commission"])
 def create_member_commission(
@@ -305,6 +297,15 @@ def get_member_current_commission_on_package(
         package_id=package_id,
         current_user=current_user)
 
+@business_router.get("/{business_id}/commissions", response_model=List[BusinessMemberCommissionsRead], tags=["business - member - commission"])
+def get_business_commissions(
+        business_id: int,
+        service: PACKAGE_SERVICE_DEP,
+        current_user: CURRENT_USER_DEPENDENCY
+):
+    """Get the list of all commissions for business, owner and admin only"""
+    return service.get_business_commission(business_id=business_id, current_user=current_user)
+
 @business_router.patch("/members/commissions", response_model=BusinessMemberCommissionsRead, status_code=200, tags=["business - member - commission"])
 def update_member_commission(
         data: BusinessMemberCommissionsUpdate,
@@ -312,6 +313,6 @@ def update_member_commission(
         current_user: CURRENT_USER_DEPENDENCY
 ):
     """Update a member commission for business, owner and admin only"""
-    pass
+    return service.update_member_commission(data=data, current_user=current_user)
 
 

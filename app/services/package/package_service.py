@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
+from google.api_core.datetime_helpers import utcnow
 
 #PYDANTIC MODEL
 from app.models.package.package_model import PackageCreate, PackageUpdate, PackageRead
@@ -9,7 +10,8 @@ from app.repositories.business_member_repository import BusinessMemberRepository
 from app.repositories.packages.package_price_repository import PackagePriceRepository
 from app.repositories.packages.packages_repository import PackagesRepository
 from app.models.package.package_category_model import PackageCategoryCreate, PackageCategoryUpdate
-from app.models.Member.business_member_commissions import BusinessMemberCommissionsCreate, BusinessMemberCommissionsRead
+from app.models.Member.business_member_commissions import BusinessMemberCommissionsCreate, \
+    BusinessMemberCommissionsRead, BusinessMemberCommissionsUpdate
 from app.models.Member.busioness_member_form_model import BusinessMemberFormCreate, BusinessMemberFormUpdate
 
 #SERVICE
@@ -244,6 +246,22 @@ class PackageService:
         self.business_guard.ensure_exists(business_id=business_id)
         self.business_guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
 
+        return self.member_repo.get_current_business_commission(business_id=business_id)
+
+    def update_member_commission(self, data: BusinessMemberCommissionsUpdate, current_user: User):
+        commission = self.business_guard.ensure_commission_Exist(data.id)
+        member = self.business_guard.ensure_member_exist(member_id=commission.business_member_id)
+        business = self.business_guard.ensure_exists(business_id=member.business_id)
+        self.business_guard.ensure_admin_or_owner(business_id=member.business_id, user_id=current_user.id)
+        package = self.packages_guard.ensure_package_exist(commission.package_id)
+
+        created_data = BusinessMemberCommissionsCreate(
+            business_member_id=member.id,
+            package_id=package.id,
+            commission_percent=data.commission_percent,
+            effective_from= utcnow()
+        )
+        return self.create_member_commission(data=created_data, current_user=current_user)
 
 
 
