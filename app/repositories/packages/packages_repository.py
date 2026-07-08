@@ -14,6 +14,7 @@ class PackagesRepository:
 
     ## Package
     def create_package(self, package: Package) -> Package:
+        package.jotform_alias = "test"
         self.db.add(package)
         self.db.commit()
         self.db.refresh(package)
