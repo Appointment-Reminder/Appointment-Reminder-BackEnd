@@ -226,7 +226,8 @@ class PackageService:
         commission = MemberCommission(
             business_member_id=data.business_member_id,
             package_id=package.id,
-            commission_percent = data.commission_percent,
+            commission_amount = data.commission_amount,
+            commission_isPercentage = data.commission_isPercentage,
             effective_from=data.effective_from,
         )
         return self.member_repo.set_commission(commission)
