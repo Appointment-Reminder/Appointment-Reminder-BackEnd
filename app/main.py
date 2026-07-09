@@ -11,7 +11,7 @@ from app.api.v1.jotform_Webhook import jotform_router
 from app.api.v1.userRoutes import userRouter
 from app.api.v1.appointment_routes import appointment_router
 from app.api.v1.business_routes import business_router
-from db.session import engine
+from app.db.session import engine
 
 app = FastAPI(title=config.app_name)
 
