@@ -1,0 +1,67 @@
+{
+  "slug": "submit\/261174297742362",
+  "jsExecutionTracker": "build-date-1784819119747=>init-started:1784819120565=>validator-called:1784819120569=>validator-mounted-false:1784819120569=>init-complete:1784819120571=>onsubmit-fired:1784819126805=>observerSubmitHandler_received-submit-event:1784819126805=>submit-validation-passed:1784819126816=>observerSubmitHandler_validation-passed-submitting-form:1784819126821",
+  "submitSource": "form",
+  "submitDate": "1784819126821",
+  "buildDate": "1784819119747",
+  "uploadServerUrl": "https:\/\/upload.jotform.com\/upload",
+  "eventObserver": "1",
+  "eventObserverPayment": "LEGACY",
+  "q3_name": {
+    "first": "John",
+    "last": "Smith"
+  },
+  "q29_instagramUsername": "textbox_sample2",
+  "q89_facebookName": "textbox_sample3",
+  "q5_phoneNumber5": {
+    "area": "312",
+    "phone": "312"
+  },
+  "q69_email": "john@example.com",
+  "q90_fromWhich": "textbox_sample7",
+  "q92_communicationPlatform": "Facebook",
+  "q93_stayConnected": [
+    "I will have mobile data (not relying on Wi-Fi)."
+  ],
+  "q164_howDid": "Les Frenchies Paris Travel Tips Facebook Group",
+  "q123_packageOptions123": "PARISIAN DREAM\u00a012 HOURS (600 Edited) - \u20ac2000",
+  "q65_appointmentDate": {
+    "implementation": "new",
+    "date": "2026-07-31 11:00",
+    "duration": "30",
+    "timezone": "Europe\/Paris (GMT+02:00)"
+  },
+  "appointmentSlot-input_65": "2026-07-31 11:00 AM",
+  "q94_additionalServices": [
+    "Personal Assistant Only \u2013 \u20ac40 per hour"
+  ],
+  "q84_eventMeet": "textbox_sample8",
+  "q87_otherRequest": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean mollis ultricies interdum. Nullam pharetra vitae lectus eget volutpat. Integer in sodales ligula. Vestibulum pellentesque arcu in est aliquam rhoncus. Curabitur et dui quis arcu scelerisque congue. Pellentesque libero ligula, sagittis a tempus quis, finibus eget erat. Nunc sed tempor nunc. Mauris tempor odio id lorem commodo dapibus. Nulla viverra mi in magna imperdiet volutpat.",
+  "q132_onceA": "I have read and\u00a0understood\u00a0the\u00a0No Changes Policy.",
+  "q134_fogampamp": "I have read and\u00a0understood\u00a0the\u00a0Weather Conditions Policy.",
+  "q136_reschedulingEach": "I have read and\u00a0understood\u00a0the\u00a0Rescheduling, Cancellations & No Show Policy.",
+  "q138_clientsMust": "I have read and\u00a0understood\u00a0the Photoshoot Commitment & Confirmation Policy.",
+  "q140_coverageBegins": "I have read and\u00a0understood\u00a0the\u00a0Photoshoot Duration & Time Management Policy.",
+  "q142_ifThere": "I have read and\u00a0understood\u00a0the Late\u00a0Arrival & Abandonment Policy.",
+  "q144_thePhotographer": "I have read and\u00a0understood\u00a0the Personal Belongings Policy.",
+  "q146_byParticipating": "I have read and agree to the Liability & Waiver and\u00a0understood\u00a0that Gabrielle Sy (Gabby) is only responsible for photography and posing guidance.",
+  "q148_anyDamage": "I have read and\u00a0understood\u00a0the\u00a0Equipment Damage Policy.",
+  "q156_anyAdditional": "I have read and\u00a0understood\u00a0the\u00a0Additional Services & Travel Fees Policy.",
+  "q150_editingIncludes": "I have read and\u00a0understood\u00a0the Editing Service Policy.",
+  "q152_forWeddings": "I have read and\u00a0understood\u00a0the\u00a0Photographer Photo Selection Policy.",
+  "q154_finalImages": "I have read and\u00a0understood\u00a0the Delivery of Online Gallery Policy.",
+  "q129_photographersCopyright": "I have read the Photographer\u2019s Copyright summary. I confirm that the full legal terms stated above, accessible by clicking the arrow, have been read and understood to avoid any misunderstanding.",
+  "q122_typeA122": "I agree to allow Gabby in Paris Photography to feature my photos and videos on their social media platforms and to use them for promotional purposes, in accordance with the Photographer\u2019s Copyright Notice.",
+  "q12_portraitAgreement12": [
+    "I have read and agree to the Event and Wedding Photography Agreement."
+  ],
+  "q177_clientAcknowledgment177": "I confirm that I have provided accurate and complete information and that I have read, understood, and agreed to all sections of this Photoshoot Service Contract, including the Photographer\u2019s Copyright, Photoshoot Policies, and the Terms & Conditions of Gabby in Paris Photography. By selecting the required options and submitting this form, I confirm my agreement to all terms and acknowledge that I am responsible for ensuring I have reviewed and understood this contract in full. I understand that any misunderstandings arising from my failure to review the terms carefully remain my responsibility. If I wish to review the terms again, the most current and complete version is available on the official website: https:\/\/gabbyinparis.com\/policy-terms-conditions.",
+  "q160_dateOf": "textbox_sample9",
+  "q99_pleasePay": "I confirm that I have paid the \u20ac100 non-refundable reservation fee. (Please do not check this box unless payment has been completed.)",
+  "q174_aNonrefundable": "I have read and\u00a0understood\u00a0the\u00a0Reservation Fee Policy.",
+  "q8_bySigning": "data:image\/png;base64,iVBORw0KGgoAAAANSUhEUgAAATIAAABuCAYAAACk\/Z\/9AAAFPElEQVR4Xu3dTWxUZRSH8f+5IxBAJKEFE+NGY4wLF8YtOw0L4kfSaRsDRImJBENnuiAuTFAMKIkLw6IdCA0mBA2waDtN\/AgLP3ZsjQsXxhjdGKO0JQGhBLBzzMx0Lg1FRGg7c+59fru+t4u5b5unt8mZeU0AEJwFf\/0AQMgAxMcTGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGYDwCBmA8AgZgPAIGbBINvYNv15z7TUlf0yND2xJL2DJETLgPt0MmD3dXLGvCdnyImTAPdhUHN5cS6zHXHtcWl1fc\/kPienw5Fj5ROv7sDwIGXCXWvGSq0fS4+kF02WTDxKw9iFkwB1s2DH0UHK1sMsSP+CutekF6ReZJpKaT5yvls+lq2gLQgbcxsb+I8+o5m\/U5LtMtnJu+apMR4lX5yFkwDxdxUqPme+SbGu6KD\/rbsenq6WJdAkdhZAB9YD1HSma+0lJD9a\/dvn1RHZciX08OTrwPZvU2QgZcq27WHlWid6T6+W5jZiR2\/7a6tnjF04NXsr15gRCyJBL63oqXSsT7TdpcG4DLko6ODVeOpzLDQmOkCF3unsreyXtl7S+fvMuDV2v6eBfE6Xp3G1GRhAy5EJrjELygzKtady06TPVdGCqWvouF5uQYYQMmbZgjMKbA6xutnN6bKCa6ZvPEUKGTGKMIl8IGTKFMYp8ImTIBMYo8o2QITTGKFBHyBAWYxRoIWQIZUNx6NFCkrzmNdsnc8Yo0EDIEEJ38egLMt8peX\/jBTNGgXkIGTpW+vTl2inpyZsv1EbldnKquufLdAm5RsjQcRY8fTX9ZKaTs7XaJxeqg7+lqwBPZOgk9UM83JMhyRsfpdPE0xf+G09kaLuFpxBpxkyHePrC3SJkaJtbA8YpRLhXhAzLjoBhsREyLBsChqVCyLCkWiMUctvnag6w8i8kFhshw5K47QgFB9liiRAyLBoGWNEuhAz37bZPXwywYhkRMtyTJ7YOrbq4xt6U2SF3rU0vMMCKNiBk+F8e7h9+bHZW9YDtbp1CxAAr2o2Q4a5sKg5vrjXj9Wq6KH1j5iOTY+XRdAVoA0KGO9rYN9zv3gjY8+mi9GniPnK+Wj6XrgBtRMiwQFfv8FMm22ayt1qzX42TuN1HCgUd+3O0\/OvcGtARCBkaHnlpZM2NFX9vc\/l2mZ5Lt8V0xdz3rZ\/xYz+fHbyWrgMdhJDl3Ib+yharabtJ2yStmtuOay6d8USnL4yWvsr5FiEAQpZTzc\/+siFJNz\/7y\/WtyU6vuPHAmd8\/3z2TrgMdjpDlzK1v3K6PTkj6yOVnpsfLP+ZsO5ARhCwnbg0Yb9xGlhCyjOvuq7wot9OSr6vfKgFDFhGyjGpO4Nv7Mu1o3KL5FZPKk2PlExm9ZeQYIcugrt4jb5v8A0kFSbMue2d6fODDDN4q0EDIMqS7t3JZmvcGbtepQsHfZYAVWUfIMqS7t1I\/f7v+92lG5q9MjZW+yNDtAf+KkGVIK2RT4yV+rsgVfuEzZO5fy3rI5h1wC2QfIQMQHiEDEB4hAxAeIQMQHiEDEB4hAxAeIQMQHiEDEB4hAxAeIQMQHiEDEB4hAxAeIQMQHiEDEB4hAxAeIQMQHiEDEB4hAxAeIQMQHiEDEB4hAxAeIQMQHiEDEN4\/KUzTfq2beZ0AAAAQZGVCR0Y1NDZEQjlBOURGRTk0N0Si84azAAAAAElFTkSuQmCC",
+  "timeToSubmit": "6",
+  "preview": "true",
+  "validatedNewRequiredFieldIDs": "{\"new\":1,\"input_8\":\"da\",\"id_3\":\"Sm\",\"id_29\":\"te\",\"id_89\":\"te\",\"id_5\":\"31\",\"id_69\":\"jo\",\"id_90\":\"te\",\"id_92\":\"WA\",\"id_93\":\"I \",\"id_164\":\"Le\",\"id_123\":\"PA\",\"id_65\":\"20\",\"id_94\":\"To\",\"id_84\":\"te\",\"id_87\":\"Lo\",\"id_132\":\"I \",\"id_134\":\"I \",\"id_136\":\"I \",\"id_138\":\"I \",\"id_140\":\"I \",\"id_142\":\"I \",\"id_144\":\"I \",\"id_146\":\"I \",\"id_148\":\"I \",\"id_156\":\"I \",\"id_150\":\"I \",\"id_152\":\"I \",\"id_154\":\"I \",\"id_129\":\"I \",\"id_122\":\"I \",\"id_12\":\"I \",\"id_177\":\"I \",\"id_160\":\"te\",\"id_99\":\"I \",\"id_174\":\"I \"}",
+  "path": "\/submit\/261174297742362"
+}
