@@ -74,3 +74,4 @@ ci-artifacts/
 *.dockerfile
 docker-compose.override.yml
 
+/request/
