@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 import json
 
-from app.services.jotform_service import JotformService
+from app.services.jotform.jotform_webhook_processing import JotformWebhookProcessing
 from app.db.models.business_member import BusinessMember
 
 
@@ -47,8 +47,8 @@ def test_process_webhook_success(mock_appointment_repo, mock_business_member_rep
     mock_appointment.id = 1
     mock_appointment_repo.create.return_value = mock_appointment
 
-    with patch.object(JotformService, 'validate_photographer', return_value=mock_business_member):
-        result = JotformService.process_webhook(
+    with patch.object(JotformWebhookProcessing, 'validate_photographer', return_value=mock_business_member):
+        result = JotformWebhookProcessing.process_webhook(
             appointment_repository=mock_appointment_repo,
             business_member_repository=mock_business_member_repo,
             payload=valid_jotform_payload,
@@ -63,7 +63,7 @@ def test_process_webhook_invalid_token(mock_appointment_repo, mock_business_memb
     mock_business_member_repo.get_by_webhook_token.return_value = None
 
     with pytest.raises(Exception):  # Replace with your specific exception
-        JotformService.process_webhook(
+        JotformWebhookProcessing.process_webhook(
             appointment_repository=mock_appointment_repo,
             business_member_repository=mock_business_member_repo,
             payload=valid_jotform_payload,
@@ -76,7 +76,7 @@ def test_process_webhook_invalid_json(mock_appointment_repo, mock_business_membe
     invalid_payload = {"rawRequest": "not valid json{"}
 
     with pytest.raises(ValueError, match="Failed to parse raw request"):
-        JotformService.process_webhook(
+        JotformWebhookProcessing.process_webhook(
             appointment_repository=mock_appointment_repo,
             business_member_repository=mock_business_member_repo,
             payload=invalid_payload,

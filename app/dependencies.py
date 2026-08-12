@@ -16,6 +16,8 @@ from app.services import user_service
 from app.services.User.user_guard import UserGuard
 from app.services.business.BusinessGuard import BusinessGuard
 from app.services.business.business_service_refactor import BusinessService
+from app.services.jotform.jotform_guard import JotformGuard
+from app.services.jotform.jotform_service import JotformService
 from app.services.package.package_guard import PackageGuard
 from app.services.package.package_service import PackageService
 from app.services.user_service import oauth2_bearer
@@ -97,6 +99,27 @@ def get_package_service(package_repo: PACKAGE_REPO,
                           business_guard=business_guard,
                           packages_guard=package_guard)
 
+def get_jotform_guard(
+):
+    return JotformGuard()
+
+def get_jotform_service(
+        member_repo: BUSINESS_MEMBER_REPO_DEP,
+        package_repo: PACKAGE_REPO,
+        jotform_guard: Annotated[JotformGuard, Depends(get_jotform_guard)],
+        packages_guard: PackageGuard,
+        business_guard: BusinessGuard,
+):
+    return JotformService(
+        business_guard=business_guard,
+        packages_guard=packages_guard,
+        jotform_guard=jotform_guard,
+        package_repo=package_repo,
+        member_repo=member_repo,
+    )
+
+JOTFORM_GUARD_DEPENDENCY = Annotated[JotformGuard, Depends(get_jotform_guard)]
+JOTFORM_SERVICE_DEP = Annotated[JotformService, Depends(get_jotform_service)]
 USER_GUARD_DEPENDENCY = Annotated[User, Depends(get_user_guard)]
 BUSINESS_GUARD_DEP = Annotated[BusinessGuard, Depends(get_business_guard)]
 BUSINESS_SERVICE_DEP = Annotated[BusinessService, Depends(get_business_service)]

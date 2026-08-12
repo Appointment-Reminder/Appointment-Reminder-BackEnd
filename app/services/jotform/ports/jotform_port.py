@@ -1,0 +1,9 @@
+from typing import Protocol
+
+from app.services.jotform.models.jotform_models import JotformForm, JotformQuestion
+
+
+class JotformPort(Protocol):
+    async def get_list_forms(self, api_key:str) -> list[JotformForm]: ...
+    async def get_form_questions(self, form_id: str, api_key: str) -> list[JotformQuestion]: ...
+    async def register_webhook(self,form_id: str, url: str, api_key: str)-> None: ...
