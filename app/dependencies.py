@@ -103,25 +103,27 @@ def get_jotform_guard(
 ):
     return JotformGuard()
 
-def get_jotform_service(
-        member_repo: BUSINESS_MEMBER_REPO_DEP,
-        package_repo: PACKAGE_REPO,
-        jotform_guard: Annotated[JotformGuard, Depends(get_jotform_guard)],
-        packages_guard: PackageGuard,
-        business_guard: BusinessGuard,
-):
-    return JotformService(
-        business_guard=business_guard,
-        packages_guard=packages_guard,
-        jotform_guard=jotform_guard,
-        package_repo=package_repo,
-        member_repo=member_repo,
-    )
+
 
 JOTFORM_GUARD_DEPENDENCY = Annotated[JotformGuard, Depends(get_jotform_guard)]
-JOTFORM_SERVICE_DEP = Annotated[JotformService, Depends(get_jotform_service)]
+
 USER_GUARD_DEPENDENCY = Annotated[User, Depends(get_user_guard)]
 BUSINESS_GUARD_DEP = Annotated[BusinessGuard, Depends(get_business_guard)]
 BUSINESS_SERVICE_DEP = Annotated[BusinessService, Depends(get_business_service)]
 PACKAGE_GUARD_DEP = Annotated[PackageGuard, Depends(get_package_guard)]
 PACKAGE_SERVICE_DEP = Annotated[PackageService, Depends(get_package_service)]
+
+def get_jotform_service(
+        member_repo: BUSINESS_MEMBER_REPO_DEP,
+        package_repo: PACKAGE_REPO,
+        jotform_guard: Annotated[JotformGuard, Depends(get_jotform_guard)],
+        business_guard: BUSINESS_GUARD_DEP,
+):
+    return JotformService(
+        business_guard=business_guard,
+        jotform_guard=jotform_guard,
+        package_repo=package_repo,
+        member_repo=member_repo,
+    )
+
+JOTFORM_SERVICE_DEP = Annotated[JotformService, Depends(get_jotform_service)]

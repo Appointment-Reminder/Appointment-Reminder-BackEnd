@@ -18,7 +18,11 @@ class JotformProcessingResult(BaseModel):
     photographer_id: int
 
 class JotformFormCreate(BaseModel):
+    credential_id: int
+    business_id: int
+    category_id: int
     form_id: str
+    name: str
     member_assigns: List[dict]
     field_mapping: List[dict]
 
@@ -36,7 +40,7 @@ class JotformFormRead(BaseModel):
 class JotformFormUpdate(BaseModel):
     id: int
     name: str
-    member_assigns: List[dict]
+    member_assigns: List[int]
     field_mapping: List[dict]
 
 class JotformFormDelete(BaseModel):
