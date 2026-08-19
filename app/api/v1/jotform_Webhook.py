@@ -1,14 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlmodel import Session
+from fastapi import APIRouter
 
-from app.db.session import get_session
+
 from app.dependencies import CURRENT_USER_DEPENDENCY, JOTFORM_SERVICE_DEP
-from app.models.Jotform.jotform_model import JotformProcessingResult, JotformCredentialRead, JotformCredentialCreate, \
+from app.models.Jotform.jotform_model import JotformCredentialRead, JotformCredentialCreate, \
     JotformCredentialUpdate, JotformFormCreate, JotformFormRead, JotformFormUpdate
-from app.repositories.appointments.appointment_repositories import AppointmentRepository
-from app.services.jotform import jotform_webhook_processing
+
 
 jotform_router = APIRouter(
     prefix="/webhooks/jotform",
@@ -54,45 +52,48 @@ async def receive_jotform_webhook(
 """
 
 ##CREDENTIALS
-@jotform_router.post("/jotform/credentials}", status_code=201, response_model=JotformCredentialRead)
-async def create_jotform_credentials(credential: JotformCredentialCreate, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
-    ...
+@jotform_router.post("/jotform/credentials", status_code=201, response_model=JotformCredentialRead)
+async def create_jotform_credentials(
+        credential: JotformCredentialCreate,
+        service: JOTFORM_SERVICE_DEP,
+        current_user: CURRENT_USER_DEPENDENCY):
+    return service.create_jotform_credential(credential, current_user)
 
 @jotform_router.get("/business/{business_id}/jotform/credentials", status_code=200, response_model= List[JotformCredentialRead])
-async def get_jotform_credentials(business_id: str):
-    ...
+async def get_jotform_credentials(business_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.get_jotform_credentials(business_id, current_user)
 
 @jotform_router.patch("jotform/credentials", response_model=JotformCredentialRead)
-async def update_jotform_credentials(credential: JotformCredentialUpdate):
-    ...
+async def update_jotform_credentials(credential: JotformCredentialUpdate, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.update_jotform_credentials(credential, current_user)
 
 @jotform_router.delete("jotform/credentials/{credential_id}")
-async def delete_jotform_credentials(credential_id: str):
-    ...
+async def delete_jotform_credentials(credential_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.delete_jotform_credentials(credential_id, current_user)
 
 #FORM
 @jotform_router.post("jotform/form", status_code=201, response_model=JotformFormCreate)
-async def jotform_form_create(form_data: JotformFormCreate):
-    ...
+async def jotform_form_create(form_data: JotformFormCreate, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.jotform_form_create(form_data, current_user)
 
 @jotform_router.get("jotform/form/{form_id}", status_code=200, response_model=JotformFormRead)
-async def jotform_form_read(form_id: str):
-    ...
+async def jotform_form_read(form_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.get_jotform_form_by_id(form_id, current_user)
 
 @jotform_router.get("/business/{business_id}/jotform/form",response_model=List[JotformFormRead])
-async def get_jotform_forms_for_business(business_id: str):
-    ...
+async def get_jotform_forms_for_business(business_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.get_jotform_form_by_business_id(business_id, current_user)
 
 @jotform_router.get("jotform/form/{member_id}/{category_id}", response_model=JotformFormRead)
-async def get_jotform_forms_for_member_and_category(member_id: int, category_id: int):
-    ...
+async def get_jotform_forms_for_member_and_category(member_id: int, category_id: int, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.get_jotform_form_by_member_and_category(member_id, category_id, current_user)
 
 @jotform_router.patch("jotform/form", status_code=200, response_model=JotformFormRead)
-async def jotform_form_update(form_data: JotformFormUpdate):
-    ...
+async def jotform_form_update(form_data: JotformFormUpdate, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.update_jotform_form(form_data, current_user)
 
 @jotform_router.delete("jotform/form/{form_id}")
-async def jotform_form_delete(form_id: str):
-    ...
+async def jotform_form_delete(form_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.delete_jotform_form(form_id, current_user)
 
 
