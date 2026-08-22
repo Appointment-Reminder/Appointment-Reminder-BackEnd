@@ -20,7 +20,6 @@ def create_user( user_in : User, repository: UserRepositoryPort) -> User:
         email=user_in.email,
         name=user_in.name,
         hashed_password = hash_password(user_in.password),
-        is_active = True
     )
 
     repository.create(user)
