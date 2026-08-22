@@ -1,4 +1,4 @@
-from dataclasses import dataclass, Field
+from dataclasses import dataclass, Field, field
 from datetime import datetime
 from typing import Optional, List
 
@@ -13,7 +13,7 @@ class JotformForm:
     webhook_token: str
     field_mapping: List[dict]
     is_active: bool
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = field(default_factory=datetime.now)
 
 @dataclass
 class JotformQuestion:

@@ -9,6 +9,7 @@ from app.db.session import get_session
 from app.repositories.appointments.appointment_repositories import AppointmentRepository
 from app.repositories.business_member_repository import BusinessMemberRepository
 from app.repositories.business_repository import BusinessRepository
+from app.repositories.jotform.jotform_repository import JotformRepository
 from app.repositories.packages.package_price_repository import PackagePriceRepository
 from app.repositories.packages.packages_repository import PackagesRepository
 from app.repositories.user_repository import UserRepository
@@ -37,6 +38,9 @@ def get_business_repository(db:  Annotated[Session, Depends(get_session)]) -> Bu
 def get_package_repo(db: Annotated[Session, Depends(get_session)]) -> PackagesRepository:
     return PackagesRepository(db)
 
+def get_jotform_repo(db: Annotated[Session, Depends(get_session)]) -> JotformRepository:
+    return JotformRepository(db)
+
 def get_package_price_repo(db: Annotated[Session, Depends(get_session)]) -> PackagePriceRepository:
     return PackagePriceRepository(db)
 
@@ -62,6 +66,7 @@ BUSINESS_REPO_DEP = Annotated[BusinessRepository, Depends(get_business_repositor
 PACKAGE_REPO = Annotated[PackagesRepository, Depends(get_package_repo)]
 PACKAGE_PRICE_REPO = Annotated[PackagePriceRepository, Depends(get_package_price_repo)]
 CURRENT_USER_DEPENDENCY = Annotated[User, Depends(get_current_user)]
+JOTFORM_REPO_DEPENDENCY = Annotated[JotformRepository, Depends(get_jotform_repo)]
 
 def get_business_guard(business_repo: BUSINESS_REPO_DEP,
                        member_repo: BUSINESS_MEMBER_REPO_DEP,
@@ -99,13 +104,7 @@ def get_package_service(package_repo: PACKAGE_REPO,
                           business_guard=business_guard,
                           packages_guard=package_guard)
 
-def get_jotform_guard(
-):
-    return JotformGuard()
 
-
-
-JOTFORM_GUARD_DEPENDENCY = Annotated[JotformGuard, Depends(get_jotform_guard)]
 
 USER_GUARD_DEPENDENCY = Annotated[User, Depends(get_user_guard)]
 BUSINESS_GUARD_DEP = Annotated[BusinessGuard, Depends(get_business_guard)]
@@ -113,10 +112,19 @@ BUSINESS_SERVICE_DEP = Annotated[BusinessService, Depends(get_business_service)]
 PACKAGE_GUARD_DEP = Annotated[PackageGuard, Depends(get_package_guard)]
 PACKAGE_SERVICE_DEP = Annotated[PackageService, Depends(get_package_service)]
 
+def get_jotform_guard(
+        jotform_repo: JOTFORM_REPO_DEPENDENCY
+):
+    return JotformGuard(jotform_repo=jotform_repo)
+
+
+
+JOTFORM_GUARD_DEPENDENCY = Annotated[JotformGuard, Depends(get_jotform_guard)]
+
 def get_jotform_service(
         member_repo: BUSINESS_MEMBER_REPO_DEP,
         package_repo: PACKAGE_REPO,
-        jotform_guard: Annotated[JotformGuard, Depends(get_jotform_guard)],
+        jotform_guard: JOTFORM_GUARD_DEPENDENCY,
         business_guard: BUSINESS_GUARD_DEP,
 ):
     return JotformService(
