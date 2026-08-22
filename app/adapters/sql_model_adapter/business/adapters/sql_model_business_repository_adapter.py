@@ -1,11 +1,13 @@
 import datetime
-from typing import Optional
+from typing import Optional, List
 
 from sqlmodel import select, Session
 
-from app.domain.business.models.business_member_model import BusinessMember
-from app.domain.business.models.business_model import Business
+from app.adapters.sql_model_adapter.business.models.business_member import BusinessMember as BusinessMemberSQL
 from app.domain.business.port.business_repository_port import BusinessRepositoryPort
+
+from app.adapters.sql_model_adapter.business.models.business import Business as BusinessSQL, _to_domain as business_to_domain, _apply_to_sql as business_apply_to_sql
+from app.domain.business.models.business_model import Business as BusinessEntity
 
 
 class SQLModelBusinessRepositoryAdapter(BusinessRepositoryPort):
@@ -13,66 +15,74 @@ class SQLModelBusinessRepositoryAdapter(BusinessRepositoryPort):
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def create(self, business: Business) -> Business:
-        self.db.add(business)
+    def create(self, business: BusinessEntity) -> BusinessEntity:
+        sql_business = BusinessSQL(
+            name=business.name,
+            description=business.description,
+            owner_id=business.owner_id,
+        )
+        self.db.add(sql_business)
         self.db.commit()
-        self.db.refresh(business)
-        return business
+        self.db.refresh(sql_business)
+        return business_to_domain(sql_business)
 
-    def find_by_name(self, business_name: str) -> Business:
-        return self.db.exec(
-            select(Business).where(Business.name == business_name)
+    def find_by_name(self, business_name: str) -> BusinessEntity:
+        result = self.db.exec(
+            select(BusinessSQL).where(BusinessSQL.name == business_name)
         ).first()
+        return business_to_domain(result)
 
-    def find_by_owner_id(self, business_owner_id: int) -> Business:
-        return self.db.exec(
-            select(Business).where(Business.owner_id == business_owner_id)
+    def find_by_owner_id(self, business_owner_id: int) -> BusinessEntity:
+        result = self.db.exec(
+            select(BusinessSQL).where(BusinessSQL.owner_id == business_owner_id)
         ).all()
+        return business_to_domain(result)
 
-    def find_by_user(self, user_id: int, is_active: Optional[bool] = None) -> Business:
+
+    def find_by_user(self, user_id: int, is_active: Optional[bool] = None) -> List[BusinessEntity]:
         """Get all businesses where user is a member"""
 
         statement = (
-            select(Business)
-            .join(BusinessMember, Business.id == BusinessMember.business_id)
-            .where(BusinessMember.user_id == user_id)
+            select(BusinessSQL)
+            .join(BusinessMemberSQL, BusinessSQL.id == BusinessMemberSQL.business_id)
+            .where(BusinessMemberSQL.user_id == user_id)
         )
 
         if is_active is not None:
-            statement = statement.where(Business.is_active == is_active)
+            statement = statement.where(BusinessSQL.is_active == is_active)
 
-        return self.db.exec(statement).all()
+        resut = self.db.exec(statement).all()
+        return [business_to_domain(business) for business in resut]
 
-    def find_by_id(self, business_id: int) -> Business:
-        return self.db.exec(select(Business).where(Business.id == business_id)).first()
+    def find_by_id(self, business_id: int) -> BusinessEntity:
+        return self.db.exec(select(BusinessSQL).where(BusinessSQL.id == business_id)).first()
 
-    def find_by_id_and_user(self, business_id: int, user_id: int) -> Business:
+    def find_by_id_and_user(self, business_id: int, user_id: int) -> BusinessEntity:
         statement = (
-            select(Business)
-            .join(BusinessMember, Business.id == BusinessMember.business_id)
-            .where(Business.id == business_id)
-            .where(BusinessMember.user_id == user_id)
-            .where(BusinessMember.is_active == True)
+            select(BusinessSQL)
+            .join(BusinessMemberSQL, BusinessSQL.id == BusinessMemberSQL.business_id)
+            .where(BusinessSQL.id == business_id)
+            .where(BusinessMemberSQL.user_id == user_id)
+            .where(BusinessMemberSQL.is_active == True)
         )
-        return self.db.exec(statement).first()
+        result =  self.db.exec(statement).first()
+        return business_to_domain(result)
 
-    def update(self, business_id: int, business: Business) -> Business:
-        business = self.db.get(Business, business_id)
+    def update(self, business_id: int, business: BusinessEntity) -> BusinessEntity:
+        existing = self.db.get(BusinessSQL, business_id)
 
-        if not business:
+        if not existing:
             return None
 
-        update_data = business.dict(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(business, key, value)
+        business_apply_to_sql(entity=business, sql=existing)
 
-        business.updated_at = datetime.now()
+        existing.updated_at = datetime.now()
         self.db.commit()
-        self.db.refresh(business)
-        return business
+        self.db.refresh(existing)
+        return business_to_domain(existing)
 
-    def delete(self, business_id: int) -> Business:
-        business = self.db.get(Business, business_id)
+    def delete(self, business_id: int) -> bool:
+        business = self.db.get(BusinessSQL, business_id)
 
         if not business:
             return False
