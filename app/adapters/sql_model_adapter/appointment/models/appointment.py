@@ -1,11 +1,6 @@
 from datetime import datetime
 from sqlmodel import Field, SQLModel, Relationship
 from typing import Optional
-from app.db.models.business import Business
-from app.db.models.package.package import Package
-from app.db.models.package.package_price import PackagePrice
-from app.db.models.Member.business_member_form import BusinessMemberForm
-
 
 class Appointment(SQLModel, table=True):
     __tablename__ = 'appointments'
@@ -42,5 +37,3 @@ class Appointment(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.now)
 
     user: Optional["User"] = Relationship()
-
-

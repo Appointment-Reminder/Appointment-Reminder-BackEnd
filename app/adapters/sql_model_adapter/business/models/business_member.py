@@ -5,14 +5,8 @@ from sqlmodel import Field, Relationship
 from sqlmodel import SQLModel
 import secrets
 
+from app.domain.business.models.business_member_model import MemberRole
 
-
-
-class MemberRole(str, Enum):
-    OWNER = "owner"
-    ADMIN = "admin"
-    PHOTOGRAPHER = "photographer"
-    ASSISTANT = "assistant"
 
 class BusinessMember(SQLModel, table=True):
     __tablename__ = "business_members"
@@ -54,6 +48,3 @@ class BusinessMember(SQLModel, table=True):
             "foreign_keys": "[BusinessMember.invited_by]"
         }
     )
-
-
-
