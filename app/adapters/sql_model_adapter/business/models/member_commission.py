@@ -3,6 +3,22 @@ from typing import Optional
 
 from sqlmodel import SQLModel, Field
 
+from models.Member.member_commision import MemberCommission
+from app.domain.business.models.member_commission import MemberCommission as MemberCommissionEntity
+
+def _to_domain(sqlobj: MemberCommission) -> MemberCommissionEntity:
+    return MemberCommissionEntity(
+        id=sqlobj.id,
+        business_member_id=sqlobj.business_member_id,
+        package_id=sqlobj.package_id,
+        commission_amount=sqlobj.commission_amount,
+        commission_isPercentage=sqlobj.commission_isPercentage,
+        effective_from=sqlobj.effective_from,
+    )
+
+def _apply_to_sql(sql: MemberCommission, obj: MemberCommissionEntity) -> None:
+    sql.commission_amount = obj.commission_amount
+    sql.commission_isPercentage = obj.commission_isPercentage
 
 class MemberCommission(SQLModel, table = True):
     __tablename__ = "member_commission"

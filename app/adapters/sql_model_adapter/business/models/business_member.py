@@ -5,8 +5,7 @@ from sqlmodel import Field, Relationship
 from sqlmodel import SQLModel
 import secrets
 
-from app.domain.business.models.business_member_model import MemberRole
-
+from app.domain.business.models.business_member_model import BusinessMember as BusinessMemberEntity, MemberRole
 
 class BusinessMember(SQLModel, table=True):
     __tablename__ = "business_members"
@@ -48,3 +47,20 @@ class BusinessMember(SQLModel, table=True):
             "foreign_keys": "[BusinessMember.invited_by]"
         }
     )
+
+def _to_domain(row: BusinessMember) -> BusinessMemberEntity:
+    return BusinessMember(
+        id = row.id,
+        business_id = row.business_id,
+        user_id = row.user_id,
+        role = row.role,
+        invited_at = row.invited_at,
+        invited_by = row.invited_by,
+        joined_at = row.joined_at,
+        is_active = row.is_active,
+        created_at = row.created_at,
+    )
+
+def _apply_to_sql(sql: BusinessMember, entity: BusinessMemberEntity ) -> None:
+    sql.role = entity.role
+    sql.is_active = entity.is_active

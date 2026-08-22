@@ -1,16 +1,15 @@
 from typing import List
 
 from app.domain.Jotform.errors.jotform_errors import JotformDomainError
+from app.domain.Jotform.guard.jotform_guard import JotformGuard
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
 from app.domain.Jotform.models.jotform_form_model import JotformForm, JotformCredential
+from app.domain.business.guard.business_guard import BusinessGuard
+from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
+from app.domain.package.port.package_repository_port import PackageRepositoryPort
+from app.domain.user.models.user import User
 
-from app.db.models.user import User
 
-
-from app.repositories.business_member_repository import BusinessMemberRepository
-from app.repositories.packages.packages_repository import PackagesRepository
-from app.services.business.BusinessGuard import BusinessGuard
-from app.services.jotform.jotform_guard import JotformGuard
 
 
 class JotformService:
@@ -18,8 +17,8 @@ class JotformService:
             self,
             business_guard: BusinessGuard,
             jotform_guard: JotformGuard,
-            package_repo: PackagesRepository,
-            member_repo: BusinessMemberRepository,
+            package_repo: PackageRepositoryPort,
+            member_repo: BusinessMemberRepositoryPort,
             jotform_repo: JotformRepositoryPort
     ):
         self.jotform_guard = jotform_guard
