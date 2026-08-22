@@ -63,20 +63,20 @@ async def create_jotform_credentials(
 async def get_jotform_credentials(business_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
     return service.get_jotform_credentials(business_id, current_user)
 
-@jotform_router.patch("jotform/credentials", response_model=JotformCredentialRead)
+@jotform_router.patch("/jotform/credentials", response_model=JotformCredentialRead)
 async def update_jotform_credentials(credential: JotformCredentialUpdate, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
     return service.update_jotform_credentials(credential, current_user)
 
-@jotform_router.delete("jotform/credentials/{credential_id}")
+@jotform_router.delete("/jotform/credentials/{credential_id}")
 async def delete_jotform_credentials(credential_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
     return service.delete_jotform_credentials(credential_id, current_user)
 
 #FORM
-@jotform_router.post("jotform/form", status_code=201, response_model=JotformFormCreate)
+@jotform_router.post("/jotform/form", status_code=201, response_model=JotformFormCreate)
 async def jotform_form_create(form_data: JotformFormCreate, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
     return service.jotform_form_create(form_data, current_user)
 
-@jotform_router.get("jotform/form/{form_id}", status_code=200, response_model=JotformFormRead)
+@jotform_router.get("/jotform/form/{form_id}", status_code=200, response_model=JotformFormRead)
 async def jotform_form_read(form_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
     return service.get_jotform_form_by_id(form_id, current_user)
 
@@ -84,15 +84,15 @@ async def jotform_form_read(form_id: str, service: JOTFORM_SERVICE_DEP, current_
 async def get_jotform_forms_for_business(business_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
     return service.get_jotform_form_by_business_id(business_id, current_user)
 
-@jotform_router.get("jotform/form/{member_id}/{category_id}", response_model=JotformFormRead)
-async def get_jotform_forms_for_member_and_category(member_id: int, category_id: int, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
-    return service.get_jotform_form_by_member_and_category(member_id, category_id, current_user)
+@jotform_router.get("/jotform/form/{member_id}/{category_id}", response_model=JotformFormRead)
+async def get_jotform_forms_for_member_and_category(business_id: int, member_id: int, category_id: int, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
+    return service.get_jotform_form_by_member_and_category(business_id=business_id,member_id=member_id, category_id=category_id, current_user=current_user)
 
-@jotform_router.patch("jotform/form", status_code=200, response_model=JotformFormRead)
+@jotform_router.patch("/jotform/form", status_code=200, response_model=JotformFormRead)
 async def jotform_form_update(form_data: JotformFormUpdate, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
     return service.update_jotform_form(form_data, current_user)
 
-@jotform_router.delete("jotform/form/{form_id}")
+@jotform_router.delete("/jotform/form/{form_id}")
 async def jotform_form_delete(form_id: str, service: JOTFORM_SERVICE_DEP, current_user: CURRENT_USER_DEPENDENCY):
     return service.delete_jotform_form(form_id, current_user)
 

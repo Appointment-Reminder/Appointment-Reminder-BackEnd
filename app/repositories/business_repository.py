@@ -7,9 +7,6 @@ from app.db.models.business_member import BusinessMember
 from app.db.models.business import Business
 from app.models.business_model import BusinessUpdate
 
-
-##TODO FIX THE BUSINESS SERVICES WITH THE NEW BUSINESS REPOSITORY, ESPECIALLY FIX THE BUSINESS MEMBER ADD REPOSITORY AND UNIT TEST
-
 class BusinessRepository:
 
     def __init__(self, db: Session) -> None:

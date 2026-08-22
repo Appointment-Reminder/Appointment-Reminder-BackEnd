@@ -2,22 +2,22 @@ from datetime import datetime
 from typing import Any, Optional, List
 
 from app.domain.business.errors.business_errors import BusinessError
-from app.models.business_member_model import BusinessMemberInvite, BusinessMemberUpdate
-from app.models.business_model import BusinessCreate, BusinessUpdate
-from app.repositories.business_member_repository import BusinessMemberRepository
-from app.repositories.business_repository import BusinessRepository
-from app.services.User.user_guard import UserGuard
-from app.services.business.BusinessGuard import BusinessGuard
-from app.db.models.business_member import BusinessMember, MemberRole
-from app.db.models.user import User
-from app.db.models.business import Business
+from app.domain.business.guard.business_guard import BusinessGuard
+from app.domain.business.models.business_member_model import BusinessMember, MemberRole
+from app.domain.business.models.business_model import Business
+from app.domain.business.models.business_invitation import BusinessMemberInvitation
+from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
+from app.domain.business.port.business_repository_port import BusinessRepositoryPort
 
+
+from app.services.User.user_guard import UserGuard
+from models.user import User
 
 
 class BusinessService:
     def __init__(self,
-                 business_repo: BusinessRepository,
-                 member_repo: BusinessMemberRepository,
+                 business_repo: BusinessRepositoryPort,
+                 member_repo: BusinessMemberRepositoryPort,
                  guard: BusinessGuard,
                  user_guard: UserGuard,
                  ):
@@ -26,7 +26,7 @@ class BusinessService:
         self.guard = guard
         self.user_guard = user_guard
 
-    def create(self, data: BusinessCreate, current_user: User) -> BusinessMember:
+    def create(self, data: Business, current_user: User) -> BusinessMember:
         business = Business(
             name=data.name,
             description=data.description,
@@ -53,7 +53,7 @@ class BusinessService:
 
         return self.business_repo.find_by_user(user_id=current_user.id)
 
-    def update(self, business_id: int, data: BusinessUpdate, current_user: User) -> BusinessMember:
+    def update(self, business_id: int, data: Business, current_user: User) -> BusinessMember:
         self.guard.ensure_exists(business_id=business_id)
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
         return self.business_repo.update(business_id=business_id, business_data=data)
@@ -71,7 +71,7 @@ class BusinessService:
             self.member_repo.delete(member.id)
 
 
-    def invite_member(self, business_id: int, current_user: User, invite_data: BusinessMemberInvite) -> BusinessMember:
+    def invite_member(self, business_id: int, current_user: User, invite_data: BusinessMemberInvitation) -> BusinessMember:
         self.guard.ensure_exists(business_id=business_id)
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
 
@@ -92,7 +92,7 @@ class BusinessService:
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
         return self.member_repo.get_by_business_id(business_id=business_id)
 
-    def update_member(self, data: BusinessMemberUpdate, member_id: int, business_id: int, current_user: User) -> BusinessMember:
+    def update_member(self, data: BusinessMember, member_id: int, business_id: int, current_user: User) -> BusinessMember:
 
         self.guard.ensure_exists(business_id=business_id)
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
@@ -126,8 +126,6 @@ class BusinessService:
             raise BusinessError()
 
         self.member_repo.delete(member.id)
-
-
 
     def _to_dict(self, data: Business, role: str) -> dict[str, Any]:
         return {
