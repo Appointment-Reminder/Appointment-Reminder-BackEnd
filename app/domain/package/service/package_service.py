@@ -13,6 +13,8 @@ from app.domain.package.guard.package_guard import PackageGuard
 
 #DATA
 from app.domain.package.models.package import Package
+from app.domain.user.models.user import User
+
 
 class PackageService:
     def __init__(

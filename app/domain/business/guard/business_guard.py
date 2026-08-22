@@ -45,13 +45,6 @@ class BusinessGuard:
             raise BusinessError()
         return member
 
-    def ensure_form_Exist(self, form_id: int) -> BusinessMemberForm:
-        print(f"ensure form exist: {form_id}")
-        form = self.business_member_repo.get_form(form_id)
-        if not form:
-            raise BusinessError()
-        return form
-
     def ensure_commission_Exist(self, commission_id: int) -> MemberCommission:
         commission = self.business_member_repo.get_commission_by_id(commission_id=commission_id)
         if not commission:
@@ -59,3 +52,14 @@ class BusinessGuard:
 
         print(f'commission found {commission}')
         return commission
+
+"""
+    def ensure_form_Exist(self, form_id: int) -> BusinessMemberForm:
+        print(f"ensure form exist: {form_id}")
+        form = self.business_member_repo.get_form(form_id)
+        if not form:
+            raise BusinessError()
+        return form
+"""
+
+

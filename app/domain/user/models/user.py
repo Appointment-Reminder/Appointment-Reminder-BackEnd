@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from models.business_member import BusinessMember
+from app.domain.business.models.business_member_model import BusinessMember
 
 
 @dataclass
