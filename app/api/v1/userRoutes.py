@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.dependencies import USER_REPOSITORY_DEPENDENCY,CURRENT_USER_DEPENDENCY
-from app.models.userModel import UserCreate, UserRead
+from app.api.models import UserCreate, UserRead
 from app.db.models.token import Token
 from app.services import user_service
 

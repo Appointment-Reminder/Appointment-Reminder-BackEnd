@@ -1,21 +1,19 @@
 from typing import List, Optional
 
 from fastapi import APIRouter
-from sqlalchemy.sql.functions import current_user
 
-from app.dependencies import BUSINESS_MEMBER_REPO_DEP, BUSINESS_REPO_DEP, USER_REPOSITORY_DEPENDENCY, \
-    BUSINESS_SERVICE_DEP, PACKAGE_SERVICE_DEP
+from app.dependencies import BUSINESS_SERVICE_DEP, PACKAGE_SERVICE_DEP
 
 from app.dependencies import CURRENT_USER_DEPENDENCY
-from app.models.Member.business_member_commissions import BusinessMemberCommissionsCreate, \
+from app.api.models import BusinessMemberCommissionsCreate, \
     BusinessMemberCommissionsRead, BusinessMemberCommissionsUpdate
-from app.models.Member.busioness_member_form_model import BusinessMemberFormRead, BusinessMemberFormCreate, \
+from app.api.models import BusinessMemberFormRead, BusinessMemberFormCreate, \
     BusinessMemberFormUpdate
-from app.models.business_member_model import BusinessMemberRead, BusinessMemberInvite, BusinessMemberUpdate
-from app.models.business_model import BusinessRead, BusinessCreate, BusinessUpdate
-from app.models.package.package_category_model import PackageCategoryRead, PackageCategoryCreate, PackageCategoryUpdate
-from app.models.package.package_model import PackageCreate, PackageRead, PackageUpdate
-from app.models.package.package_price_model import PackagePriceRead, PackagePriceCreate
+from app.api.models import BusinessMemberRead, BusinessMemberInvite, BusinessMemberUpdate
+from app.api.models import BusinessRead, BusinessCreate, BusinessUpdate
+from app.api.models import PackageCategoryRead, PackageCategoryCreate, PackageCategoryUpdate
+from app.api.models import PackageCreate, PackageRead, PackageUpdate
+from app.api.models import PackagePriceRead, PackagePriceCreate
 
 business_router = APIRouter(
     prefix="/business",

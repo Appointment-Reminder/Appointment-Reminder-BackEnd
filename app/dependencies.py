@@ -5,7 +5,7 @@ from fastapi.params import Depends
 from sqlmodel import Session
 
 from app.db.models.user import User
-from app.db.session import get_session
+from app.adapters.session import get_session
 from app.repositories.appointments.appointment_repositories import AppointmentRepository
 from app.repositories.business_member_repository import BusinessMemberRepository
 from app.repositories.business_repository import BusinessRepository
@@ -22,7 +22,7 @@ from app.services.jotform.jotform_service import JotformService
 from app.services.package.package_guard import PackageGuard
 from app.services.package.package_service import PackageService
 from app.services.user_service import oauth2_bearer
-from app.db.models.Member.member_commision import MemberCommission
+
 
 def get_user_repository(db:  Annotated[Session, Depends(get_session)]) -> UserRepository:
     return UserRepository(db)

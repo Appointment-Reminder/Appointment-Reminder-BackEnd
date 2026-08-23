@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 
 from app.dependencies import CURRENT_USER_DEPENDENCY, JOTFORM_SERVICE_DEP
-from app.models.Jotform.jotform_model import JotformCredentialRead, JotformCredentialCreate, \
+from app.api.models import JotformCredentialRead, JotformCredentialCreate, \
     JotformCredentialUpdate, JotformFormCreate, JotformFormRead, JotformFormUpdate
 
 

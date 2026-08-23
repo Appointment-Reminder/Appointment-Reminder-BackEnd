@@ -1,4 +1,4 @@
-from app.db.session import SessionLocal
+from app.adapters.session import SessionLocal
 from app.db.models.role import Role
 
 db = SessionLocal()
