@@ -5,11 +5,11 @@ from typing import Optional, List
 
 @dataclass
 class JotformCredential:
-    id: Optional[int]
     business_id: int
     label: str
     api_key: str
-    created_at: datetime
+    id: Optional[int] = None
+    created_at: datetime = datetime.now()
 
 
 @dataclass

@@ -1,5 +1,4 @@
-import datetime
-from os.path import commonpath
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.orm import selectinload

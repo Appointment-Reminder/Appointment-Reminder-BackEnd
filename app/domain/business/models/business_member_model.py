@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
+from app.domain.user.models.user import User
+
 
 class MemberRole(str, Enum):
     OWNER = "owner"
@@ -20,4 +22,7 @@ class BusinessMember:
     joined_at: datetime
     is_active: bool
     created_at: datetime
+
+    user: User
+    invited_by_user: User
 

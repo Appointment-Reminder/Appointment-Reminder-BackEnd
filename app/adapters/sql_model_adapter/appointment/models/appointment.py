@@ -4,6 +4,7 @@ from typing import Optional
 
 
 from app.domain.appointment.models.appointment_model import Appointment as AppointmentEntity
+from app.adapters.sql_model_adapter.user.models.user import _to_domain as user_to_domain
 
 class Appointment(SQLModel, table=True):
     __tablename__ = 'appointments'
@@ -62,7 +63,7 @@ def _to_domain(row: Appointment) -> AppointmentEntity:
         status=row.status,
         created_at=row.created_at,
         updated_at=row.updated_at,
-        user=_user_to_domain(row.user) if row.user else None,
+        user= user_to_domain(row.user) if row.user else None,
     )
 
 

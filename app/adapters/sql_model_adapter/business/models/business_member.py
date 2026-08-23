@@ -59,8 +59,8 @@ def _to_domain(row: BusinessMember) -> BusinessMemberEntity:
         joined_at = row.joined_at,
         is_active = row.is_active,
         created_at = row.created_at,
-        user = [user_to_domain(user) for user in row.users],
-        invited_by_user = [user_to_domain(user) for user in row.invited_users],
+        user = user_to_domain(row.user),
+        invited_by_user = user_to_domain(row.invited_by_user) ,
     )
 
 def _apply_to_sql(sql: BusinessMember, entity: BusinessMemberEntity ) -> None:
