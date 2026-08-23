@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime
 from typing import Optional
 
-from app.models.userModel import UserRead
+from app.api.models.userModel import UserRead
 
 
 class AppointmentCreate(BaseModel):

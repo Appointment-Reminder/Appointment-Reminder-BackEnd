@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query
 from typing import Optional, List
 
-from sqlalchemy.sql.annotation import Annotated
-
-from app.models.appointment_model import AppointmentRead, AppointmentUpdate, AppointmentCreate
+from app.api.models import AppointmentRead, AppointmentUpdate, AppointmentCreate
 from app.repositories import business_member_repository
 from app.repositories.business_member_repository import BusinessMemberRepository
 from app.services import appointment_service

@@ -5,13 +5,13 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from app.api.v1.exception_handlers import register_exception_handlers
-from app.core.config import config
+from app.domain.core.config import config
 
 from app.api.v1.jotform_Webhook import jotform_router
 from app.api.v1.userRoutes import userRouter
 from app.api.v1.appointment_routes import appointment_router
 from app.api.v1.business_routes import business_router
-from app.db.session import engine
+from app.adapters.session import engine
 
 app = FastAPI(title=config.app_name)
 

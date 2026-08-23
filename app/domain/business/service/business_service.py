@@ -9,8 +9,7 @@ from app.domain.business.models.business_invitation import BusinessMemberInvitat
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
 from app.domain.business.port.business_repository_port import BusinessRepositoryPort
 from app.domain.user.guard.user_guard import UserGuard
-
-from models.user import User
+from app.domain.user.models.user import User
 
 
 class BusinessService:

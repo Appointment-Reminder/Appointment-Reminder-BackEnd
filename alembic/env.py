@@ -1,8 +1,5 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
 import sys
 import os
@@ -14,9 +11,8 @@ from app.db.models.user import User
 from app.db.models.role import Role
 from app.db.models.appointment import Appointment
 from app.db.models.Member.member_commision import MemberCommission
-import sqlmodel
 
-from app.core.config import config
+from app.domain.core.config import config
 
 # app/db/base.py
 from app.db.models.user import User
@@ -71,7 +67,7 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     from sqlalchemy import create_engine
-    from app.core.config import config
+    from app.domain.core.config import config
 
     connectable = create_engine(config.db_url)
 
