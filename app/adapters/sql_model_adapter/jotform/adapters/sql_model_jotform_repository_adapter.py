@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from sqlmodel import select, Session
 
@@ -28,7 +28,7 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
         result = self.db.get(JotformCredentialSQL, credential_id)
         return jotform_credential_to_domain(result) if result else None
 
-    def get_credential_by_business(self, business_id: int) -> JotformCredentialEntity:
+    def get_credential_by_business(self, business_id: int) -> List[JotformCredentialEntity]:
         result = self.db.exec(
             select(JotformCredentialSQL).where(JotformCredentialSQL.business_id == business_id)
         ).all()
@@ -69,7 +69,7 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
 
     def get_form_by_id(self, jotform_id: int) -> JotformFormEntity:
         result = self.db.get(JotformFormSQL, jotform_id)
-        return jotform_form_to_domain(result)
+        return jotform_form_to_domain(result) if result else None
 
     def get_form_by_webhook_token(self, webhook_token: str) -> JotformFormEntity:
         result = self.db.exec(
@@ -80,7 +80,7 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
 
         return jotform_form_to_domain(result)
 
-    def get_form_by_business_id(self, business_id: int) -> JotformFormEntity:
+    def get_form_by_business_id(self, business_id: int) -> List[JotformFormEntity]:
         result = self.db.exec(
             select(JotformFormSQL).where(JotformFormSQL.business_id == business_id)
         ).all()

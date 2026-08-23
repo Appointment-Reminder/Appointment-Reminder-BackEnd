@@ -9,7 +9,7 @@ from app.adapters.sql_model_adapter.business.models.business_member import Busin
     _to_domain as business_member_to_domain, _apply_to_sql as business_member_apply_to_sql
 
 from app.adapters.sql_model_adapter.business.models.member_commission import MemberCommission as MemberCommissionSQL, \
-    _to_domain as member_commission_to_domain,  _apply_to_sql as member_commission_to_domain
+    _to_domain as member_commission_to_domain,  _apply_to_sql as member_commission_apply_to_sql
 
 
 from app.domain.business.models.member_commission import MemberCommission as MemberCommissionEntity
@@ -17,6 +17,7 @@ from app.domain.business.models.member_commission import MemberCommission as Mem
 from app.domain.business.models.business_member_model import BusinessMember as BusinessMemberEntity, MemberRole
 
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
+
 from models.Member.business_member_form import BusinessMemberForm
 
 
@@ -34,7 +35,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
 
     def create(self, business_member: BusinessMemberEntity) -> BusinessMemberEntity:
         sql_member = BusinessMemberSQL(
-            business_member = business_member.business_id,
+            business_id = business_member.business_id,
             user_id = business_member.user_id,
             role = business_member.role,
             invited_by = business_member.invited_by,
@@ -58,8 +59,8 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
             self._base_query()
             .where(BusinessMemberSQL.id == member_id)
             .where(BusinessMemberSQL.is_active == True)
-        )
-        return business_member_to_domain(result)
+        ).first()
+        return business_member_to_domain(result) if result else None
 
 
     def get_by_business_id(self, business_id: int) -> BusinessMemberEntity:
@@ -180,7 +181,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
         existing = self.db.get(MemberCommissionSQL, commission.id)
         if not existing:
             return None
-        business_member_apply_to_sql(sql=existing, entity=commission)
+        member_commission_apply_to_sql(sql=existing, entity=commission)
 
         self.db.commit()
         self.db.refresh(existing)
@@ -191,6 +192,6 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
         if not commission:
             return False
 
-        self.db.delete(BusinessMemberForm, commission.id)
+        self.db.delete(commission)
         self.db.commit()
         return True

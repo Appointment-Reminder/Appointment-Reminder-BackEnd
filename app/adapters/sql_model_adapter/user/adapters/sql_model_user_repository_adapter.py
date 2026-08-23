@@ -1,5 +1,3 @@
-import email
-
 from sqlalchemy.orm import Session
 from sqlmodel import select
 
@@ -36,7 +34,7 @@ class SQLModelUserRepositoryAdapter(UserRepositoryPort):
 
     def get_all(self) -> list[UserEntity]:
         result = self.db.exec(select(UserSQL)).all()
-        return _to_domain(result) if result else []
+        return [_to_domain(user) for user in result] if result else []
 
     def delete(self, user_id: int) -> bool:
         found_user = self.db.get(UserSQL, user_id)

@@ -7,8 +7,6 @@ from sqlmodel import select
 from app.domain.package.models.package_price import PackagePrice as PackagePriceEntity
 
 from app.adapters.sql_model_adapter.package.models.package_price import PackagePrice as PackagePriceSQL, _to_domain as package_price_to_domain, _apply_sql as package_price_apply_sql
-from app.adapters.sql_model_adapter.package.models.package import Package as PackageSQL, _to_domain as package_to_domain, _apply_sql as package_apply_sql
-from app.adapters.sql_model_adapter.package.models.package_category import PackageCategory as PackageCategorySQL, _to_domain as package_category_to_domain, _apply_sql as package_category_apply_sql
 from app.domain.package.port.package_price_repository_port import PackagePriceRepositoryPort
 
 
@@ -65,7 +63,7 @@ class SQLModelPackagePriceRepositoryAdapter(PackagePriceRepositoryPort):
         return package_price_to_domain(result) if result else None
 
     def get_package_price(self, package_price_id: int) -> PackagePriceEntity:
-        query = select(PackagePriceSQL, package_price_id)
+        query = select(PackagePriceSQL).where(PackagePriceSQL.id == package_price_id)
 
         result = self.db.exec(query).one_or_none()
         return package_price_to_domain(result) if result else None

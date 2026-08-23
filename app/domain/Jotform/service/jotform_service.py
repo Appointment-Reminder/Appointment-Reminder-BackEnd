@@ -90,7 +90,7 @@ class JotformService:
 
     def get_jotform_form_by_business_id(self, business_id: int, current_user: User) -> List[JotformForm]:
         self.business_guard.ensure_exists(business_id)
-        jotform = self.jotform_repo.get_forms_by_business(business_id)
+        jotform = self.jotform_repo.get_form_by_business_id(business_id)
         self.business_guard.ensure_admin_or_owner(business_id, current_user.id)
 
         return jotform
