@@ -52,7 +52,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
             .where(BusinessMemberSQL.user_id == user_id)
             .where(BusinessMemberSQL.is_active == True)
         ).first()
-        return business_member_to_domain(result)
+        return business_member_to_domain(result) if result else None
 
     def get_member_by_id(self, member_id: int) -> BusinessMemberEntity:
         result = self.db.exec(
@@ -110,7 +110,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
 
     def get_commission_by_id(self, commission_id: int) -> MemberCommissionEntity:
         result =  self.db.get(MemberCommissionSQL, commission_id)
-        return member_commission_to_domain(result)
+        return member_commission_to_domain(result) if result else None
 
     def get_commission(self, member_id: int) -> MemberCommissionEntity:
         result = self.db.exec(
@@ -119,7 +119,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
             .order_by(MemberCommissionSQL.effective_from.desc())
             .limit(1)
         ).first()
-        return member_commission_to_domain(result)
+        return member_commission_to_domain(result) if result else None
 
     def get_commission_at_date(self, member_id: int, package_id: int, at_date: datetime) -> Optional[MemberCommissionEntity]:
         result = self.db.exec(
@@ -166,7 +166,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
                 & (MemberCommissionSQL.effective_from == latest_subq.c.max_effective_from)
             )
         ).all()
-        return member_commission_to_domain(result) if result else None
+        return [member_commission_to_domain(item) for item in result] if result else None
 
     def get_commission_history(self, member_id: int, package_id: int) -> Optional[MemberCommissionEntity]:
         result = self.db.exec(
@@ -175,13 +175,13 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
             .where(MemberCommissionSQL.package_id == package_id)
             .order_by(MemberCommissionSQL.effective_from.desc())
         ).all()
-        return member_commission_to_domain(result) if result else None
+        return [member_commission_to_domain(item) for item in result] if result else None
 
     def update_commission(self, commission: MemberCommissionEntity) -> MemberCommissionEntity:
         existing = self.db.get(MemberCommissionSQL, commission.id)
         if not existing:
             return None
-        member_commission_apply_to_sql(sql=existing, entity=commission)
+        member_commission_apply_to_sql(sql=existing, obj=commission)
 
         self.db.commit()
         self.db.refresh(existing)

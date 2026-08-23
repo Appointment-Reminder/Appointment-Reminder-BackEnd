@@ -98,7 +98,7 @@ class JotformService:
     def get_jotform_form_by_member_and_category(self, business_id:int, member_id:int, category_id:int, current_user: User) -> JotformForm:
         self.business_guard.ensure_exists(business_id)
         self.business_guard.ensure_admin_or_owner(business_id, current_user.id)
-        jotform = self.jotform_repo.get_form_by_category_and_member(business_id=business_id, member_id=member_id, category_id=category_id)
+        jotform = self.jotform_repo.get_form_by_category_and_member( member_id=member_id, category_id=category_id)
 
         if not jotform:
             raise JotformDomainError()

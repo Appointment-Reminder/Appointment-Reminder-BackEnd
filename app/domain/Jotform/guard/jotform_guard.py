@@ -27,7 +27,8 @@ class JotformGuard:
 
     def ensure_form_belongs_to_business(self, form_id: int, business_id: int) -> JotformForm:
         form = self.ensure_form_exists(form_id)
-        if form.business_id != business_id:
+        credential = self.ensure_credential_exists(credential_id=form.credential_id)
+        if credential.business_id != business_id:
             raise JotformDomainError()
         return form
 

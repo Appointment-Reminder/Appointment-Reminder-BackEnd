@@ -50,7 +50,7 @@ class SQLModelPackageRepositoryAdapter(PackageRepositoryPort):
 
     def get_package_by_id(self, package_id: int) -> Optional[PackageEntity]:
         package = self.db.get(PackageSQL, package_id)
-        return package_to_domain(package) if package else []
+        return package_to_domain(package) if package else None
 
     def get_packages_by_business_id(self, business_id: int, is_active: bool = True) -> Optional[List[PackageEntity]]:
         query = select(PackageSQL).where(PackageSQL.business_id == business_id)

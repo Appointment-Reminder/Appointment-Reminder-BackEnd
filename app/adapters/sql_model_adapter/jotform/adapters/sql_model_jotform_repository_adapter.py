@@ -78,11 +78,13 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
             .where(JotformFormSQL.is_active == True)
         ).first()
 
-        return jotform_form_to_domain(result)
+        return jotform_form_to_domain(result) if result else None
 
     def get_form_by_business_id(self, business_id: int) -> List[JotformFormEntity]:
         result = self.db.exec(
-            select(JotformFormSQL).where(JotformFormSQL.business_id == business_id)
+            select(JotformFormSQL)
+            .join(JotformCredentialSQL, JotformCredentialSQL.id == JotformFormSQL.credential_id)
+            .where(JotformCredentialSQL.business_id == business_id)
         ).all()
 
         return [jotform_form_to_domain(item) for item in result]
@@ -93,7 +95,7 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
             .where(JotformFormSQL.category_id == category_id)
             .where(JotformFormSQL.is_active == True)
         ).first()
-        return jotform_form_to_domain(result)
+        return jotform_form_to_domain(result) if result else None
 
     def get_form_by_category_and_member(self, category_id: int, member_id: int) -> JotformFormEntity:
         result = self.db.exec(
@@ -103,7 +105,7 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
             .where(JotformFormSQL.is_active == True)
         ).first()
 
-        return jotform_form_to_domain(result)
+        return jotform_form_to_domain(result) if result else None
 
     def update_form(self, form: JotformFormEntity) -> JotformFormEntity:
         existing = self.db.get(JotformFormSQL, form.id)
