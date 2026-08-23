@@ -2,6 +2,9 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional
 
+from app.domain.business.models.business_member_model import BusinessMember
+from app.domain.user.models.user import User as UserEntity
+
 class User(SQLModel, table=True):
     __tablename__ = "user"
 
@@ -24,5 +27,15 @@ class User(SQLModel, table=True):
         sa_relationship_kwargs={
             "foreign_keys": "[BusinessMember.invited_by]"
         }
+    )
+
+def _to_domain(sql: User):
+    return UserEntity(
+        id=sql.id,
+        email=sql.email,
+        name=sql.name,
+        hashed_password=sql.hashed_password,
+        business_members = [],
+        invited_members = []
     )
 
