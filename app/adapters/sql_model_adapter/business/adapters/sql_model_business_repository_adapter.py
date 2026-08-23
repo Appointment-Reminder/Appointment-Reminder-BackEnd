@@ -30,14 +30,13 @@ class SQLModelBusinessRepositoryAdapter(BusinessRepositoryPort):
         result = self.db.exec(
             select(BusinessSQL).where(BusinessSQL.name == business_name)
         ).first()
-        return business_to_domain(result)
+        return business_to_domain(result) if result else None
 
     def find_by_owner_id(self, business_owner_id: int) -> BusinessEntity:
         result = self.db.exec(
             select(BusinessSQL).where(BusinessSQL.owner_id == business_owner_id)
         ).all()
-        return business_to_domain(result)
-
+        return [business_to_domain(business) for business in result] if result else []
 
     def find_by_user(self, user_id: int, is_active: Optional[bool] = None) -> List[BusinessEntity]:
         """Get all businesses where user is a member"""
@@ -55,7 +54,8 @@ class SQLModelBusinessRepositoryAdapter(BusinessRepositoryPort):
         return [business_to_domain(business) for business in resut]
 
     def find_by_id(self, business_id: int) -> BusinessEntity:
-        return self.db.exec(select(BusinessSQL).where(BusinessSQL.id == business_id)).first()
+        result = self.db.exec(select(BusinessSQL).where(BusinessSQL.id == business_id)).first()
+        return business_to_domain(result) if result else None
 
     def find_by_id_and_user(self, business_id: int, user_id: int) -> BusinessEntity:
         statement = (
@@ -66,7 +66,7 @@ class SQLModelBusinessRepositoryAdapter(BusinessRepositoryPort):
             .where(BusinessMemberSQL.is_active == True)
         )
         result =  self.db.exec(statement).first()
-        return business_to_domain(result)
+        return business_to_domain(result) if result else None
 
     def update(self, business_id: int, business: BusinessEntity) -> BusinessEntity:
         existing = self.db.get(BusinessSQL, business_id)

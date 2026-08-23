@@ -2,7 +2,6 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional
 
-from app.domain.business.models.business_member_model import BusinessMember
 from app.domain.user.models.user import User as UserEntity
 
 class User(SQLModel, table=True):

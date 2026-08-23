@@ -50,7 +50,7 @@ class SQLModelPackageRepositoryAdapter(PackageRepositoryPort):
 
     def get_package_by_id(self, package_id: int) -> Optional[PackageEntity]:
         package = self.db.get(PackageSQL, package_id)
-        return package_to_domain(package) if package else None
+        return package_to_domain(package) if package else []
 
     def get_packages_by_business_id(self, business_id: int, is_active: bool = True) -> Optional[List[PackageEntity]]:
         query = select(PackageSQL).where(PackageSQL.business_id == business_id)
@@ -58,7 +58,7 @@ class SQLModelPackageRepositoryAdapter(PackageRepositoryPort):
             query = query.where(PackageSQL.is_active == is_active)
 
         result = self.db.exec(query).all()
-        return [package_to_domain(package) for package in result] if result else None
+        return [package_to_domain(package) for package in result] if result else []
 
     def get_by_category(self, category_id: int, is_active: bool = True) -> List[PackageEntity]:
         query = select(PackageSQL).where(PackageSQL.category_id == category_id)
@@ -67,7 +67,7 @@ class SQLModelPackageRepositoryAdapter(PackageRepositoryPort):
             query = query.where(PackageSQL.is_active == is_active)
 
         result = self.db.exec(query).all()
-        return [package_to_domain(package) for package in result] if result else None
+        return [package_to_domain(package) for package in result] if result else []
 
     def create_package_category(self, package_category: PackageCategoryEntity) -> PackageCategoryEntity:
         sql_obj = PackageCategorySQL(
@@ -113,7 +113,7 @@ class SQLModelPackageRepositoryAdapter(PackageRepositoryPort):
             .where(PackageSQL.jotform_alias == alias_raw_value.strip())
         ).first()
 
-        return package_category_to_domain(result) if result else None
+        return package_to_domain(result) if result else None
 
     def get_category_by_id(self, category_id: int) -> Optional[PackageCategoryEntity]:
         result = self.db.get(PackageCategorySQL, category_id)
