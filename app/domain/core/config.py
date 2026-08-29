@@ -1,5 +1,4 @@
 import os
-
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
@@ -13,12 +12,13 @@ class Config(BaseSettings):
     DB_HOST: str = ""
     DB_PORT: str = ""
     DB_NAME: str = ""
+    JOTFORM_API = ""
 
     @property
     def db_url(self):
         return (
             f"postgresql+psycopg://"
-            f"{self.DB_USER}:{self.DB_PASSWORD}"cf ''
+            f"{self.DB_USER}:{self.DB_PASSWORD}"
             f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
 
