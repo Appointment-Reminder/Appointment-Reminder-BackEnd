@@ -1,1 +1,1 @@
-from app.db.models import *
+from app.adapters.sql_model_adapter import *
