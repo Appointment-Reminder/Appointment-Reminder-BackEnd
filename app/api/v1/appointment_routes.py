@@ -1,80 +1,70 @@
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Query
 from typing import Optional, List
 
-from app.api.models import AppointmentRead, AppointmentUpdate, AppointmentCreate
-from app.repositories import business_member_repository
-from app.repositories.business_member_repository import BusinessMemberRepository
-from app.services import appointment_service
-from app.dependencies import APPOINTMENT_REPOSITORY_DEPENDENCY, CURRENT_USER_DEPENDENCY, BUSINESS_MEMBER_REPO_DEP
+from app.api.models.appointment_model import AppointmentRead, AppointmentCreate, AppointmentUpdate
+from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
+from app.domain.appointment.service.appointment_service import AppointmentService
+from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
+from app.domain.user.models.user import User
 
 appointment_router = APIRouter(
     prefix="/appointments",
     tags=["appointments"],
+    route_class=DishkaRoute
 )
 
 @appointment_router.post("/", response_model=AppointmentRead, status_code=200)
 def create_appointment(
-        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
-        current_user: CURRENT_USER_DEPENDENCY,
-        business_member_repo: BUSINESS_MEMBER_REPO_DEP,
+        appointment_service: FromDishka[AppointmentService],
+        current_user: FromDishka[User],
         appointment_data: AppointmentCreate,
 ):
     return appointment_service.create_appointment_by_business_member(
-        appointment_repository=appointment_repository,
-        business_member_repo=business_member_repo,
         current_user=current_user,
-        appointment_data=appointment_data,
+        appointment=appointment_data,
     )
 
 @appointment_router.get("/me", response_model=List[AppointmentRead], status_code=200)
 def get_my_appointments(
-        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
-        current_user: CURRENT_USER_DEPENDENCY,
+        appointment_service: FromDishka[AppointmentService],
+        current_user: FromDishka[User],
         status: Optional[str] = Query(None, description="Filter by status: pending confirmed etc"),
 ):
     """Get all appointments for the currently logged in photographer"""
-    photographer_id = current_user.id
-    appointments = appointment_service.get_assigned_appointments(current_user= current_user, appointment_repository=appointment_repository, status = status)
+    appointments = appointment_service.get_assigned_appointments(current_user= current_user)
     return appointments
 
 @appointment_router.get("/business/{business_id}", response_model=List[AppointmentRead], status_code=200)
 def get_appointment_for_business(
-        appointment_repository : APPOINTMENT_REPOSITORY_DEPENDENCY,
-        business_member_repo :  BUSINESS_MEMBER_REPO_DEP,
-        current_user : CURRENT_USER_DEPENDENCY,
+        appointment_service: FromDishka[AppointmentService],
+        current_user : FromDishka[User],
         business_id: int,
         status: Optional[str] = Query(None, description="Filter by status: pending confirmed etc")):
-    """Get all appointments for the currently logged in user for business"""
+    """Get all appointments for the currently loggedin user for business"""
     return appointment_service.get_appointments_by_business(
         current_user=current_user,
-        appointment_repository=appointment_repository,
-        business_member_repository=business_member_repo,
         business_id=business_id,
-        status=status,
     )
 
 @appointment_router.get("/business/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
 def get_single_appointment(
-        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
-        business_member_repo: BUSINESS_MEMBER_REPO_DEP,
-        current_user: CURRENT_USER_DEPENDENCY,
+        appointment_service: FromDishka[AppointmentService],
+        current_user: FromDishka[User],
         business_id: int,
         appointment_id: int,
 ):
     """Get a single appointment for the currently logged in user for business"""
     return appointment_service.get_single_appointment(
         current_user=current_user,
-        appointment_repository=appointment_repository,
-        business_member_repository=business_member_repo,
         business_id=business_id,
         appointment_id=appointment_id,
     )
 
 @appointment_router.patch("/business/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
 def update_single_appointment(
-        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
-        business_member_repo: BUSINESS_MEMBER_REPO_DEP,
-        current_user: CURRENT_USER_DEPENDENCY,
+        appointment_service: FromDishka[AppointmentService],
+        current_user: FromDishka[User],
         business_id: int,
         appointment_id: int,
         appointment_data: AppointmentUpdate,
@@ -82,33 +72,27 @@ def update_single_appointment(
     """Update a single appointment for the currently logged in user"""
     return appointment_service.update_single_appointment(
         current_user=current_user,
-        appointment_repository=appointment_repository,
-        business_member_repository=business_member_repo,
         business_id=business_id,
-        appointment_id=appointment_id,
         appointment_data=appointment_data,
     )
 
 @appointment_router.delete("/{appointment_id}", status_code=200)
 def delete_single_appointment(
-        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
-        business_member_repo: BUSINESS_MEMBER_REPO_DEP,
-        current_user: CURRENT_USER_DEPENDENCY,
+        appointment_service: FromDishka[AppointmentService],
+        current_user: FromDishka[User],
         appointment_id: int,
 ):
     """delete an appointment for the admin or owner only of a business"""
     appointment_service.delete_single_appointment(
         current_user=current_user,
-        appointment_repository=appointment_repository,
-        business_member_repository=business_member_repo,
         appointment_id=appointment_id,
     )
 
 @appointment_router.get("{appointment_id}/businesses/{business_id}/", response_model=AppointmentRead, status_code=200)
 def get_single_appointment(
-        appointment_repository: APPOINTMENT_REPOSITORY_DEPENDENCY,
-        business_member_repo: BUSINESS_MEMBER_REPO_DEP,
-        current_user: CURRENT_USER_DEPENDENCY,
+        appointment_repository: FromDishka[AppointmentRepositoryPort],
+        business_member_repo: FromDishka[BusinessMemberRepositoryPort],
+        current_user: FromDishka[User],
         business_id: int,
         appointment_id: int,
 ):
