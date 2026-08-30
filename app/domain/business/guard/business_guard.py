@@ -41,6 +41,8 @@ class BusinessGuard:
 
     def ensure_admin_or_owner(self, business_id: int, user_id: int) -> BusinessMember:
         member = self.business_member_repo.get_member(business_id, user_id)
+        if not member:
+            raise BusinessError()
         if member.role not in [MemberRole.OWNER, MemberRole.ADMIN]:
             raise BusinessError()
         return member
@@ -52,14 +54,5 @@ class BusinessGuard:
 
         print(f'commission found {commission}')
         return commission
-
-"""
-    def ensure_form_Exist(self, form_id: int) -> BusinessMemberForm:
-        print(f"ensure form exist: {form_id}")
-        form = self.business_member_repo.get_form(form_id)
-        if not form:
-            raise BusinessError()
-        return form
-"""
 
 

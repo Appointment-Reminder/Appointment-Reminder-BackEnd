@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr
-from app.db.models.business_member import MemberRole
 from app.api.models.userModel import UserRead
+from app.domain.business.models.business_member_model import MemberRole
 
 
 class BusinessMemberRead(BaseModel):

@@ -5,7 +5,6 @@ from dishka.integrations.fastapi import FromDishka, inject, DishkaRoute
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.dependencies import USER_REPOSITORY_DEPENDENCY,CURRENT_USER_DEPENDENCY
 from app.api.models.userModel import UserCreate, UserRead
 from app.domain.user.models.token import Token
 

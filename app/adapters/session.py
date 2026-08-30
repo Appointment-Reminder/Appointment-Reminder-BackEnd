@@ -1,6 +1,6 @@
 from sqlmodel import create_engine, SQLModel, Session
 from app.domain.core.config import config
-from app.db.models import *
+from app.adapters.sql_model_adapter import *
 
 engine = create_engine(
     config.db_url,

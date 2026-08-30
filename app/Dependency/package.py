@@ -40,5 +40,5 @@ class PackageProvider(Provider):
             price_repo= package_price_repo,
             member_repo= member_repo,
             business_guard= business_guard,
-            package_guard= package_guard
+            packages_guard= package_guard
         )

@@ -1,4 +1,4 @@
-from dishka import Scope, provide
+from dishka import Scope, provide, Provider
 from sqlmodel import Session
 
 from app.adapters.sql_model_adapter.jotform.adapters.sql_model_jotform_repository_adapter import \
@@ -11,7 +11,7 @@ from app.domain.business.port.business_member_repository_port import BusinessMem
 from app.domain.package.port.package_repository_port import PackageRepositoryPort
 
 
-class JotformProvider:
+class JotformProvider(Provider):
     scope = Scope.REQUEST
 
     @provide
