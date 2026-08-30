@@ -88,17 +88,6 @@ def delete_single_appointment(
         appointment_id=appointment_id,
     )
 
-@appointment_router.get("{appointment_id}/businesses/{business_id}/", response_model=AppointmentRead, status_code=200)
-def get_single_appointment(
-        appointment_repository: FromDishka[AppointmentRepositoryPort],
-        business_member_repo: FromDishka[BusinessMemberRepositoryPort],
-        current_user: FromDishka[User],
-        business_id: int,
-        appointment_id: int,
-):
-    """Get a single appointment for the currently logged in user for business"""
-    pass
-
 @appointment_router.patch("{appointment_id}/businesses/{business_id}/payments", response_model=AppointmentRead, status_code=200)
 def update_appointment_payments(business_id: int, appointment_id: int):
     """Update the payments for the currently logged in user for business"""

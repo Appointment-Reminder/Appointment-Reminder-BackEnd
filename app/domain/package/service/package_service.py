@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
 
-from google.api_core.datetime_helpers import utcnow
-
 from app.domain.business.guard.business_guard import BusinessGuard
+from app.domain.business.models.member_commission import MemberCommission
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
 from app.domain.package.models.package_category_model import PackageCategory
 from app.domain.package.models.package_price import PackagePrice
@@ -142,7 +141,7 @@ class PackageService:
         business = self.business_guard.ensure_admin_or_owner(package.business_id, current_user.id)
 
         if is_current is not None and is_current:
-            return self.price_repo.get_current_price(package_id, is_personal=is_personal)
+            return self.price_repo.get_current_price(package_id)
 
         return self.price_repo.get_price_history(package_id=package_id)
 
@@ -158,54 +157,7 @@ class PackageService:
 
         return prices
 
-    def create_member_form(self, data: BusinessMemberFormCreate, current_user: User) -> BusinessMemberForm:
-        #TODO Check that the category exist and the package is in a business where current user is admin or owner
-        # TODO CHeck that the business member is in the business
-        category = self.packages_guard.ensure_category_exist(data.category_id)
-        self.business_guard.ensure_exists(business_id=category.business_id)
-        business = self.business_guard.ensure_admin_or_owner(business_id=category.business_id, user_id=current_user.id)
-        member = self.business_guard.ensure_member_exist(member_id=data.business_member_id)
-        self.business_guard.ensure_is_a_member(business_id=category.business_id, user_id=member.user_id)
-
-        #TODO Create webhook token for the business member form
-
-        memberForm = BusinessMemberForm(
-            business_member_id=data.business_member_id,
-            category_id=data.category_id,
-            jotform_field_map = data.jotform_field_map,
-            is_active= True,
-            created_at= datetime.now(),
-            webhook_token= "CREATETOKEN"
-        )
-        return self.member_repo.create_form(memberForm)
-
-    def get_member_form(self, business_id, member_id: int, current_user: User) -> BusinessMemberForm:
-        member = self.business_guard.ensure_member_exist(member_id=member_id)
-        self.business_guard.ensure_is_a_member(business_id=business_id, user_id=member.user_id)
-        self.business_guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
-
-        return self.member_repo.get_forms_for_member(member_id)
-
-    def get_member_form_for_business(self, business_id:int, current_user: User) -> BusinessMemberForm:
-        self.business_guard.ensure_exists(business_id=business_id)
-        self.business_guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
-
-        return self.member_repo.get_forms_by_business(business_id=business_id)
-
-    def update_member_form(self, data: BusinessMemberFormUpdate, current_user: User) -> BusinessMemberForm:
-        member = self.business_guard.ensure_member_exist(member_id=data.business_member_id)
-        category = self.packages_guard.ensure_category_exist(data.category_id)
-        self.business_guard.ensure_is_a_member(business_id=category.business_id, user_id=member.user_id)
-        self.business_guard.ensure_admin_or_owner(business_id=category.business_id, user_id=current_user.id)
-        return self.member_repo.update_form(data)
-
-    def delete_member_form(self,form_id: int, current_user: User):
-        form = self.business_guard.ensure_form_Exist(form_id=form_id)
-        member = self.business_guard.ensure_member_exist(member_id=form.business_member_id)
-        self.business_guard.ensure_admin_or_owner(business_id=member.business_id, user_id=current_user.id)
-        self.member_repo.delete_form(form)
-
-    def create_member_commission(self, data: BusinessMemberCommissionsCreate, current_user: User) -> BusinessMemberCommissionsCreate:
+    def create_member_commission(self, data: MemberCommission, current_user: User) -> MemberCommission:
         package = self.packages_guard.ensure_package_exist(data.package_id)
         business = self.business_guard.ensure_exists(business_id=package.business_id)
         member = self.business_guard.ensure_member_exist(member_id=data.business_member_id)
@@ -238,18 +190,18 @@ class PackageService:
 
         return self.member_repo.get_current_business_commission(business_id=business_id)
 
-    def update_member_commission(self, data: BusinessMemberCommissionsUpdate, current_user: User):
+    def update_member_commission(self, data: MemberCommission, current_user: User):
         commission = self.business_guard.ensure_commission_Exist(data.id)
         member = self.business_guard.ensure_member_exist(member_id=commission.business_member_id)
         business = self.business_guard.ensure_exists(business_id=member.business_id)
         self.business_guard.ensure_admin_or_owner(business_id=member.business_id, user_id=current_user.id)
         package = self.packages_guard.ensure_package_exist(commission.package_id)
 
-        created_data = BusinessMemberCommissionsCreate(
+        created_data = MemberCommission(
             business_member_id=member.id,
             package_id=package.id,
             commission_percent=data.commission_percent,
-            effective_from= utcnow()
+            effective_from= datetime.utcnow()
         )
         return self.create_member_commission(data=created_data, current_user=current_user)
 

@@ -18,8 +18,6 @@ from app.domain.business.models.business_member_model import BusinessMember as B
 
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
 
-from models.Member.business_member_form import BusinessMemberForm
-
 
 
 class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):

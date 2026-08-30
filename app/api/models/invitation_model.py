@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr
 
-from app.db.models.business_member import MemberRole
+from app.domain.business.models.business_member_model import MemberRole
 
 
 class InvitationCreate(BaseModel):
