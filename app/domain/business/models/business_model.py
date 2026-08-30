@@ -1,13 +1,14 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Optional
 
 
 @dataclass(frozen=True)
 class Business:
-    id: int
     name: str
-    description: str
+    description: Optional[str]
     owner_id: int
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
+    id: Optional[int]= None
+    is_active: bool = True
+    created_at: datetime = field(default_factory=datetime.now)
+    updated_at: datetime = field(default_factory=datetime.now)

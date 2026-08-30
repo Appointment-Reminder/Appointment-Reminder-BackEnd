@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 from app.domain.user.models.user import User
 
@@ -13,16 +14,16 @@ class MemberRole(str, Enum):
 
 @dataclass()
 class BusinessMember:
-    id: int
     business_id: int
     user_id: int
     role: MemberRole
-    invited_at: datetime
-    invited_by: int
-    joined_at: datetime
-    is_active: bool
-    created_at: datetime
+    id: Optional[int] = None
+    invited_at: Optional[datetime] = None
+    invited_by: Optional[int] = None
+    joined_at: Optional[datetime] = None
+    is_active: bool = True
+    created_at: Optional[datetime] = None
 
-    user: User
-    invited_by_user: User
+    user: Optional[User] = None
+    invited_by_user: Optional[User] = None
 
