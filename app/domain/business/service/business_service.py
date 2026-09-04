@@ -43,24 +43,25 @@ class BusinessService:
         self.member_repo.create(member)
         return saved
 
-    def get_for_user(self, current_user: User, is_active: Optional[bool], business_id: Optional[int]) -> BusinessMember:
+    def get_for_user(self, current_user: User, is_active: Optional[bool], business_id: Optional[int]) -> Business:
         if business_id:
+            self.guard.ensure_is_a_member(business_id=business_id, user_id=current_user.id)
             return self.guard.ensure_exists(business_id=business_id)
         if is_active:
             return self.business_repo.find_by_user(user_id=current_user.id, is_active=is_active)
 
         return self.business_repo.find_by_user(user_id=current_user.id)
 
-    def update(self, business_id: int, data: Business, current_user: User) -> BusinessMember:
+    def update(self, business_id: int, data: Business, current_user: User) -> Business:
         self.guard.ensure_exists(business_id=business_id)
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
-        return self.business_repo.update(business_id=business_id, business_data=data)
+        return self.business_repo.update(business_id=business_id, business=data)
 
-    def delete(self, business_id: int, current_user: User) -> BusinessMember:
+    def delete(self, business_id: int, current_user: User) -> bool:
         self.delete_all_members(business_id=business_id, current_user=current_user)
         return self.business_repo.delete(business_id=business_id)
 
-    def delete_all_members(self, business_id: int, current_user: User) -> BusinessMember:
+    def delete_all_members(self, business_id: int, current_user: User) -> None:
         self.guard.ensure_exists(business_id=business_id)
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
         members = self.member_repo.get_by_business_id(business_id)
@@ -112,7 +113,7 @@ class BusinessService:
         updated_member = self.member_repo.update(member)
         return updated_member
 
-    def delete_member(self, business_id: int, member_id: int, current_user: User) -> BusinessMember:
+    def delete_member(self, business_id: int, member_id: int, current_user: User) -> bool:
         self.guard.ensure_exists(business_id=business_id)
         self.guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
         member = self.guard.ensure_is_a_member(business_id=business_id, user_id=member_id)
@@ -123,7 +124,7 @@ class BusinessService:
         if member.user_id == current_user.id:
             raise BusinessError()
 
-        self.member_repo.delete(member.id)
+        return self.member_repo.delete(member.id)
 
     def _to_dict(self, data: Business, role: str) -> dict[str, Any]:
         return {
