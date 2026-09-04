@@ -83,7 +83,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
         self.db.refresh(found_member)
         return business_member_to_domain(found_member)
 
-    def delete(self, member_id: int) -> BusinessMemberEntity:
+    def delete(self, member_id: int) -> bool:
         found_member = self.db.get(BusinessMemberSQL, member_id)
 
         if not found_member:

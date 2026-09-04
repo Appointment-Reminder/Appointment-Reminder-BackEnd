@@ -21,7 +21,7 @@ class BusinessGuard:
             raise InvalidBusiness(business_id=business_id)
         return business
 
-    def ensure_member_exist(self, member_id) -> BusinessMember:
+    def ensure_member_exist(self, member_id: int) -> BusinessMember:
         member = self.business_member_repo.get_member_by_id( member_id=member_id)
         if not member:
             raise BusinessError()
@@ -33,11 +33,11 @@ class BusinessGuard:
             raise BusinessError()
         return member
 
-    def ensure_not_a_member(self, business_id: int, user_id: int):
+    def ensure_not_a_member(self, business_id: int, user_id: int) -> bool:
         member = self.business_member_repo.get_member(business_id, user_id)
         if member:
             raise BusinessError()
-        return
+        return True
 
     def ensure_admin_or_owner(self, business_id: int, user_id: int) -> BusinessMember:
         member = self.business_member_repo.get_member(business_id, user_id)
