@@ -40,7 +40,7 @@ class BusinessService:
             joined_at=datetime.now(),
         )
 
-        self.member_repo.create(member)
+        member = self.member_repo.create(member)
         return saved
 
     def get_for_user(self, current_user: User, is_active: Optional[bool], business_id: Optional[int]) -> Business:

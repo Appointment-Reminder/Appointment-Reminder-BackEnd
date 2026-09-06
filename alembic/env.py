@@ -7,17 +7,16 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from sqlmodel import SQLModel
-from app.db.models.user import User
-from app.db.models.role import Role
-from app.db.models.appointment import Appointment
-from app.db.models.Member.member_commision import MemberCommission
-
+from app.adapters.sql_model_adapter.user.models.user import User
+from app.adapters.sql_model_adapter.appointment.models.appointment import Appointment
+from app.adapters.sql_model_adapter.business.models.business_member import BusinessMember
+from app.adapters.sql_model_adapter.business.models.member_commission import MemberCommission
+from app.adapters.sql_model_adapter.package.models.package import Package
+from app.adapters.sql_model_adapter.package.models.package_price import PackagePrice
+from app.adapters.sql_model_adapter.package.models.package_category import PackageCategory
+from app.adapters.sql_model_adapter.business.models.business import Business
+from app.adapters.sql_model_adapter.jotform.models.jotform import JotformForm, JotformCredential
 from app.domain.core.config import config
-
-# app/db/base.py
-from app.db.models.user import User
-from app.db.models.role import Role
-from app.db.models.appointment import Appointment
 
 
 # this is the Alembic Config object, which provides

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import func
 from sqlalchemy.orm import selectinload
@@ -61,7 +61,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
         return business_member_to_domain(result) if result else None
 
 
-    def get_by_business_id(self, business_id: int) -> BusinessMemberEntity:
+    def get_by_business_id(self, business_id: int) -> List[BusinessMemberEntity]:
         result = self.db.exec(
             self._base_query()
             .where(BusinessMemberSQL.business_id == business_id)

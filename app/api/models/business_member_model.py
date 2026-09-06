@@ -11,7 +11,6 @@ class BusinessMemberRead(BaseModel):
     business_id: int
     user_id: int
     role: MemberRole
-    webhook_token: str
     invited_by: Optional[int]
     invited_at: datetime
     joined_at: Optional[datetime]

@@ -12,7 +12,7 @@ class Config(BaseSettings):
     DB_HOST: str = ""
     DB_PORT: str = ""
     DB_NAME: str = ""
-    JOTFORM_API = ""
+    JOTFORM_API: str = ""
 
     @property
     def db_url(self):

@@ -12,13 +12,11 @@ from app.domain.user.service.user_service import decode_token
 
 
 class UserProvider(Provider):
-    scope = Scope.REQUEST
-
-    @provide
+    @provide(scope=Scope.REQUEST)
     def get_user_repo(self, db: Session) -> UserRepositoryPort:
         return SQLModelUserRepositoryAdapter(db=db)
 
-    @provide
+    @provide(scope=Scope.REQUEST)
     def get_user_guard(self, repo: UserRepositoryPort) -> UserGuard:
         return UserGuard(repo)
 

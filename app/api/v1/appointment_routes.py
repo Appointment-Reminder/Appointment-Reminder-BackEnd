@@ -1,5 +1,5 @@
-from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter, Query
+from dishka.integrations.fastapi import DishkaRoute, FromDishka, DishkaSyncRoute
+from fastapi import APIRouter, Query, Depends
 from typing import Optional, List
 
 from app.api.models.appointment_model import AppointmentRead, AppointmentCreate, AppointmentUpdate
@@ -7,11 +7,13 @@ from app.domain.appointment.port.appointment_repository_port import AppointmentR
 from app.domain.appointment.service.appointment_service import AppointmentService
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
 from app.domain.user.models.user import User
+from app.domain.user.service.user_service import oauth2_bearer
 
 appointment_router = APIRouter(
     prefix="/appointments",
     tags=["appointments"],
-    route_class=DishkaRoute
+    route_class=DishkaSyncRoute,
+    dependencies=[Depends(oauth2_bearer)]
 )
 
 @appointment_router.post("/", response_model=AppointmentRead, status_code=200)
