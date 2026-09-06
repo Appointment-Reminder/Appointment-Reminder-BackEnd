@@ -2,6 +2,7 @@ from typing import List
 
 from app.domain.Jotform.errors.jotform_errors import JotformDomainError
 from app.domain.Jotform.guard.jotform_guard import JotformGuard
+from app.domain.Jotform.port.jotform_port import JotformPort
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
 from app.domain.Jotform.models.jotform_form_model import JotformForm, JotformCredential
 from app.domain.business.guard.business_guard import BusinessGuard
@@ -19,7 +20,8 @@ class JotformService:
             jotform_guard: JotformGuard,
             package_repo: PackageRepositoryPort,
             member_repo: BusinessMemberRepositoryPort,
-            jotform_repo: JotformRepositoryPort
+            jotform_repo: JotformRepositoryPort,
+            jotform_api: JotformPort
     ):
         self.jotform_guard = jotform_guard
         self.business_guard = business_guard
@@ -107,7 +109,8 @@ class JotformService:
 
     def update_jotform_form(self, form_data: JotformForm, current_user: User) -> JotformForm:
         form = self.jotform_guard.ensure_form_exists(form_data.id)
-        self.business_guard.ensure_admin_or_owner(form.business_id, current_user.id)
+        credential = self.jotform_guard.ensure_credential_exists(form_data.credential_id)
+        self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
 
         form.name = form_data.name
         form.member_assigns = form_data.member_assigns

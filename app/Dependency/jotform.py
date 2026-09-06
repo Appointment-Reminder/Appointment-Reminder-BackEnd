@@ -1,9 +1,12 @@
 from dishka import Scope, provide, Provider
 from sqlmodel import Session
 
+from app.adapters.jotform.APIJotformPort import JotformClientAdapter
 from app.adapters.sql_model_adapter.jotform.adapters.sql_model_jotform_repository_adapter import \
     SQLModelJotformRepositoryAdapter
 from app.domain.Jotform.guard.jotform_guard import JotformGuard
+from app.domain.Jotform.port import jotform_port
+from app.domain.Jotform.port.jotform_port import JotformPort
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
 from app.domain.Jotform.service.jotform_service import JotformService
 from app.domain.business.guard.business_guard import BusinessGuard
@@ -23,16 +26,22 @@ class JotformProvider(Provider):
         return JotformGuard(jotform_repo=repo)
 
     @provide
+    def get_jotform_api(self) -> JotformPort:
+        return JotformClientAdapter();
+    @provide
     def get_jotform_service(self,
                             business_guard: BusinessGuard,
                             jotform_guard: JotformGuard,
                             package_repo: PackageRepositoryPort,
                             member_repo: BusinessMemberRepositoryPort,
-                            jotform_repo: JotformRepositoryPort) -> JotformService:
+                            jotform_repo: JotformRepositoryPort,
+                            jotform_api: JotformPort,
+                            ) -> JotformService:
         return JotformService(
             business_guard=business_guard,
             jotform_guard=jotform_guard,
             package_repo=package_repo,
             member_repo=member_repo,
-            jotform_repo=jotform_repo
+            jotform_repo=jotform_repo,
+            jotform_api=jotform_api
         )

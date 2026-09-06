@@ -34,7 +34,7 @@ class JotformGuard:
 
     def ensure_category_not_already_mapped(self, business_id: int, category_id: int) -> None:
         """One form = one mapping: block a second form claiming the same category."""
-        existing = self.jotform_repo.get_form_by_category(business_id, category_id)
+        existing = self.jotform_repo.get_form_by_category_id(category_id)
         if existing:
             raise JotformDomainError()
 
