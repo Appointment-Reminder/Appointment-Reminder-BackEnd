@@ -44,7 +44,7 @@ class JotformService:
         self.business_guard.ensure_exists(business_id)
         self.business_guard.ensure_admin_or_owner(business_id, current_user.id)
 
-        return self.jotform_repo.get_credentials_by_business_id(business_id)
+        return self.jotform_repo.get_credential_by_business(business_id)
 
     def update_jotform_credentials(self, data: JotformCredential, current_user: User) -> JotformCredential:
         self.business_guard.ensure_exists(data.business_id)
@@ -66,13 +66,13 @@ class JotformService:
 
 
 
-    def jotform_form_create(self, data: JotformCredential, current_user: User) -> JotformCredential:
-        self.business_guard.ensure_exists(data.business_id)
-        self.business_guard.ensure_admin_or_owner(data.business_id, current_user.id)
+    def jotform_form_create(self, data: JotformForm, current_user: User) -> JotformForm:
+        credential = self.jotform_guard.ensure_credential_exists(credential_id=data.credential_id)
+        self.business_guard.ensure_exists(business_id=credential.business_id)
+        self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
 
         jotform = JotformForm(
             credential_id = data.credential_id,
-            business_id = data.business_id,
             category_id = data.category_id,
             form_id = data.form_id,
             name = data.name,
@@ -84,7 +84,8 @@ class JotformService:
 
     def get_jotform_form_by_id(self, form_id:str, current_user: User) -> JotformForm:
         jotform = self.jotform_guard.ensure_form_exists(form_id)
-        self.business_guard.ensure_admin_or_owner(jotform.business_id, current_user.id)
+        credential = self.jotform_guard.ensure_credential_exists(jotform.credential_id)
+        self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
 
         return jotform
 

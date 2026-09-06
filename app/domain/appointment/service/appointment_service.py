@@ -3,9 +3,10 @@ from typing import List
 from app.domain.appointment.errors.appointment_error import AppointmentError
 from app.domain.appointment.models.appointment_model import Appointment
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
+from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
 from app.domain.user.models.user import User
-from app.services.business.BusinessGuard import BusinessGuard
+
 
 
 class AppointmentService:

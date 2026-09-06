@@ -60,7 +60,7 @@ def _to_domain(row: BusinessMember) -> BusinessMemberEntity:
         is_active = row.is_active,
         created_at = row.created_at,
         user = user_to_domain(row.user),
-        invited_by_user = user_to_domain(row.invited_by_user) ,
+        invited_by_user = user_to_domain(row.invited_by_user) if row.invited_by_user else None ,
     )
 
 def _apply_to_sql(sql: BusinessMember, entity: BusinessMemberEntity ) -> None:

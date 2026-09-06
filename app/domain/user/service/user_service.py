@@ -22,7 +22,7 @@ def create_user( user_in : User, repository: UserRepositoryPort) -> User:
         hashed_password = hash_password(user_in.password),
     )
 
-    repository.create(user)
+    user = repository.create(user)
     return user
 
 def get_user_by_id(user_id: int, repo: UserRepositoryPort) -> User | None:

@@ -19,7 +19,6 @@ class JotformProcessingResult(BaseModel):
 
 class JotformFormCreate(BaseModel):
     credential_id: int
-    business_id: int
     category_id: int
     form_id: str
     name: str
@@ -29,7 +28,6 @@ class JotformFormCreate(BaseModel):
 class JotformFormRead(BaseModel):
     """Read a jotform form"""
     id: int
-    business_id: int
     form_id: str
     name: str
     member_assigns: List[dict]

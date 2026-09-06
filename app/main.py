@@ -3,7 +3,7 @@ import uvicorn
 from dishka import make_container
 from dishka.integrations.fastapi import setup_dishka, FastapiProvider
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
 from sqlmodel import SQLModel
 
@@ -25,8 +25,11 @@ from app.api.v1.userRoutes import userRouter
 from app.api.v1.appointment_routes import appointment_router
 from app.api.v1.business_routes import business_router
 from app.adapters.session import engine
+from app.domain.user.service.user_service import oauth2_bearer
 
-app = FastAPI(title=config.app_name)
+app = FastAPI(
+    title=config.app_name,
+)
 
 container = make_container(
     Infrastructure(),

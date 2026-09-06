@@ -1,7 +1,7 @@
 import httpx
 
-from app.services.jotform.models.jotform_models import JotformForm, JotformQuestion
-from app.services.jotform.ports.jotform_port import JotformPort
+from app.domain.Jotform.models.jotform_form_model import JotformForm, JotformQuestion
+from app.domain.Jotform.port.jotform_port import JotformPort
 
 
 class JotformClientAdapter(JotformPort):

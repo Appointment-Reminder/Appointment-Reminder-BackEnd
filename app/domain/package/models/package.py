@@ -4,7 +4,6 @@ from typing import Optional
 
 @dataclass
 class Package:
-    id: Optional[int]
     business_id: int
     category_id: int
     name: str
@@ -12,3 +11,4 @@ class Package:
     is_active: bool
 
     jotform_alias: str
+    id: Optional[int] = None

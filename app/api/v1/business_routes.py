@@ -1,8 +1,8 @@
 from typing import List, Optional
 
 from dishka import FromDishka
-from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter
+from dishka.integrations.fastapi import DishkaRoute, DishkaSyncRoute
+from fastapi import APIRouter, Depends
 
 from app.api.models.Member.business_member_commissions import BusinessMemberCommissionsRead, \
     BusinessMemberCommissionsCreate, BusinessMemberCommissionsUpdate
@@ -17,10 +17,12 @@ from app.api.models.package.package_price_model import PackagePriceCreate, Packa
 from app.domain.business.service.business_service import BusinessService
 from app.domain.package.service.package_service import PackageService
 from app.domain.user.models.user import User
+from app.domain.user.service.user_service import oauth2_bearer
 
 business_router = APIRouter(
     prefix="/business",
-    route_class=DishkaRoute
+    route_class=DishkaSyncRoute,
+    dependencies=[Depends(oauth2_bearer)]
 )
 
 @business_router.post("/", response_model=BusinessRead, status_code=201, tags=["business"])

@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated
 
-from dishka.integrations.fastapi import FromDishka, inject, DishkaRoute
+from dishka.integrations.fastapi import FromDishka, inject, DishkaSyncRoute
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -18,11 +18,10 @@ from app.domain.user.service import user_service
 userRouter = APIRouter(
     prefix="/users",
     tags=["user"],
-    route_class=DishkaRoute,
+    route_class=DishkaSyncRoute,
 )
 
 @userRouter.post("/token", response_model=Token)
-@inject
 def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     repo: FromDishka[UserRepositoryPort],
@@ -40,7 +39,7 @@ def create_user(user_in: UserCreate, repo: FromDishka[UserRepositoryPort]):
         raise HTTPException(status_code=400, detail="Email already registered")
     return user_service.create_user(user_in, repo)
 
-@userRouter.get("/me", response_model=UserRead)
+@userRouter.get("/me", response_model=UserRead, dependencies=[Depends(user_service.oauth2_bearer)])
 def get_me(current_user: FromDishka[User]):
     return current_user
 
