@@ -15,6 +15,7 @@ class Appointment(SQLModel, table=True):
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
     package_id: int = Field(foreign_key='package.id')
     package_price_id: int = Field(foreign_key='package_price.id')
+    form_id: int = Field(foreign_key='forms.id')
 
     # client information
     client_name: str
