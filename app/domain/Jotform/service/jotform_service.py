@@ -28,6 +28,7 @@ class JotformService:
         self.member_repo = member_repo
         self.package_repo = package_repo
         self.jotform_repo = jotform_repo
+        self.jotform_api = jotform_api
 
     def create_jotform_credential(self, data: JotformCredential, current_user: User) -> JotformCredential:
         """ Create a new jotform credential  only for admin and owner"""
@@ -123,3 +124,9 @@ class JotformService:
         form = self.jotform_guard.ensure_form_exists(form_id)
         self.business_guard.ensure_admin_or_owner(form.business_id, current_user.id)
         return self.jotform_repo.delete_form(form)
+
+    async def get_jotform_list_for_credential(self, credential_id, current_user):
+        """Check that credential exist , Check that the user is admin or owner of the credential id business """
+        credential = self.jotform_guard.ensure_credential_exists(credential_id= credential_id)
+        self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
+        return await self.jotform_api.get_list_forms(credential.api_key)
