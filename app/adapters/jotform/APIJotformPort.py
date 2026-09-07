@@ -8,7 +8,7 @@ class JotformClientAdapter(JotformPort):
     BASE_URL = "https://eu-api.jotform.com"
 
     async def get_list_forms(self, api_key:str) -> list[JotformForm]:
-        r = httpx.AsyncClient.get(f"{self.BASE_URL}/user/forms", params={"apiKey": api_key})
+        r = await httpx.AsyncClient.get(f"{self.BASE_URL}/user/forms", params={"apiKey": api_key})
         r.raise_for_status()
         return [JotformForm(**f) for f in r.json()["content"]]
 

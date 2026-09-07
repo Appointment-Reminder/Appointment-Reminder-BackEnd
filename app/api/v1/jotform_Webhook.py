@@ -67,6 +67,9 @@ async def create_jotform_credentials(
 async def get_jotform_credentials(business_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
     return service.get_jotform_credentials(business_id, current_user)
 
+@jotform_router.get("/jotform/credentials/{credential_id}/forms", status_code=200, response_model=List[JotformFormRead])
+async def get_jotform_list_for_credential(credential_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
+    return await service.get_jotform_list_for_credential(credential_id, current_user)
 @jotform_router.patch("/jotform/credentials", response_model=JotformCredentialRead)
 async def update_jotform_credentials(credential: JotformCredentialUpdate, service: FromDishka[JotformService], current_user: FromDishka[User]):
     return service.update_jotform_credentials(credential, current_user)
