@@ -14,12 +14,12 @@ class JotformCredential:
 
 @dataclass
 class JotformForm:
-    credential_id: int
-    category_id: int
     form_id: str
     name: str
-    member_assigns: List[int]
-    field_mapping: List[dict]
+    status: str = None
+    url: str = None
+    credential_id: int = None
+    field_mapping: List[dict] = None
     webhook_token: Optional[str] = None
     is_active: bool = True
     created_at: datetime = datetime.now()
@@ -30,4 +30,10 @@ class JotformQuestion:
     id: int
     name: str
 
+@dataclass
+class JotformFormAssignment:
+    form_id: int
+    business_member_id: int
+    category_id: int
+    id: Optional[int] = None
 

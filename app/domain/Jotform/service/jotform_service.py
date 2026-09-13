@@ -4,7 +4,7 @@ from app.domain.Jotform.errors.jotform_errors import JotformDomainError
 from app.domain.Jotform.guard.jotform_guard import JotformGuard
 from app.domain.Jotform.port.jotform_port import JotformPort
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
-from app.domain.Jotform.models.jotform_form_model import JotformForm, JotformCredential
+from app.domain.Jotform.models.jotform_form_model import JotformForm, JotformCredential, JotformFormAssignment
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
 from app.domain.package.port.package_repository_port import PackageRepositoryPort
@@ -67,8 +67,6 @@ class JotformService:
 
         return self.jotform_repo.delete_credential(credential.id)
 
-
-
     def jotform_form_create(self, data: JotformForm, current_user: User) -> JotformForm:
         credential = self.jotform_guard.ensure_credential_exists(credential_id=data.credential_id)
         self.business_guard.ensure_exists(business_id=credential.business_id)
@@ -94,9 +92,8 @@ class JotformService:
 
     def get_jotform_form_by_business_id(self, business_id: int, current_user: User) -> List[JotformForm]:
         self.business_guard.ensure_exists(business_id)
-        jotform = self.jotform_repo.get_form_by_business_id(business_id)
         self.business_guard.ensure_admin_or_owner(business_id, current_user.id)
-
+        jotform = self.jotform_repo.get_forms_by_business_id(business_id)
         return jotform
 
     def get_jotform_form_by_member_and_category(self, business_id:int, member_id:int, category_id:int, current_user: User) -> JotformForm:
@@ -107,6 +104,31 @@ class JotformService:
         if not jotform:
             raise JotformDomainError()
         return jotform
+
+    async def get_forms_from_api_for_credential(self, credential: JotformCredential) -> List[JotformForm]:
+        result = await self.jotform_api.get_list_forms(credential.api_key)
+        return result
+
+    async def update_jotform_form_list(self, business_id: int, current_user: User) -> List[JotformForm]:
+        """Update the jotform form returning the new created form"""
+        self.business_guard.ensure_exists(business_id=business_id)
+        self.business_guard.ensure_admin_or_owner(business_id, current_user.id)
+        credential_list = self.get_jotform_credentials(business_id=business_id, current_user=current_user)
+
+        result_list = []
+
+        for credential in credential_list:
+            existing_ids = {f.form_id for f in self.jotform_repo.get_forms_by_business_id(credential.business_id)}
+            forms = await self.get_forms_from_api_for_credential(credential)
+
+            for form in forms:
+                if form.form_id in existing_ids:
+                    continue
+
+                form.credential_id = credential.id
+                result_list.append(self.jotform_repo.create_form(form))
+
+        return result_list
 
     def update_jotform_form(self, form_data: JotformForm, current_user: User) -> JotformForm:
         form = self.jotform_guard.ensure_form_exists(form_data.id)
@@ -122,11 +144,27 @@ class JotformService:
 
     def delete_jotform_form(self, form_id: int, current_user: User) -> bool:
         form = self.jotform_guard.ensure_form_exists(form_id)
-        self.business_guard.ensure_admin_or_owner(form.business_id, current_user.id)
+        credential = self.jotform_guard.ensure_credential_exists(form.credential_id)
+        self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
         return self.jotform_repo.delete_form(form)
 
-    async def get_jotform_list_for_credential(self, credential_id, current_user):
+    def get_jotform_list_for_credential(self, credential_id, current_user):
         """Check that credential exist , Check that the user is admin or owner of the credential id business """
         credential = self.jotform_guard.ensure_credential_exists(credential_id= credential_id)
         self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
-        return await self.jotform_api.get_list_forms(credential.api_key)
+        return self.jotform_repo.get_form_by_credential_id(credential_id)
+
+    def assign_jotform_form_to_member_and_category(self, jotform_assignment: JotformFormAssignment, current_user: User) -> JotformForm:
+        form = self.jotform_guard.ensure_form_exists(jotform_assignment.form_id)
+        self.jotform_guard.ensure_jotform_assignment_doesnt_exist(category_id=jotform_assignment.category_id, form_id=jotform_assignment.form_id, business_member_id=jotform_assignment.business_member_id)
+        cred = self.jotform_guard.ensure_credential_exists(form.credential_id)
+        self.business_guard.ensure_admin_or_owner(cred.business_id, current_user.id)
+
+        assignment = JotformFormAssignment(
+            business_member_id=jotform_assignment.business_member_id,
+            form_id=jotform_assignment.form_id,
+            category_id=jotform_assignment.category_id,
+        )
+        return self.jotform_repo.create_assignment(assignment)
+
+

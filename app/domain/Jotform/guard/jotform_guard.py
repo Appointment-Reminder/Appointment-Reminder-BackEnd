@@ -44,3 +44,11 @@ class JotformGuard:
         if not form:
             raise JotformDomainError()
         return form
+
+    def ensure_jotform_assignment_doesnt_exist(self, category_id: int, business_member_id: int, form_id: int) -> None:
+        form_assignments = self.jotform_repo.get_assignments_for_form(form_id)
+        for assignment in form_assignments:
+            if (assignment.business_member_id == business_member_id
+                and assignment.form_id == form_id
+                and assignment.category_id == category_id):
+                raise JotformDomainError()
