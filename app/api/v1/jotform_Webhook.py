@@ -5,7 +5,8 @@ from dishka.integrations.fastapi import DishkaRoute, DishkaSyncRoute
 from fastapi import APIRouter, Depends
 
 from app.api.models.Jotform.jotform_model import JotformCredentialRead, JotformCredentialCreate, \
-    JotformCredentialUpdate, JotformFormCreate, JotformFormRead, JotformFormUpdate
+    JotformCredentialUpdate, JotformFormCreate, JotformFormRead, JotformFormUpdate, JotformAssignmentRead, \
+    JotformAssignmentCreate
 from app.domain.user.models.user import User
 from app.domain.Jotform.service.jotform_service import JotformService
 from app.domain.user.service.user_service import oauth2_bearer
@@ -69,7 +70,15 @@ async def get_jotform_credentials(business_id: int, service: FromDishka[JotformS
 
 @jotform_router.get("/jotform/credentials/{credential_id}/forms", status_code=200, response_model=List[JotformFormRead])
 async def get_jotform_list_for_credential(credential_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
-    return await service.get_jotform_list_for_credential(credential_id, current_user)
+    return service.get_jotform_list_for_credential(credential_id, current_user)
+
+@jotform_router.get("business/{business_id}/jotform/forms", status_code=200, response_model=List[JotformFormRead])
+async def get_jotform_list_for_business(business_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
+    return service.get_jotform_form_by_business_id(business_id, current_user)
+
+@jotform_router.post("business/{business_id}/jotform/forms/update", status_code=200, response_model=List[JotformFormRead])
+async def update_jotform_available_list_for_business(business_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
+    return await service.update_jotform_form_list(business_id=business_id,current_user=current_user)
 @jotform_router.patch("/jotform/credentials", response_model=JotformCredentialRead)
 async def update_jotform_credentials(credential: JotformCredentialUpdate, service: FromDishka[JotformService], current_user: FromDishka[User]):
     return service.update_jotform_credentials(credential, current_user)
@@ -77,7 +86,6 @@ async def update_jotform_credentials(credential: JotformCredentialUpdate, servic
 @jotform_router.delete("/jotform/credentials/{credential_id}")
 async def delete_jotform_credentials(credential_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
     return service.delete_jotform_credentials(credential_id, current_user)
-
 #FORM
 @jotform_router.post("/jotform/form", status_code=201, response_model=JotformFormCreate)
 async def jotform_form_create(form_data: JotformFormCreate, service: FromDishka[JotformService], current_user: FromDishka[User]):
@@ -104,5 +112,8 @@ async def jotform_form_delete(form_id: int, service: FromDishka[JotformService],
     return service.delete_jotform_form(form_id, current_user)
 
 
+@jotform_router.post("/jotform/form/assign", status_code=201, response_model=JotformAssignmentRead)
+async def assign_jotform(form_assignment : JotformAssignmentCreate, service: FromDishka[JotformService], current_user: FromDishka[User]):
+    return service.assign_jotform_form_to_member_and_category(form_assignment, current_user)
 
 

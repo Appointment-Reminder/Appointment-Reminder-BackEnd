@@ -1,12 +1,17 @@
 from typing import Optional, List
 
 from sqlmodel import select, Session
+from urllib3.util import url
 
 from app.domain.Jotform.models.jotform_form_model import JotformForm as JotformFormEntity, JotformCredential as JotformCredentialEntity
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
 
-from app.adapters.sql_model_adapter.jotform.models.jotform import JotformCredential as JotformCredentialSQL, JotformForm as JotformFormSQL
+from app.domain.Jotform.models.jotform_form_model import JotformFormAssignment as JotformFormAssignmentEntity
+
+from app.adapters.sql_model_adapter.jotform.models.jotform import JotformCredential as JotformCredentialSQL, \
+    JotformForm as JotformFormSQL, jotform_assignment_to_domain
 from app.adapters.sql_model_adapter.jotform.models.jotform import jotform_credential_apply_sql,jotform_credential_to_domain, jotform_form_apply_sql, jotform_form_to_domain
+from app.adapters.sql_model_adapter.jotform.models.jotform import JotformFormAssignment as JotformFormAssignmentSQL
 
 class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
 
@@ -54,10 +59,10 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
     def create_form(self, form: JotformFormEntity) -> JotformFormEntity:
         sql_obj = JotformFormSQL(
             credential_id=form.credential_id,
-            category_id=form.category_id,
             form_id=form.form_id,
             name=form.name,
-            member_assigns=form.member_assigns,
+            url = form.url,
+            status = form.status,
             field_mapping=form.field_mapping,
             is_active=form.is_active,
             webhook_token=form.webhook_token,
@@ -80,7 +85,7 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
 
         return jotform_form_to_domain(result) if result else None
 
-    def get_form_by_business_id(self, business_id: int) -> List[JotformFormEntity]:
+    def get_forms_by_business_id(self, business_id: int) -> List[JotformFormEntity]:
         result = self.db.exec(
             select(JotformFormSQL)
             .join(JotformCredentialSQL, JotformCredentialSQL.id == JotformFormSQL.credential_id)
@@ -89,23 +94,12 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
 
         return [jotform_form_to_domain(item) for item in result]
 
-    def get_form_by_category_id(self, category_id: int) -> JotformFormEntity:
+    def get_form_by_credential_id(self, credential_id: int) -> List[JotformFormEntity]:
         result = self.db.exec(
             select(JotformFormSQL)
-            .where(JotformFormSQL.category_id == category_id)
-            .where(JotformFormSQL.is_active == True)
-        ).first()
-        return jotform_form_to_domain(result) if result else None
-
-    def get_form_by_category_and_member(self, category_id: int, member_id: int) -> JotformFormEntity:
-        result = self.db.exec(
-            select(JotformFormSQL)
-            .where(JotformFormSQL.category_id == category_id)
-            .where(JotformFormSQL.member_assigns == member_id)
-            .where(JotformFormSQL.is_active == True)
-        ).first()
-
-        return jotform_form_to_domain(result) if result else None
+            .where(JotformFormSQL.credential_id == credential_id)
+        ).all()
+        return [jotform_form_to_domain(item) for item in result]
 
     def update_form(self, form: JotformFormEntity) -> JotformFormEntity:
         existing = self.db.get(JotformFormSQL, form.id)
@@ -125,3 +119,48 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
         self.db.delete(form)
         self.db.commit()
         return True
+
+    def create_assignment(self, assignment: JotformFormAssignmentEntity) -> JotformFormAssignmentEntity:
+        form_assignment = JotformFormAssignmentSQL(
+            category_id=assignment.category_id,
+            form_id=assignment.form_id,
+            business_member_id= assignment.business_member_id,
+        )
+        self.db.add(form_assignment)
+        self.db.commit()
+        self.db.refresh(form_assignment)
+        return jotform_assignment_to_domain(form_assignment)
+
+    def get_assignment_by_member_and_category(self, business_member_id: int, category_id: int) -> Optional[JotformFormAssignmentEntity]:
+        result = self.db.exec(
+            select(JotformFormAssignmentSQL)
+            .where(JotformFormAssignmentSQL.category_id == category_id)
+            .where(JotformFormAssignmentSQL.business_member_id == business_member_id)
+            .where(JotformFormSQL.is_active == True)
+        ).first()
+        return jotform_assignment_to_domain(result) if result else None
+
+    def get_assignments_for_form(self, form_id: int) -> List[JotformFormAssignmentEntity]:
+        result = self.db.exec(
+            select(JotformFormAssignmentSQL)
+            .where(JotformFormAssignmentSQL.form_id == form_id)
+        ).all()
+        return [jotform_assignment_to_domain(item) for item in result] if result else None
+
+    def delete_assignment(self, assignment_id: int) -> bool:
+        assignment = self.db.get(JotformFormAssignmentSQL, assignment_id)
+        if not assignment:
+            return False
+        self.db.delete(assignment)
+        self.db.commit()
+        return True
+
+    def get_form_by_category_and_member(self, category_id: int, member_id: int) -> Optional[JotformFormEntity]:
+        result = self.db.exec(
+            select(JotformFormSQL)
+            .join(JotformFormAssignmentSQL, JotformFormAssignmentSQL.form_id == JotformFormSQL.id)
+            .where(JotformFormAssignmentSQL.category_id == category_id)
+            .where(JotformFormAssignmentSQL.business_member_id == member_id)
+            .where(JotformFormSQL.is_active == True)
+        ).first()
+        return jotform_form_to_domain(result) if result else None

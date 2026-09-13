@@ -6,7 +6,7 @@ from sqlalchemy import UniqueConstraint, Column
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import SQLModel, Field
 
-from app.domain.Jotform.models.jotform_form_model import JotformCredential as JotformCredentialEntity, JotformForm as JotformFormEntity
+from app.domain.Jotform.models.jotform_form_model import JotformCredential as JotformCredentialEntity, JotformForm as JotformFormEntity, JotformFormAssignment as JotformFormAssignmentEntity
 class JotformCredential(SQLModel, table=True):
     __tablename__ = "jotform_credentials"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -36,12 +36,13 @@ class JotformForm(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     credential_id: int = Field(foreign_key="jotform_credentials.id")
-    category_id: int = Field(foreign_key="package_category.id")
 
     form_id: str
     name: str
+    status: str = Field(default="active")
+    url: str = Field(default=None)
 
-    member_assigns: List[int] = Field(sa_column=Column(JSONB))  # business_member ids
+
     field_mapping: List[dict] = Field(sa_column=Column(JSONB))  # [{target_key, qid, subkey}]
 
     webhook_token: str = Field(default_factory=lambda: secrets.token_urlsafe(32), unique=True, index=True)
@@ -53,10 +54,10 @@ def jotform_form_to_domain(sql: JotformForm) -> JotformFormEntity:
     return JotformFormEntity(
         id=sql.id,
         credential_id=sql.credential_id,
-        category_id=sql.category_id,
         form_id=sql.form_id,
         name=sql.name,
-        member_assigns=sql.member_assigns,
+        status=sql.status,
+        url=sql.url,
         field_mapping=sql.field_mapping,
         webhook_token=sql.webhook_token,
         is_active=sql.is_active,
@@ -65,5 +66,23 @@ def jotform_form_to_domain(sql: JotformForm) -> JotformFormEntity:
 
 def jotform_form_apply_sql(sql: JotformForm, obj: JotformFormEntity) -> None:
     sql.name = obj.name
-    sql.member_assigns = obj.member_assigns
     sql.field_mapping = obj.field_mapping
+
+class JotformFormAssignment(SQLModel, table= True):
+    __tablename__ = "jotform_form_assignments"
+    __table_args__  = (
+        UniqueConstraint("business_member_id", "category_id", name="uq_jotform_form_assignment"),
+    )
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    form_id: int = Field(foreign_key="jotform_forms.id")
+    business_member_id: int = Field(foreign_key="business_members.id")
+    category_id: int = Field(foreign_key="package_category.id")
+
+def jotform_assignment_to_domain(sql: JotformFormAssignment) -> JotformFormAssignmentEntity:
+    return JotformFormAssignmentEntity(
+        id=sql.id,
+        business_member_id=sql.business_member_id,
+        category_id=sql.category_id,
+        form_id=sql.form_id,
+    )

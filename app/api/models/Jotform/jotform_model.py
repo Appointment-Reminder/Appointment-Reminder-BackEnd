@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 
 class JotformWebhookPayload(BaseModel):
@@ -19,10 +19,8 @@ class JotformProcessingResult(BaseModel):
 
 class JotformFormCreate(BaseModel):
     credential_id: int
-    category_id: int
     form_id: str
     name: str
-    member_assigns: List[dict]
     field_mapping: List[dict]
 
 class JotformFormRead(BaseModel):
@@ -30,9 +28,8 @@ class JotformFormRead(BaseModel):
     id: int
     form_id: str
     name: str
-    member_assigns: List[dict]
     webhook_token: str
-    field_mapping: List[dict]
+    field_mapping: Optional[List[dict]]
     created_at: datetime
 
 class JotformFormUpdate(BaseModel):
@@ -62,6 +59,16 @@ class JotformCredentialUpdate(BaseModel):
 
 class JotformCredentialDelete(BaseModel):
     id: int
+
+class JotformAssignmentCreate(BaseModel):
+    form_id: int
+    business_member_id: int
+    category_id: int
+class JotformAssignmentRead(BaseModel):
+    id: int
+    form_id: int
+    business_member_id: int
+    category_id: int
 
 
 
