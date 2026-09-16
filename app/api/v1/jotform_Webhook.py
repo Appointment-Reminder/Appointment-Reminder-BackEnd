@@ -4,9 +4,12 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute, DishkaSyncRoute
 from fastapi import APIRouter, Depends
 
+from app.api.models.Jotform.jotform_field_mapping_model import SubmissionFieldRead, JotformFieldMappingUpdate, \
+    JotformFieldMappingRead
 from app.api.models.Jotform.jotform_model import JotformCredentialRead, JotformCredentialCreate, \
     JotformCredentialUpdate, JotformFormCreate, JotformFormRead, JotformFormUpdate, JotformAssignmentRead, \
     JotformAssignmentCreate
+from app.domain.Jotform.models.jotform_field_mapping import JotformFieldMapping
 from app.domain.user.models.user import User
 from app.domain.Jotform.service.jotform_service import JotformService
 from app.domain.user.service.user_service import oauth2_bearer
@@ -99,9 +102,6 @@ async def jotform_form_read(form_id: int, service: FromDishka[JotformService], c
 async def get_jotform_forms_for_business(business_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
     return service.get_jotform_form_by_business_id(business_id, current_user)
 
-@jotform_router.get("/jotform/form/{member_id}/{category_id}", response_model=JotformFormRead)
-async def get_jotform_forms_for_member_and_category(business_id: int, member_id: int, category_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
-    return service.get_jotform_form_by_member_and_category(business_id=business_id,member_id=member_id, category_id=category_id, current_user=current_user)
 
 @jotform_router.patch("/jotform/form", status_code=200, response_model=JotformFormRead)
 async def jotform_form_update(form_data: JotformFormUpdate, service: FromDishka[JotformService], current_user: FromDishka[User]):
@@ -116,4 +116,29 @@ async def jotform_form_delete(form_id: int, service: FromDishka[JotformService],
 async def assign_jotform(form_assignment : JotformAssignmentCreate, service: FromDishka[JotformService], current_user: FromDishka[User]):
     return service.assign_jotform_form_to_member_and_category(form_assignment, current_user)
 
+@jotform_router.get("/jotform/target-fields", status_code=200, response_model=list[SubmissionFieldRead])
+async def get_submission_target_fields(service: FromDishka[JotformService]):
+    """Static registry of fields the business can map form questions to — no auth-scoping needed, same for every business"""
+    return service.get_submission_field_defs()
+
+@jotform_router.get("/jotform/form/{form_id}/mapping", status_code=200, response_model=list[JotformFieldMappingRead])
+async def get_jotform_field_mapping(form_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
+    print("Getting field mappings")
+    return service.get_field_mappings(form_id=form_id, current_user=current_user)
+
+@jotform_router.put("/jotform/form/{form_id}/mapping", status_code=200, response_model=list[JotformFieldMappingRead])
+async def update_jotform_field_mapping(
+        form_id: int,
+        data: JotformFieldMappingUpdate,
+        service: FromDishka[JotformService],
+        current_user: FromDishka[User]):
+    mappings = [
+        JotformFieldMapping(form_id=form_id, target_key=m.target_key, qid=m.qid, priority=m.priority, subkey=m.subkey)
+        for m in data.mapping
+    ]
+    return service.save_field_mappings(form_id=form_id, mappings=mappings, current_user=current_user)
+
+@jotform_router.get("/jotform/form/{member_id}/{category_id}", response_model=JotformFormRead)
+async def get_jotform_forms_for_member_and_category(business_id: int, member_id: int, category_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
+    return service.get_jotform_form_by_member_and_category(business_id=business_id,member_id=member_id, category_id=category_id, current_user=current_user)
 

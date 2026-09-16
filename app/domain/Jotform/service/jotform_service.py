@@ -171,12 +171,14 @@ class JotformService:
     def save_field_mappings(self, form_id: int, mappings: list[JotformFieldMapping], current_user: User) -> list[
         JotformFieldMapping]:
         form = self.jotform_guard.ensure_form_exists(form_id)
+        print("Saving mappings")
         credential = self.jotform_guard.ensure_credential_exists(form.credential_id)
+        print("Saving mappings")
         self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
-
+        print("Saving mappings")
         self.jotform_guard.ensure_mapping_valid(mappings)
-        self.jotform_guard.ensure_no_duplicate_qid(mappings)
-
+        self.jotform_guard.ensure_no_duplicate_qid(form_id=form_id, mappings=mappings)
+        print("Saving mappings")
         normalized = [
             JotformFieldMapping(
                 form_id=form_id,
@@ -190,10 +192,11 @@ class JotformService:
         return self.jotform_repo.set_field_mappings(form_id, normalized)
 
     def get_field_mappings(self, form_id: int, current_user: User) -> list[JotformFieldMapping]:
+        print("Getting field mappings")
         form = self.jotform_guard.ensure_form_exists(form_id)
         credential = self.jotform_guard.ensure_credential_exists(form.credential_id)
         self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
-
+        print("Getting field mappings")
         return self.jotform_repo.get_field_mappings(form_id)
 
     def resolve_submission(self, form: JotformForm, raw_answers: dict) -> dict:
