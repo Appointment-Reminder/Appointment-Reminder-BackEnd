@@ -1,5 +1,6 @@
 from typing import Protocol, List, Optional
 
+from app.domain.Jotform.models.jotform_field_mapping import JotformFieldMapping
 from app.domain.Jotform.models.jotform_form_model import JotformForm, JotformCredential, JotformFormAssignment
 
 
@@ -38,3 +39,9 @@ class JotformRepositoryPort(Protocol):
     def delete_assignment(self, assignment_id: int) -> bool: ...
 
     def get_form_by_category_and_member(self, category_id: int, member_id: int) -> Optional[JotformForm]: ...
+
+    def set_field_mappings(self, form_id: int, mappings: list[JotformFieldMapping]) -> list[JotformFieldMapping]: ...
+
+    def get_field_mappings(self, form_id: int) -> list[JotformFieldMapping]: ...
+
+    def get_mapping_by_qid(self, form_id: int, qid: str) -> Optional[JotformFieldMapping]: ...
