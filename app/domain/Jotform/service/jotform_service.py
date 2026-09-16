@@ -2,6 +2,7 @@ from typing import List
 
 from app.domain.Jotform.errors.jotform_errors import JotformDomainError
 from app.domain.Jotform.guard.jotform_guard import JotformGuard
+from app.domain.Jotform.models.jotform_field_mapping import JotformFieldMapping, SubmissionFieldDef, SUBMISSION_FIELDS
 from app.domain.Jotform.port.jotform_port import JotformPort
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
 from app.domain.Jotform.models.jotform_form_model import JotformForm, JotformCredential, JotformFormAssignment
@@ -74,10 +75,8 @@ class JotformService:
 
         jotform = JotformForm(
             credential_id = data.credential_id,
-            category_id = data.category_id,
             form_id = data.form_id,
             name = data.name,
-            member_assigns = data.member_assigns,
             field_mapping = data.field_mapping,
         )
 
@@ -166,5 +165,63 @@ class JotformService:
             category_id=jotform_assignment.category_id,
         )
         return self.jotform_repo.create_assignment(assignment)
+
+    def get_submission_field_defs(self) -> List[SubmissionFieldDef]:
+        return SUBMISSION_FIELDS
+    def save_field_mappings(self, form_id: int, mappings: list[JotformFieldMapping], current_user: User) -> list[
+        JotformFieldMapping]:
+        form = self.jotform_guard.ensure_form_exists(form_id)
+        credential = self.jotform_guard.ensure_credential_exists(form.credential_id)
+        self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
+
+        self.jotform_guard.ensure_mapping_valid(mappings)
+        self.jotform_guard.ensure_no_duplicate_qid(mappings)
+
+        normalized = [
+            JotformFieldMapping(
+                form_id=form_id,
+                target_key=m.target_key,
+                qid=m.qid,
+                subkey=m.subkey,
+                priority=m.priority,
+            )
+            for m in mappings
+        ]
+        return self.jotform_repo.set_field_mappings(form_id, normalized)
+
+    def get_field_mappings(self, form_id: int, current_user: User) -> list[JotformFieldMapping]:
+        form = self.jotform_guard.ensure_form_exists(form_id)
+        credential = self.jotform_guard.ensure_credential_exists(form.credential_id)
+        self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
+
+        return self.jotform_repo.get_field_mappings(form_id)
+
+    def resolve_submission(self, form: JotformForm, raw_answers: dict) -> dict:
+        mappings = self.jotform_repo.get_field_mappings(form.id)
+
+        by_key: dict[str, list[JotformFieldMapping]] = {}
+        for m in mappings:
+            by_key.setdefault(m.target_key, []).append(m)
+
+        print(f"Resolving submission for mapping {mappings} by key {by_key}")
+        resolved: dict = {}
+        for field in SUBMISSION_FIELDS:
+            value = None
+            print(f"Process field {field} with rawAnswer {raw_answers}")
+            for m in sorted(by_key.get(field.key, []), key=lambda m: m.priority):
+                print(f"Process m {m} with rawAnswer {raw_answers}")
+                raw = raw_answers.get(m.qid, {}).get("answer")
+                if m.subkey and isinstance(raw, dict):
+                    raw = raw.get(m.subkey)
+                if raw not in (None, "", []):
+                    value = raw
+                    break
+
+            if field.required and value is None:
+                raise JotformDomainError()
+
+            resolved[field.key] = value
+
+        return resolved
 
 

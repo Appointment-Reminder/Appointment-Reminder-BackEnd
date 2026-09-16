@@ -1,17 +1,21 @@
 from typing import Optional, List
 
+from sqlalchemy import delete
 from sqlmodel import select, Session
 from urllib3.util import url
 
 from app.domain.Jotform.models.jotform_form_model import JotformForm as JotformFormEntity, JotformCredential as JotformCredentialEntity
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
-
 from app.domain.Jotform.models.jotform_form_model import JotformFormAssignment as JotformFormAssignmentEntity
+from app.domain.Jotform.models.jotform_field_mapping import JotformFieldMapping as JotformFieldMappingEntity
 
 from app.adapters.sql_model_adapter.jotform.models.jotform import JotformCredential as JotformCredentialSQL, \
     JotformForm as JotformFormSQL, jotform_assignment_to_domain
 from app.adapters.sql_model_adapter.jotform.models.jotform import jotform_credential_apply_sql,jotform_credential_to_domain, jotform_form_apply_sql, jotform_form_to_domain
 from app.adapters.sql_model_adapter.jotform.models.jotform import JotformFormAssignment as JotformFormAssignmentSQL
+from app.adapters.sql_model_adapter.jotform.models.jotform_field_mapping import \
+    JotformFieldMapping as JotformFieldMappingSQL, mapping_to_domain
+
 
 class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
 
@@ -164,3 +168,42 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
             .where(JotformFormSQL.is_active == True)
         ).first()
         return jotform_form_to_domain(result) if result else None
+
+    def set_field_mappings(self, form_id: int, mappings: list[JotformFieldMappingEntity]) -> list[
+        JotformFieldMappingEntity]:
+        self.db.exec(
+            delete(JotformFieldMappingSQL).where(JotformFieldMappingSQL.form_id == form_id)
+        )
+
+        rows = [
+            JotformFieldMappingSQL(
+                form_id=form_id,
+                target_key=m.target_key,
+                qid=m.qid,
+                subkey=m.subkey,
+                priority=m.priority,
+            )
+            for m in mappings
+        ]
+        self.db.add_all(rows)
+        self.db.commit()
+        for row in rows:
+            self.db.refresh(row)
+
+        return [mapping_to_domain(row) for row in rows]
+
+    def get_field_mappings(self, form_id: int) -> list[JotformFieldMappingEntity]:
+        result = self.db.exec(
+            select(JotformFieldMappingSQL)
+            .where(JotformFieldMappingSQL.form_id == form_id)
+            .order_by(JotformFieldMappingSQL.target_key, JotformFieldMappingSQL.priority)
+        ).all()
+        return [mapping_to_domain(row) for row in result]
+
+    def get_mapping_by_qid(self, form_id: int, qid: str) -> Optional[JotformFieldMappingEntity]:
+        result = self.db.exec(
+            select(JotformFieldMappingSQL)
+            .where(JotformFieldMappingSQL.form_id == form_id)
+            .where(JotformFieldMappingSQL.qid == qid)
+        ).first()
+        return mapping_to_domain(result) if result else None
