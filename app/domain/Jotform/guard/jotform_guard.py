@@ -1,7 +1,9 @@
+from typing import Optional
+
 from app.domain.Jotform.errors.jotform_errors import JotformDomainError
 from app.domain.Jotform.models.jotform_field_mapping import JotformFieldMapping, SUBMISSION_FIELD_KEYS
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
-from app.domain.Jotform.models.jotform_form_model import JotformForm, JotformCredential
+from app.domain.Jotform.models.jotform_form_model import JotformForm, JotformCredential, JotformFormAssignment
 
 
 class JotformGuard:
@@ -59,7 +61,7 @@ class JotformGuard:
             if m.target_key not in SUBMISSION_FIELD_KEYS:
                 raise JotformDomainError()
 
-    def ensure_no_duplicate_qid(self, form_id: int, mappings: list[JotformFieldMapping]) -> None:
+    def ensure_no_duplicate_qid(self, mappings: list[JotformFieldMapping]) -> None:
         seen_qids = set()
         for m in mappings:
             key = (m.qid, m.subkey)
@@ -74,3 +76,7 @@ class JotformGuard:
             if pk in seen_priority:
                 raise JotformDomainError()
             seen_priority.add(pk)
+
+    def resolve_assignment_or_unknown(self, form_id: int, category_id: int) -> Optional[JotformFormAssignment]:
+        """None means unresolved (no assignment, or ambiguous multiple) — caller creates an unassigned appointment."""
+        return self.jotform_repo.get_assignment_by_form_and_category(form_id, category_id)

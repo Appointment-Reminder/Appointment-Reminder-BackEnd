@@ -16,6 +16,7 @@ from app.Dependency.infrastructure import Infrastructure, DbProvider
 from app.Dependency.jotform import JotformProvider
 from app.Dependency.package import PackageProvider
 from app.Dependency.user import UserProvider
+from app.api.v1.jotform_public_webhook import jotform_public_router
 
 from app.domain.core.config import config
 
@@ -48,6 +49,7 @@ app.include_router(userRouter)
 app.include_router(jotform_router)
 app.include_router(appointment_router)
 app.include_router(business_router)
+app.include_router(jotform_public_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[

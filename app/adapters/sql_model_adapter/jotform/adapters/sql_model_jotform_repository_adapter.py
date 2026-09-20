@@ -207,3 +207,16 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
             .where(JotformFieldMappingSQL.qid == qid)
         ).first()
         return mapping_to_domain(result) if result else None
+
+    def get_assignment_by_form_and_category(self, form_id: int, category_id: int) -> Optional[
+        JotformFormAssignmentEntity]:
+        results = self.db.exec(
+            select(JotformFormAssignmentSQL)
+            .where(JotformFormAssignmentSQL.form_id == form_id)
+            .where(JotformFormAssignmentSQL.category_id == category_id)
+        ).all()
+
+        if len(results) != 1:
+            return None
+
+        return jotform_assignment_to_domain(results[0])

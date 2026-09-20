@@ -34,6 +34,7 @@ def _apply_sql(sql: Package, obj: PackageEntity) -> None:
     sql.category_id = obj.category_id
     sql.name = obj.name
     sql.description = obj.description
+    sql.jotform_alias = obj.jotform_alias
 
 
 

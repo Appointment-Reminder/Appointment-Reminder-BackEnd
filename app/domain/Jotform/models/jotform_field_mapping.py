@@ -36,6 +36,7 @@ SUBMISSION_FIELDS: list[SubmissionFieldDef] = [
     SubmissionFieldDef("referral_source", "Where Did You Find Us", FieldType.TEXT),
     SubmissionFieldDef("add_ons", "Add Ons", FieldType.LIST),
     SubmissionFieldDef("guest_count", "Number Of People", FieldType.NUMBER),
+    SubmissionFieldDef("client_email", "Client Email", FieldType.TEXT, required=True),
 ]
 
 SUBMISSION_FIELD_KEYS: set[str] = {f.key for f in SUBMISSION_FIELDS}

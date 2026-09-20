@@ -4,6 +4,11 @@ from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 
 
+class JotformQuestionRead(BaseModel):
+    id: str
+    name: str
+    options: list[str] = []
+
 class JotformWebhookPayload(BaseModel):
     """Schema for incoming hotform webhook"""
     submissionID: str
@@ -30,7 +35,11 @@ class JotformFormRead(BaseModel):
     name: str
     webhook_token: str
     field_mapping: Optional[List[dict]]
+    questions: List[JotformQuestionRead] = []
     created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 class JotformFormUpdate(BaseModel):
     id: int
@@ -51,6 +60,7 @@ class JotformCredentialRead(BaseModel):
     label: str
     api_key: str
     created_at: datetime
+    questions: List[dict]
 
 class JotformCredentialUpdate(BaseModel):
     id:int

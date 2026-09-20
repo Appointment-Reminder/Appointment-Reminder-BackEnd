@@ -68,7 +68,17 @@ class PackageService:
         self.business_guard.ensure_admin_or_owner(data.business_id, current_user.id)
         self.packages_guard.ensure_category_exist(data.category_id)
 
-        return self.package_repo.update_package(data)
+        normalized = Package(
+            id=data.id,
+            business_id=data.business_id,
+            category_id=data.category_id,
+            name=data.name,
+            description=data.description,
+            is_active=data.is_active,
+            jotform_alias=data.jotform_alias.strip().replace("\u00a0",
+                                                             " ") if data.jotform_alias else data.jotform_alias,
+        )
+        return self.package_repo.update_package(normalized)
 
     def delete(self, package_id: int, current_user: User) -> Package:
         package = self.packages_guard.ensure_package_exist(package_id)

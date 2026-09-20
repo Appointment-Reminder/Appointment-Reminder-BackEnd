@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, List
 
@@ -11,6 +11,11 @@ class JotformCredential:
     id: Optional[int] = None
     created_at: datetime = datetime.now()
 
+@dataclass
+class JotformQuestion:
+    id: int
+    name: str
+    options: list[str] = field(default_factory=list)
 
 @dataclass
 class JotformForm:
@@ -23,12 +28,14 @@ class JotformForm:
     webhook_token: Optional[str] = None
     is_active: bool = True
     created_at: datetime = datetime.now()
+    questions: List[JotformQuestion] = field(default_factory=list)
     id: Optional[int] = None
 
 @dataclass
 class JotformQuestion:
     id: int
     name: str
+    options: list[str] = field(default_factory=list)
 
 @dataclass
 class JotformFormAssignment:
@@ -36,4 +43,6 @@ class JotformFormAssignment:
     business_member_id: int
     category_id: int
     id: Optional[int] = None
+
+
 

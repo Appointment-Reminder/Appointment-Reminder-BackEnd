@@ -45,3 +45,7 @@ class JotformRepositoryPort(Protocol):
     def get_field_mappings(self, form_id: int) -> list[JotformFieldMapping]: ...
 
     def get_mapping_by_qid(self, form_id: int, qid: str) -> Optional[JotformFieldMapping]: ...
+
+    def get_assignment_by_form_and_category(self, form_id: int, category_id: int) -> Optional[JotformFormAssignment]:
+        """Returns the assignment only when exactly one member is assigned to this form+category.
+        Returns None when zero OR multiple assignments exist — both cases require manual resolution."""

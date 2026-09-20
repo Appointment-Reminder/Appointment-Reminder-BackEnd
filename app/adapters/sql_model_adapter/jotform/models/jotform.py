@@ -6,7 +6,10 @@ from sqlalchemy import UniqueConstraint, Column
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import SQLModel, Field
 
-from app.domain.Jotform.models.jotform_form_model import JotformCredential as JotformCredentialEntity, JotformForm as JotformFormEntity, JotformFormAssignment as JotformFormAssignmentEntity
+from app.domain.Jotform.models.jotform_form_model import JotformCredential as JotformCredentialEntity, \
+    JotformForm as JotformFormEntity, JotformFormAssignment as JotformFormAssignmentEntity, JotformQuestion
+
+
 class JotformCredential(SQLModel, table=True):
     __tablename__ = "jotform_credentials"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -40,7 +43,7 @@ class JotformForm(SQLModel, table=True):
     form_id: str
     name: str
     status: str = Field(default="active")
-    url: str = Field(default=None)
+    url: Optional[str] = Field(default=None)
 
 
     field_mapping: List[dict] = Field(sa_column=Column(JSONB))  # [{target_key, qid, subkey}]
@@ -48,6 +51,7 @@ class JotformForm(SQLModel, table=True):
     webhook_token: str = Field(default_factory=lambda: secrets.token_urlsafe(32), unique=True, index=True)
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    questions: List[dict] = Field(default_factory=list, sa_column=Column(JSONB))
 
 
 def jotform_form_to_domain(sql: JotformForm) -> JotformFormEntity:
@@ -62,11 +66,13 @@ def jotform_form_to_domain(sql: JotformForm) -> JotformFormEntity:
         webhook_token=sql.webhook_token,
         is_active=sql.is_active,
         created_at=sql.created_at,
+        questions=[JotformQuestion(id=q["id"], name=q["name"]) for q in sql.questions] if sql.questions else [],
     )
 
 def jotform_form_apply_sql(sql: JotformForm, obj: JotformFormEntity) -> None:
     sql.name = obj.name
     sql.field_mapping = obj.field_mapping
+    sql.questions = [{"id": q.id, "name": q.name} for q in obj.questions]
 
 class JotformFormAssignment(SQLModel, table= True):
     __tablename__ = "jotform_form_assignments"
