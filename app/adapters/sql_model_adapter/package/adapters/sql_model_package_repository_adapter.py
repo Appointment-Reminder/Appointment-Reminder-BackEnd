@@ -1,5 +1,6 @@
 from typing import Optional, List
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlmodel import select
 
@@ -118,3 +119,17 @@ class SQLModelPackageRepositoryAdapter(PackageRepositoryPort):
     def get_category_by_id(self, category_id: int) -> Optional[PackageCategoryEntity]:
         result = self.db.get(PackageCategorySQL, category_id)
         return package_category_to_domain(result) if result else None
+
+    def find_package_by_submission_alias(self, business_id: int, alias_raw_value: str) -> Optional[PackageEntity]:
+        normalized = alias_raw_value.strip().replace("\u00a0", " ")
+
+        results = self.db.exec(
+            select(PackageSQL)
+            .where(PackageSQL.business_id == business_id)
+            .where(func.replace(PackageSQL.jotform_alias, "\u00a0", " ") == normalized)
+        ).all()
+
+        if len(results) != 1:
+            return None
+
+        return package_to_domain(results[0])

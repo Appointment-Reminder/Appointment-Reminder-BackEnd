@@ -102,6 +102,36 @@ def minimal_fields_adds_on_list():
     with patch("app.domain.Jotform.service.jotform_service.SUBMISSION_FIELDS", fields):
         yield fields
 
+@pytest.fixture
+def required_fields():
+    """Patch SUBMISSION_FIELDS as imported into jotform_service, not one required field to avoid noise in unrelated tests."""
+    fields = [
+        SubmissionFieldDef("appointment_date", "Appointment Date", FieldType.DATE, required=True),
+        SubmissionFieldDef("package", "Package Chosen", FieldType.TEXT, required=True),
+        SubmissionFieldDef("client_name", "Client Name", FieldType.TEXT, required=True),
+        SubmissionFieldDef("referral_source", "Where Did You Find Us", FieldType.TEXT),
+    ]
+    with patch("app.domain.Jotform.service.jotform_service.SUBMISSION_FIELDS", fields):
+        yield fields
+
+@pytest.fixture
+def Optional_fields():
+    """Patch SUBMISSION_FIELDS as imported into jotform_service, not one required field to avoid noise in unrelated tests."""
+    fields = [
+        SubmissionFieldDef("appointment_date", "Appointment Date", FieldType.DATE, required=True),
+        SubmissionFieldDef("package", "Package Chosen", FieldType.TEXT, required=True),
+        SubmissionFieldDef("privacy_opt_out", "Privacy Opt Out", FieldType.BOOL),
+        SubmissionFieldDef("client_name", "Client Name", FieldType.TEXT, required=True),
+        SubmissionFieldDef("client_source_location", "Where Client Is From", FieldType.TEXT),
+        SubmissionFieldDef("referral_source", "Where Did You Find Us", FieldType.TEXT),
+        SubmissionFieldDef("add_ons", "Add Ons", FieldType.LIST),
+        SubmissionFieldDef("guest_count", "Number Of People", FieldType.NUMBER),
+    ]
+    with patch("app.domain.Jotform.service.jotform_service.SUBMISSION_FIELDS", fields):
+        yield fields
+
+
+
 def test_create_credential_requires_admin(service, user):
     service.business_guard.ensure_admin_or_owner.side_effect = BusinessError()
     data = JotformCredential(business_id=1, label="l", api_key="k")
@@ -209,7 +239,7 @@ class TestSaveFieldMappings:
         jotform_guard.ensure_credential_exists.assert_called_once_with(credential.business_id if False else form.credential_id)
         business_guard.ensure_admin_or_owner.assert_called_once_with(credential.business_id, current_user.id)
         jotform_guard.ensure_mapping_valid.assert_called_once_with(mappings)
-        jotform_guard.ensure_no_duplicate_qid.assert_called_once_with(mappings)
+        jotform_guard.ensure_no_duplicate_qid.assert_called_once_with(mappings=mappings)
         jotform_repo.set_field_mappings.assert_called_once()
         assert result == mappings
 
@@ -305,7 +335,7 @@ class TestResolveSubmission:
     def _mapping(self, target_key, qid, priority=0, subkey=None):
         return JotformFieldMapping(form_id=10, target_key=target_key, qid=qid, priority=priority, subkey=subkey)
 
-    def test_resolves_all_required_fields_present(self, service, jotform_repo, form):
+    def test_resolves_all_required_fields_present(self, service, jotform_repo, form, required_fields):
         jotform_repo.get_field_mappings.return_value = [
             self._mapping("appointment_date", "1"),
             self._mapping("package", "2"),
@@ -407,7 +437,7 @@ class TestResolveSubmission:
         with pytest.raises(JotformDomainError):
             service.resolve_submission(form=form, raw_answers=raw_answers)
 
-    def test_optional_field_left_null_does_not_raise(self, service, jotform_repo, form):
+    def test_optional_field_left_null_does_not_raise(self, service, jotform_repo, form,  Optional_fields):
         jotform_repo.get_field_mappings.return_value = [
             self._mapping("appointment_date", "1"),
             self._mapping("package", "2"),

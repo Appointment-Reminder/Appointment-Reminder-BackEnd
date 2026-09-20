@@ -138,6 +138,10 @@ async def update_jotform_field_mapping(
     ]
     return service.save_field_mappings(form_id=form_id, mappings=mappings, current_user=current_user)
 
+@jotform_router.post("/jotform/form/{form_id}/questions/refresh", status_code=200, response_model=JotformFormRead)
+async def refresh_jotform_form_questions(form_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
+    return await service.refresh_form_question(form_id=form_id, current_user=current_user)
+
 @jotform_router.get("/jotform/form/{member_id}/{category_id}", response_model=JotformFormRead)
 async def get_jotform_forms_for_member_and_category(business_id: int, member_id: int, category_id: int, service: FromDishka[JotformService], current_user: FromDishka[User]):
     return service.get_jotform_form_by_member_and_category(business_id=business_id,member_id=member_id, category_id=category_id, current_user=current_user)

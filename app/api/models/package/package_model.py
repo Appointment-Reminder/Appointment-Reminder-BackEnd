@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -14,6 +16,7 @@ class PackageRead(BaseModel):
     name: str
     description: str
     is_active: bool
+    jotform_alias: Optional[str]
 
 
 class PackageUpdate(BaseModel):
@@ -22,6 +25,7 @@ class PackageUpdate(BaseModel):
     category_id: int
     name: str
     description: str
+    jotform_alias: Optional[str] = None
 
 
 

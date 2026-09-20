@@ -1,3 +1,5 @@
+from typing import Optional
+
 from app.domain.package.errors.package_errors import PackageError
 from app.domain.package.models.package import Package
 from app.domain.package.models.package_category_model import PackageCategory
@@ -32,3 +34,7 @@ class PackageGuard:
         if package_price is None:
             raise PackageError()
         return package_price
+
+    def resolve_package_by_submission_alias(self, business_id: int, alias_raw_value: str) -> Optional[Package]:
+        """None means unresolved (no match, or ambiguous multiple) — caller creates a needs_assignment appointment."""
+        return self.package_repo.find_package_by_submission_alias(business_id, alias_raw_value)

@@ -171,14 +171,10 @@ class JotformService:
     def save_field_mappings(self, form_id: int, mappings: list[JotformFieldMapping], current_user: User) -> list[
         JotformFieldMapping]:
         form = self.jotform_guard.ensure_form_exists(form_id)
-        print("Saving mappings")
         credential = self.jotform_guard.ensure_credential_exists(form.credential_id)
-        print("Saving mappings")
         self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
-        print("Saving mappings")
         self.jotform_guard.ensure_mapping_valid(mappings)
-        self.jotform_guard.ensure_no_duplicate_qid(form_id=form_id, mappings=mappings)
-        print("Saving mappings")
+        self.jotform_guard.ensure_no_duplicate_qid( mappings=mappings)
         normalized = [
             JotformFieldMapping(
                 form_id=form_id,
@@ -206,13 +202,11 @@ class JotformService:
         for m in mappings:
             by_key.setdefault(m.target_key, []).append(m)
 
-        print(f"Resolving submission for mapping {mappings} by key {by_key}")
+
         resolved: dict = {}
         for field in SUBMISSION_FIELDS:
             value = None
-            print(f"Process field {field} with rawAnswer {raw_answers}")
             for m in sorted(by_key.get(field.key, []), key=lambda m: m.priority):
-                print(f"Process m {m} with rawAnswer {raw_answers}")
                 raw = raw_answers.get(m.qid, {}).get("answer")
                 if m.subkey and isinstance(raw, dict):
                     raw = raw.get(m.subkey)
@@ -227,4 +221,12 @@ class JotformService:
 
         return resolved
 
+    async def refresh_form_question(self, form_id: int, current_user: User) -> JotformForm:
+        form = self.jotform_guard.ensure_form_exists(form_id)
+        credential = self.jotform_guard.ensure_credential_exists(form.credential_id)
+        self.business_guard.ensure_admin_or_owner(credential.business_id, current_user.id)
+
+        form.questions = await self.jotform_api.get_form_questions(form.form_id, credential.api_key)
+        self.jotform_repo.update_form(form)
+        return form
 

@@ -15,7 +15,7 @@ from app.adapters.jotform.APIJotformPort import JotformClientAdapter
 async def test_get_list_forms_parses_response():
     respx.get("https://eu-api.jotform.com/user/forms").mock(
         return_value=httpx.Response(200, json={"content": [
-            {"id": 1, "name": "Wedding Form"}
+            {"id": 1, "name": "Wedding Form", "title": "Wedding Form", "status": 'available', "url": "testurl"},
         ]})
     )
     adapter = JotformClientAdapter()
@@ -30,7 +30,7 @@ async def test_get_list_forms_parses_response():
 async def test_get_form_questions_parses_response():
     respx.get("https://eu-api.jotform.com/form/123/questions").mock(
         return_value=httpx.Response(200, json={"content": {
-            "1": {"id": 1, "name": "email"}
+            "1": {"qid": 1, "text": "email", "type":"test", "options": []},
         }})
     )
     adapter = JotformClientAdapter()
