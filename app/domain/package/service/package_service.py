@@ -194,7 +194,7 @@ class PackageService:
 
         return self.member_repo.get_commission(member_id=member_id)
 
-    def get_business_commission(self, business_id: int, current_user: User):
+    def get_business_commission(self, business_id: int, current_user: User) -> Optional[List[MemberCommission]]:
         self.business_guard.ensure_exists(business_id=business_id)
         self.business_guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
 

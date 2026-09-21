@@ -6,8 +6,6 @@ from fastapi import APIRouter, Depends
 
 from app.api.models.Member.business_member_commissions import BusinessMemberCommissionsRead, \
     BusinessMemberCommissionsCreate, BusinessMemberCommissionsUpdate
-from app.api.models.Member.busioness_member_form_model import BusinessMemberFormRead, BusinessMemberFormCreate, \
-    BusinessMemberFormUpdate
 from app.api.models.business_member_model import BusinessMemberInvite, BusinessMemberRead, BusinessMemberUpdate
 from app.api.models.business_model import BusinessRead, BusinessCreate, BusinessUpdate
 from app.api.models.package.package_category_model import PackageCategoryRead, PackageCategoryCreate, \
@@ -233,7 +231,9 @@ def delete_package_category(
     """Delete a package category for business, owner and admin only"""
     return service.delete_category(category_id=category_id, current_user=current_user)
 
+
 ## BusinessMemberForm
+'''
 @business_router.post("/members/forms", status_code=201, response_model=BusinessMemberFormRead, tags=["business - member - form"])
 def create_business_member_form(
         member: BusinessMemberFormCreate,
@@ -259,6 +259,8 @@ def get_all_members_forms(
     """Get the business member forms for business, owner and admin only"""
     return service.get_member_form_for_business(business_id=business_id, current_user=current_user)
 
+
+
 @business_router.patch("/members/forms", status_code=200, response_model=BusinessMemberFormRead, tags=["business - member - form"])
 def update_business_member_form(
                                 form: BusinessMemberFormUpdate,
@@ -274,10 +276,8 @@ def delete_business_member_form(
                                 current_user: FromDishka[User]):
     """Delete a business member form for business, owner and admin only"""
     return service.delete_member_form( form_id=form_id, current_user=current_user)
-
+'''
 #member commission route
-
-
 
 @business_router.post("/members/commissions", response_model=BusinessMemberCommissionsRead, status_code=201, tags=["business - member - commission"])
 def create_member_commission(
@@ -301,14 +301,16 @@ def get_member_current_commission_on_package(
         package_id=package_id,
         current_user=current_user)
 
-@business_router.get("/{business_id}/commissions", response_model=List[BusinessMemberCommissionsRead], tags=["business - member - commission"])
+@business_router.get("/{business_id}/commissions", response_model=Optional[List[BusinessMemberCommissionsRead]], tags=["business - member - commission"])
 def get_business_commissions(
         business_id: int,
         service: FromDishka[PackageService],
         current_user: FromDishka[User]
 ):
     """Get the list of all commissions for business, owner and admin only"""
-    return service.get_business_commission(business_id=business_id, current_user=current_user)
+    result = service.get_business_commission(business_id=business_id, current_user=current_user)
+    print(result)
+    return result
 
 @business_router.patch("/members/commissions", response_model=BusinessMemberCommissionsRead, status_code=200, tags=["business - member - commission"])
 def update_member_commission(
