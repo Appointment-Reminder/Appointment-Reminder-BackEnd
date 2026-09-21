@@ -42,7 +42,7 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
             select(JotformCredentialSQL).where(JotformCredentialSQL.business_id == business_id)
         ).all()
 
-        return [jotform_credential_to_domain(item) for item in result]
+        return [jotform_credential_to_domain(item) for item in result] if result else []
 
     def update_credential(self, credential: JotformCredentialEntity) -> JotformCredentialEntity:
         existing = self.db.get(JotformCredentialSQL, credential.id)
@@ -148,6 +148,15 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
         result = self.db.exec(
             select(JotformFormAssignmentSQL)
             .where(JotformFormAssignmentSQL.form_id == form_id)
+        ).all()
+        return [jotform_assignment_to_domain(item) for item in result] if result else []
+
+    def get_assignment_for_business(self, business_id: int) -> Optional[JotformFormAssignmentEntity]:
+        result = self.db.exec(
+            select(JotformFormAssignmentSQL)
+            .join(JotformFormSQL, JotformFormAssignmentSQL.form_id == JotformFormSQL.id)
+            .join(JotformCredentialSQL, JotformFormSQL.credential_id == JotformCredentialSQL.id)
+            .where(JotformCredentialSQL.business_id == business_id)
         ).all()
         return [jotform_assignment_to_domain(item) for item in result] if result else None
 

@@ -116,6 +116,10 @@ async def jotform_form_delete(form_id: int, service: FromDishka[JotformService],
 async def assign_jotform(form_assignment : JotformAssignmentCreate, service: FromDishka[JotformService], current_user: FromDishka[User]):
     return service.assign_jotform_form_to_member_and_category(form_assignment, current_user)
 
+@jotform_router.get("/jotform/{business_id}/form/assign/", status_code=200, response_model=List[JotformAssignmentRead])
+async def get_assigned_jotform_for_business(business_id: int, service: FromDishka[JotformService],current_user: FromDishka[User]):
+    return service.get_assigned_jotform_for_business_id(business_id, current_user)
+
 @jotform_router.get("/jotform/target-fields", status_code=200, response_model=list[SubmissionFieldRead])
 async def get_submission_target_fields(service: FromDishka[JotformService]):
     """Static registry of fields the business can map form questions to — no auth-scoping needed, same for every business"""

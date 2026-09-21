@@ -141,7 +141,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
 
         return member_commission_to_domain(result) if result else None
 
-    def get_current_business_commission(self, business_id: int) -> Optional[MemberCommissionEntity]:
+    def get_current_business_commission(self, business_id: int) -> Optional[List[MemberCommissionEntity]]:
         latest_subq = (
             select(
                 MemberCommissionSQL.business_member_id,

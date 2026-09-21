@@ -166,6 +166,12 @@ class JotformService:
         )
         return self.jotform_repo.create_assignment(assignment)
 
+    def get_assigned_jotform_for_business_id(self, business_id: int, current_user: User) -> List[JotformFormAssignment]:
+        self.business_guard.ensure_exists(business_id=business_id)
+        self.business_guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
+
+        return self.jotform_repo.get_assignment_for_business(business_id=business_id)
+
     def get_submission_field_defs(self) -> List[SubmissionFieldDef]:
         return SUBMISSION_FIELDS
     def save_field_mappings(self, form_id: int, mappings: list[JotformFieldMapping], current_user: User) -> list[
