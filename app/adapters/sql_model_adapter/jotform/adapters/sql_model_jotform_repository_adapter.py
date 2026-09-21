@@ -4,13 +4,14 @@ from sqlalchemy import delete
 from sqlmodel import select, Session
 from urllib3.util import url
 
-from app.domain.Jotform.models.jotform_form_model import JotformForm as JotformFormEntity, JotformCredential as JotformCredentialEntity
+from app.domain.Jotform.models.jotform_form_model import JotformForm as JotformFormEntity, \
+    JotformCredential as JotformCredentialEntity, JotformFormAssignment
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
 from app.domain.Jotform.models.jotform_form_model import JotformFormAssignment as JotformFormAssignmentEntity
 from app.domain.Jotform.models.jotform_field_mapping import JotformFieldMapping as JotformFieldMappingEntity
 
 from app.adapters.sql_model_adapter.jotform.models.jotform import JotformCredential as JotformCredentialSQL, \
-    JotformForm as JotformFormSQL, jotform_assignment_to_domain
+    JotformForm as JotformFormSQL, jotform_assignment_to_domain, assignment_apply_sql
 from app.adapters.sql_model_adapter.jotform.models.jotform import jotform_credential_apply_sql,jotform_credential_to_domain, jotform_form_apply_sql, jotform_form_to_domain
 from app.adapters.sql_model_adapter.jotform.models.jotform import JotformFormAssignment as JotformFormAssignmentSQL
 from app.adapters.sql_model_adapter.jotform.models.jotform_field_mapping import \
@@ -115,6 +116,17 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
         self.db.commit()
         self.db.refresh(existing)
         return jotform_form_to_domain(existing)
+
+    def update_assignment(self, assignment: JotformFormAssignment) -> JotformFormAssignment:
+        existing_assignment = self.db.get(JotformFormAssignmentSQL, assignment.id)
+        if not existing_assignment:
+            return None
+
+        assignment_apply_sql(sql=existing_assignment, obj=assignment)
+
+        self.db.commit()
+        self.db.refresh(existing_assignment)
+        return jotform_assignment_to_domain(existing_assignment)
 
     def delete_form(self, form: JotformFormEntity) -> bool:
         form = self.db.get(JotformFormSQL, form.id)

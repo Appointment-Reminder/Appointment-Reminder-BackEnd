@@ -92,3 +92,8 @@ def jotform_assignment_to_domain(sql: JotformFormAssignment) -> JotformFormAssig
         category_id=sql.category_id,
         form_id=sql.form_id,
     )
+
+def assignment_apply_sql(sql: JotformFormAssignment, obj: JotformFormAssignmentEntity) -> None:
+    sql.form_id = obj.form_id
+    sql.business_member_id = obj.business_member_id
+    sql.category_id = obj.category_id
