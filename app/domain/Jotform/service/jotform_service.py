@@ -156,10 +156,17 @@ class JotformService:
 
     def assign_jotform_form_to_member_and_category(self, jotform_assignment: JotformFormAssignment, current_user: User) -> JotformForm:
         form = self.jotform_guard.ensure_form_exists(jotform_assignment.form_id)
-        self.jotform_guard.ensure_jotform_assignment_doesnt_exist(category_id=jotform_assignment.category_id, form_id=jotform_assignment.form_id, business_member_id=jotform_assignment.business_member_id)
+        assignment = self.jotform_guard.ensure_jotform_assignment_doesnt_exist(category=jotform_assignment.category_id, business_member=jotform_assignment.business_member_id)
         cred = self.jotform_guard.ensure_credential_exists(form.credential_id)
         self.business_guard.ensure_admin_or_owner(cred.business_id, current_user.id)
 
+
+        if assignment:
+            print("Assignment found just update it with new form")
+            assignment.form_id = form.id
+            return self.jotform_repo.update_assignment(assignment=assignment)
+
+        print("Assign assignment to new assignment ")
         assignment = JotformFormAssignment(
             business_member_id=jotform_assignment.business_member_id,
             form_id=jotform_assignment.form_id,

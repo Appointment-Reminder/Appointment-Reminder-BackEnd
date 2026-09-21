@@ -48,13 +48,10 @@ class JotformGuard:
             raise JotformDomainError()
         return form
 
-    def ensure_jotform_assignment_doesnt_exist(self, category_id: int, business_member_id: int, form_id: int) -> None:
-        form_assignments = self.jotform_repo.get_assignments_for_form(form_id)
-        for assignment in form_assignments:
-            if (assignment.business_member_id == business_member_id
-                and assignment.form_id == form_id
-                and assignment.category_id == category_id):
-                raise JotformDomainError()
+    def ensure_jotform_assignment_doesnt_exist(self, business_member: int, category: int) -> Optional[JotformFormAssignment]:
+        form_assignments = self.jotform_repo.get_assignment_by_member_and_category(business_member_id=business_member, category_id=category)
+        return form_assignments
+
 
     def ensure_mapping_valid(self, mappings: list[JotformFieldMapping]) -> None:
         for m in mappings:
