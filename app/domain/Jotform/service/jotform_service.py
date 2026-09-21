@@ -47,8 +47,9 @@ class JotformService:
     def get_jotform_credentials(self, business_id: str, current_user: User) -> List[JotformCredential]:
         self.business_guard.ensure_exists(business_id)
         self.business_guard.ensure_admin_or_owner(business_id, current_user.id)
-
-        return self.jotform_repo.get_credential_by_business(business_id)
+        result = self.jotform_repo.get_credential_by_business(business_id)
+        print(result)
+        return result
 
     def update_jotform_credentials(self, data: JotformCredential, current_user: User) -> JotformCredential:
         self.business_guard.ensure_exists(data.business_id)
@@ -58,7 +59,7 @@ class JotformService:
         credential.label = data.label
         credential.api_key = data.api_key
 
-        self.jotform_repo.update_credential(credential)
+        return self.jotform_repo.update_credential(credential)
 
     def delete_jotform_credentials(self, credential_id: str, current_user: User):
         credential = self.jotform_guard.ensure_credential_exists(credential_id)

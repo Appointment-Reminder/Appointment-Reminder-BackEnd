@@ -60,7 +60,6 @@ class JotformCredentialRead(BaseModel):
     label: str
     api_key: str
     created_at: datetime
-    questions: List[dict]
 
 class JotformCredentialUpdate(BaseModel):
     id:int
