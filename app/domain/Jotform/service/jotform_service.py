@@ -211,11 +211,9 @@ class JotformService:
 
     def resolve_submission(self, form: JotformForm, raw_answers: dict) -> dict:
         mappings = self.jotform_repo.get_field_mappings(form.id)
-
         by_key: dict[str, list[JotformFieldMapping]] = {}
         for m in mappings:
             by_key.setdefault(m.target_key, []).append(m)
-
 
         resolved: dict = {}
         for field in SUBMISSION_FIELDS:

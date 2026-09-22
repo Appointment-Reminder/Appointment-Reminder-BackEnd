@@ -2,7 +2,7 @@ import secrets
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import UniqueConstraint, Column
+from sqlalchemy import UniqueConstraint, Column, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import SQLModel, Field
 
@@ -17,6 +17,8 @@ class JotformCredential(SQLModel, table=True):
     label: str
     api_key: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 
 def jotform_credential_to_domain(sql: JotformCredential) -> JotformCredentialEntity:
     return JotformCredentialEntity(
@@ -38,7 +40,7 @@ class JotformForm(SQLModel, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    credential_id: int = Field(foreign_key="jotform_credentials.id")
+    credential_id: int = Field(sa_column=Column(ForeignKey("jotform_credentials.id", ondelete="CASCADE")))
 
     form_id: str
     name: str
@@ -81,7 +83,7 @@ class JotformFormAssignment(SQLModel, table= True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    form_id: int = Field(foreign_key="jotform_forms.id")
+    form_id: int = Field(sa_column=Column(ForeignKey("jotform_forms.id", ondelete="CASCADE")))
     business_member_id: int = Field(foreign_key="business_members.id")
     category_id: int = Field(foreign_key="package_category.id")
 

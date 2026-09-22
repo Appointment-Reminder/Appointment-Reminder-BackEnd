@@ -141,7 +141,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
 
         return member_commission_to_domain(result) if result else None
 
-    def get_current_business_commission(self, business_id: int) -> Optional[List[MemberCommissionEntity]]:
+    def get_current_business_commission(self, business_id: int) -> List[MemberCommissionEntity]:
         latest_subq = (
             select(
                 MemberCommissionSQL.business_member_id,
@@ -164,7 +164,7 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
                 & (MemberCommissionSQL.effective_from == latest_subq.c.max_effective_from)
             )
         ).all()
-        return [member_commission_to_domain(item) for item in result] if result else None
+        return [member_commission_to_domain(item) for item in result] if result else []
 
     def get_commission_history(self, member_id: int, package_id: int) -> Optional[MemberCommissionEntity]:
         result = self.db.exec(

@@ -37,9 +37,9 @@ class JotformWebhookService:
         credential = self.jotform_guard.ensure_credential_exists(form.credential_id)
         business_id = credential.business_id
 
+
         parsed_answers = parse_jotform_raw_request(raw_request)
         resolved = self.jotform_service.resolve_submission(form=form, raw_answers=parsed_answers)
-
         booking = resolve_booking_context(
             business_id=business_id,
             form_id=form.id,
@@ -72,7 +72,6 @@ class JotformWebhookService:
             status=status,
             created_at=datetime.now(),
             updated_at=datetime.now(),
-            user=None,
         )
 
         return self.appointment_repo.create(appointment)

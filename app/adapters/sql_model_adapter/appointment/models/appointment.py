@@ -12,23 +12,23 @@ class Appointment(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     #keys
     business_id: int = Field(foreign_key='businesses.id')
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    user_id: Optional[int] = Field(default=None, foreign_key="business_members.id")
     package_id: int = Field(foreign_key='package.id')
     package_price_id: int = Field(foreign_key='package_price.id')
     form_id: int = Field(foreign_key='jotform_forms.id')
 
     # client information
-    client_name: str
-    client_email: str
+    client_name: Optional[str]
+    client_email: Optional[str] = None
     client_phone: Optional[str] = None
 
     #price info
     price_at_booking: float
     deposit_amount: float
     remaining_amount: float
-    commission_percent_at_booking: float
-    commision_amount_at_booking: float
-    is_personal: bool
+    commission_percent_at_booking: Optional[float] = Field(default = 0)
+    commision_amount_at_booking: Optional[float]= Field(default = 0)
+    is_personal: Optional[bool] = Field(default = False)
 
 
     #appointment details
@@ -39,8 +39,6 @@ class Appointment(SQLModel, table=True):
 
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-
-    user: Optional["User"] = Relationship()
 
 def _to_domain(row: Appointment) -> AppointmentEntity:
     return AppointmentEntity(
@@ -63,7 +61,6 @@ def _to_domain(row: Appointment) -> AppointmentEntity:
         status=row.status,
         created_at=row.created_at,
         updated_at=row.updated_at,
-        user= user_to_domain(row.user) if row.user else None,
     )
 
 
