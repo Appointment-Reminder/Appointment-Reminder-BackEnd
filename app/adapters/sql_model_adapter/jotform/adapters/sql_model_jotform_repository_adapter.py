@@ -53,6 +53,7 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
         self.db.commit()
         self.db.refresh(existing)
         return jotform_credential_to_domain(existing)
+
     def delete_credential(self, credential_id: int) -> bool:
         credential = self.db.get(JotformCredentialSQL, credential_id)
         if not credential:
@@ -170,7 +171,7 @@ class SQLModelJotformRepositoryAdapter(JotformRepositoryPort):
             .join(JotformCredentialSQL, JotformFormSQL.credential_id == JotformCredentialSQL.id)
             .where(JotformCredentialSQL.business_id == business_id)
         ).all()
-        return [jotform_assignment_to_domain(item) for item in result] if result else None
+        return [jotform_assignment_to_domain(item) for item in result] if result else []
 
     def delete_assignment(self, assignment_id: int) -> bool:
         assignment = self.db.get(JotformFormAssignmentSQL, assignment_id)

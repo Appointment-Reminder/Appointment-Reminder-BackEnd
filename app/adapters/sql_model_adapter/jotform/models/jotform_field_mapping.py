@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, ForeignKey, Column
 from sqlmodel import SQLModel, Field
 
 from app.domain.Jotform.models.jotform_field_mapping import JotformFieldMapping as JotformFieldMappingEntity
@@ -12,7 +12,7 @@ class JotformFieldMapping(SQLModel, table=True):
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    form_id: int = Field(foreign_key="jotform_forms.id", index=True)
+    form_id: int = Field(sa_column=Column(ForeignKey("jotform_forms.id", ondelete="CASCADE")))
     target_key: str = Field(index=True)
     qid: str
     subkey: Optional[str] = None

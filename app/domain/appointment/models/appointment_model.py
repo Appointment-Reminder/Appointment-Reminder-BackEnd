@@ -29,4 +29,3 @@ class Appointment:
     status: str
     created_at: datetime
     updated_at: datetime
-    user: Optional[User]

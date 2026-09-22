@@ -295,7 +295,7 @@ def get_member_current_commission_on_package(
         package_id=package_id,
         current_user=current_user)
 
-@business_router.get("/{business_id}/commissions", response_model=Optional[List[BusinessMemberCommissionsRead]], tags=["business - member - commission"])
+@business_router.get("/{business_id}/commissions", response_model=List[BusinessMemberCommissionsRead], tags=["business - member - commission"])
 def get_business_commissions(
         business_id: int,
         service: FromDishka[PackageService],

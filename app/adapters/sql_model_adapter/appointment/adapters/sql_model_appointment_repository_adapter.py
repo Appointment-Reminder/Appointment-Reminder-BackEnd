@@ -42,7 +42,7 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
 
         self.db.add(sql_appointment)
         self.db.commit()
-        self.db.refresh(sql_appointment, attribute_names=["user"])
+        self.db.refresh(sql_appointment)
         return _to_domain(sql_appointment)
 
     def find_by_business(self, business_id: int, status: Optional[str] = None) -> Optional[AppointmentEntity]:
