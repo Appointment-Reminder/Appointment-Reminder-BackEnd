@@ -40,14 +40,6 @@ def get_all_my_businesses(
     """Get all businesses the user is part of (owned or member)"""
     return service.get_for_user(current_user=current_user, is_active=is_active, business_id=None)
 
-@business_router.get("/{business_id}", response_model=BusinessRead, status_code=200, tags=["business"])
-def get_specific_business(
-        business_id: int,
-        service: FromDishka[BusinessService],
-        current_user: FromDishka[User]):
-    """Get a specific business if user is a member"""
-    return service.get_for_user(current_user=current_user, business_id=business_id, is_active=None)
-
 @business_router.put("/{business_id}", response_model=BusinessRead, status_code=200, tags=["business"])
 def update_business(
         business_id: int,
@@ -140,13 +132,15 @@ def get_package(
     """Get a package for business, for business_member_ only"""
     return service.get(package_id=package_id, current_user=current_user)
 
-@business_router.put("/packages", response_model=PackageRead, tags=["business - package"])
+@business_router.put("/packages/{package_id}", response_model=PackageRead, tags=["business - package"])
 def update_package(
+        package_id: int,
         package: PackageUpdate,
         service: FromDishka[PackageService],
         current_user: FromDishka[User],
 ):
     """Update a package for business, for admin and owner only"""
+    package.id = package_id
     return service.update(data=package, current_user=current_user)
 
 @business_router.delete("/packages/{package_id}", status_code=200, tags=["business - package"])

@@ -64,17 +64,18 @@ class PackageService:
         return self.package_repo.find_package_by_alias(business_id, category_id, alias_raw_value)
 
     def update(self, data: Package, current_user: User) -> Package:
-        self.business_guard.ensure_exists(business_id=data.business_id)
-        self.business_guard.ensure_admin_or_owner(data.business_id, current_user.id)
-        self.packages_guard.ensure_category_exist(data.category_id)
+        print("Update package")
+        package = self.packages_guard.ensure_package_exist(data.id)
+        self.business_guard.ensure_admin_or_owner(package.business_id, current_user.id)
+
 
         normalized = Package(
             id=data.id,
-            business_id=data.business_id,
-            category_id=data.category_id,
+            business_id=package.business_id,
+            category_id=package.category_id,
             name=data.name,
             description=data.description,
-            is_active=data.is_active,
+            is_active=package.is_active,
             jotform_alias=data.jotform_alias.strip().replace("\u00a0",
                                                              " ") if data.jotform_alias else data.jotform_alias,
         )
@@ -210,7 +211,8 @@ class PackageService:
         created_data = MemberCommission(
             business_member_id=member.id,
             package_id=package.id,
-            commission_percent=data.commission_percent,
+            commission_amount=data.commission_amount,
+            commission_isPercentage=data.commission_isPercentage,
             effective_from= datetime.utcnow()
         )
         return self.create_member_commission(data=created_data, current_user=current_user)
