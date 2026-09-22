@@ -21,8 +21,6 @@ class PackageRead(BaseModel):
 
 class PackageUpdate(BaseModel):
     id: int
-    business_id: int
-    category_id: int
     name: str
     description: str
     jotform_alias: Optional[str] = None
