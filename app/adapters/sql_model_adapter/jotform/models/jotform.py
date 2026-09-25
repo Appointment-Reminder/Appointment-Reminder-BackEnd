@@ -68,13 +68,13 @@ def jotform_form_to_domain(sql: JotformForm) -> JotformFormEntity:
         webhook_token=sql.webhook_token,
         is_active=sql.is_active,
         created_at=sql.created_at,
-        questions=[JotformQuestion(id=q["id"], name=q["name"]) for q in sql.questions] if sql.questions else [],
+        questions=[JotformQuestion(id=q["id"], name=q["name"], subkeys=q.get("subkeys", [])) for q in sql.questions] if sql.questions else [],
     )
 
 def jotform_form_apply_sql(sql: JotformForm, obj: JotformFormEntity) -> None:
     sql.name = obj.name
     sql.field_mapping = obj.field_mapping
-    sql.questions = [{"id": q.id, "name": q.name} for q in obj.questions]
+    sql.questions = [{"id": q.id, "name": q.name, "subkeys": q.subkeys} for q in obj.questions]
 
 class JotformFormAssignment(SQLModel, table= True):
     __tablename__ = "jotform_form_assignments"

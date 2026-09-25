@@ -6,6 +6,22 @@ from app.domain.Jotform.port.jotform_port import JotformPort
 
 
 class JotformClientAdapter(JotformPort):
+    COMPOSITE_TYPES = {"control_fullname", "control_phone", "control_address", "control_datetime", "control_appointment"}
+
+    NON_ANSWERABLE_TYPES = {
+        "control_head", "control_button", "control_text", "control_divider",
+        "control_collapse", "control_widget",
+    }
+
+    FIXED_SUBKEYS = {
+        "control_appointment": {
+            "implementation": "Implementation",
+            "date": "Date & Time",
+            "duration": "Duration",
+            "timezone": "Timezone",
+        },
+    }
+
     BASE_URL = "https://eu-api.jotform.com"
     OPTION_BEARING_TYPES = {"control_dropdown", "control_radio", "control_checkbox"}
 
@@ -30,10 +46,7 @@ class JotformClientAdapter(JotformPort):
     async def register_webhook(self, form_id: str, url: str, api_key:str) -> None:
         return await super().register_webhook(form_id, url, api_key=api_key)
 
-    NON_ANSWERABLE_TYPES = {
-        "control_head", "control_button", "control_text", "control_divider",
-        "control_collapse", "control_widget",
-    }
+
 
     def _to_remote_form(self, raw:dict) -> JotformForm:
         return JotformForm(
@@ -48,10 +61,19 @@ class JotformClientAdapter(JotformPort):
         if raw.get("type") in self.OPTION_BEARING_TYPES and raw.get("options"):
             options = [opt.strip() for opt in raw["options"].split("|") if opt.strip()]
 
+        subkeys: list[str] = []
+        if raw.get("type") in self.COMPOSITE_TYPES:
+            sublabels = raw.get("sublabels")
+            if isinstance(sublabels, dict) and sublabels:
+                subkeys = list(sublabels.keys())
+            elif raw.get("type") in self.FIXED_SUBKEYS:
+                subkeys = list(self.FIXED_SUBKEYS[raw["type"]].keys())
+
         return JotformQuestion(
             id=raw["qid"],
             name=raw["text"],
             options=options,
+            subkeys=subkeys,
         )
 
 
