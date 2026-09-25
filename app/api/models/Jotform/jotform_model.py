@@ -8,6 +8,7 @@ class JotformQuestionRead(BaseModel):
     id: str
     name: str
     options: list[str] = []
+    subkeys: list[str] = []
 
 class JotformWebhookPayload(BaseModel):
     """Schema for incoming hotform webhook"""

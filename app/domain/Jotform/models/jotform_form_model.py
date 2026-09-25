@@ -16,6 +16,7 @@ class JotformQuestion:
     id: int
     name: str
     options: list[str] = field(default_factory=list)
+    subkeys: list[str] = field(default_factory=list)
 
 @dataclass
 class JotformForm:
@@ -30,12 +31,6 @@ class JotformForm:
     created_at: datetime = datetime.now()
     questions: List[JotformQuestion] = field(default_factory=list)
     id: Optional[int] = None
-
-@dataclass
-class JotformQuestion:
-    id: int
-    name: str
-    options: list[str] = field(default_factory=list)
 
 @dataclass
 class JotformFormAssignment:

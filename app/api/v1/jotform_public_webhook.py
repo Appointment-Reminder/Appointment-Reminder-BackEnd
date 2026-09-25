@@ -23,6 +23,7 @@ async def receive_jotform_submission(
     try:
         raw_request = json.loads(rawRequest)
 
+        print(raw_request)
         appointment = service.process_submission(
             webhook_token=webhook_token,
             raw_request=raw_request,
