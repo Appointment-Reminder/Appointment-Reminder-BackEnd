@@ -23,10 +23,6 @@ class BusinessMemberRead(BaseModel):
     class Config:
         from_attributes = True
 
-class BusinessMemberInvite(BaseModel):
-    email: EmailStr
-    role: str = "Photographer"
-
 class BusinessMemberUpdate(BaseModel):
     role: MemberRole
     is_active:bool

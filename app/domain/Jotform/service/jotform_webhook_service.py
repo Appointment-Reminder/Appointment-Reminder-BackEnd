@@ -55,7 +55,7 @@ class JotformWebhookService:
         appointment = Appointment(
             id = None,
             business_id = business_id,
-            user_id= booking.member_id,
+            member_id= booking.member_id,
             form_id = form.id,
 
             package_id= booking.package_id,
@@ -63,7 +63,7 @@ class JotformWebhookService:
 
             client_first_name=resolved.get("client_first_name") or "",
             client_last_name=resolved.get("client_last_name") or "",
-            client_phone= resolved.get("client_country_phone") or "" + resolved.get("client_phone") or "",
+            client_phone=  (resolved.get("client_country_phone") or "") + (resolved.get("client_phone") or ""),
             client_email=resolved.get("client_email") or "",
 
             price_at_booking=booking.price_at_booking,

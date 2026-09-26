@@ -9,7 +9,7 @@ from app.domain.user.models.user import User
 class Appointment:
     id: Optional[int]
     business_id: int
-    user_id: Optional[int]
+    member_id: Optional[int]
     form_id: int
 
     # PACKAGE INFORMATION

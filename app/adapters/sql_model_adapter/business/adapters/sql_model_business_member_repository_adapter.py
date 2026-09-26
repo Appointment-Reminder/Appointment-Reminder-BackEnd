@@ -66,7 +66,14 @@ class SQLModelBusinessMemberRepositoryAdapter(BusinessMemberRepositoryPort):
             self._base_query()
             .where(BusinessMemberSQL.business_id == business_id)
         ).all()
-        return [ business_member_to_domain(row) for row in result ]
+        return [ business_member_to_domain(row) for row in result ] if result else []
+
+    def get_my_business_members(self, user_id: int) -> List[BusinessMemberSQL]:
+        result = self.db.exec(
+            self._base_query()
+            .where(BusinessMemberSQL.user_id == user_id)
+        ).all()
+        return [ business_member_to_domain(row) for row in result ] if result else []
 
     def is_owner_or_admin(self, business_id: int, user_id: int) -> bool:
         member = self.get_member(business_id, user_id)

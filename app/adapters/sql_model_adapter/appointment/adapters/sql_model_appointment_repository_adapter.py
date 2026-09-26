@@ -17,12 +17,12 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
         self.db = db
 
     def _base_query(self):
-        return select(AppointmentSQL).options(selectinload(AppointmentSQL.user))
+        return select(AppointmentSQL)
 
     def create(self, appointment: AppointmentEntity) -> AppointmentEntity:
         sql_appointment = AppointmentSQL(
             business_id=appointment.business_id,
-            user_id=appointment.user_id,
+            member_id=appointment.member_id,
             form_id=appointment.form_id,
 
             package_id=appointment.package_id,
@@ -65,20 +65,19 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
         result = self.db.exec(query).all()
         return [ _to_domain(row) for row in result ] if result else None
 
-    def get_appointment_by_photographer(self, user_id: int, business_id: Optional[int] = None,
+    def get_appointment_by_photographer(self, member_id: int, business_id: Optional[int] = None,
                                         status: Optional[str] = None) -> Optional[AppointmentEntity]:
-        query = self._base_query().where(AppointmentSQL.user_id == user_id)
+        query = self._base_query().where(AppointmentSQL.member_id == member_id)
 
         if business_id:
             query = query.where(AppointmentSQL.business_id == business_id)
         if status:
             query = query.where(AppointmentSQL.status == status)
 
-        query = query.options(selectinload(AppointmentSQL.user))
         result = self.db.exec(query).all()
         return [_to_domain(item) for item in result] if result else None
 
-    def get_appointment_by_id(self, appointment_id: int, user_id: Optional[int] = None, status: Optional[str] = None) -> \
+    def get_appointment_by_id(self, appointment_id: int, member_id: Optional[int] = None, status: Optional[str] = None) -> \
     Optional[AppointmentEntity]:
         row = self.db.exec(
             self._base_query().where(AppointmentSQL.id == appointment_id)

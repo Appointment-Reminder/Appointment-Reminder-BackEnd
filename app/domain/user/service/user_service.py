@@ -2,6 +2,7 @@
 from datetime import timedelta, datetime
 from fastapi.security import OAuth2PasswordBearer
 
+from app.domain.core.config import config
 from app.domain.user.errors.user_errors import UserError
 from app.domain.user.models.user import User
 from app.domain.user.port.user_repository_port import UserRepositoryPort
@@ -11,7 +12,7 @@ from jose import jwt, JWTError
 from app.domain.user.service.security import hash_password, verify_password
 
 ALGORITHM = "HS256"
-SECRET_KEY = '1293482109740489759sdkfhgsd'
+SECRET_KEY = config.SECRET_KEY
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='users/token')
 

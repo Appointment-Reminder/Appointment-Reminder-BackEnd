@@ -37,25 +37,6 @@ def register_exception_handlers(app: FastAPI) -> None:
             content={"detail": str(exc)},
         )
 
-    @app.exception_handler(BusinessError)
-    async def handle_invalid_business(
-            request: Request,
-            exc: BusinessError,
-    ):
-        return JSONResponse(
-            status_code=404,
-            content={"detail": str(exc)},
-        )
-
-    @app.exception_handler(BusinessError)
-    async def handle_business_already_exists(
-            request: Request,
-            exc: BusinessError,
-    ):
-        return JSONResponse(
-            status_code=400,
-            content={"detail": str(exc)},
-        )
 
     @app.exception_handler(UserError)
     async def handle_user_already_member_of_business(
@@ -64,36 +45,6 @@ def register_exception_handlers(app: FastAPI) -> None:
     ):
         return JSONResponse(
             status_code=400,
-            content={"detail": str(exc)},
-        )
-
-    @app.exception_handler(UserError)
-    async def handle_user_not_found(
-            request: Request,
-            exc: UserError,
-    ):
-        return JSONResponse(
-            status_code=404,
-            content={"detail": str(exc)},
-        )
-
-    @app.exception_handler(UserError)
-    async def handle_invalid_business(
-            request: Request,
-            exc: UserError,
-    ):
-        return JSONResponse(
-            status_code=400,
-            content={"detail": str(exc)},
-        )
-
-    @app.exception_handler(UserError)
-    async def handle_member_removal(
-            request: Request,
-            exc: UserError,
-    ):
-        return JSONResponse(
-            status_code=401,
             content={"detail": str(exc)},
         )
 
