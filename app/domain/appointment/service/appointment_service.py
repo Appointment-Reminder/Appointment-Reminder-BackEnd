@@ -3,10 +3,12 @@ from typing import List
 from app.domain.appointment.errors.appointment_error import AppointmentError
 from app.domain.appointment.models.appointment_model import Appointment
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
+from app.domain.business.guard import business_guard
 from app.domain.business.guard.business_guard import BusinessGuard
+from app.domain.business.models.business_member_model import MemberRole
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
 from app.domain.user.models.user import User
-
+from tests.domain.business.conftest import business_repo
 
 
 class AppointmentService:
@@ -29,7 +31,7 @@ class AppointmentService:
         return self.appointment_repo.create(appointment)
 
     def create_appointment_by_business_member(self, appointment : Appointment ,current_user: User) -> Appointment:
-        if not self.business_guard.ensure_is_a_member(appointment.business_id, appointment.user_id):
+        if not self.business_guard.ensure_is_a_member(appointment.business_id, appointment.member_id):
             raise AppointmentError()
 
         if not self.business_guard.ensure_admin_or_owner(business_id=appointment.business_id, user_id=current_user.id):
@@ -38,7 +40,12 @@ class AppointmentService:
         return self.create_appointment( appointment=appointment )
 
     def get_assigned_appointments(self, current_user: User) -> List[Appointment]:
-        return self.appointment_repo.get_appointments_by_photographer(user_id=current_user.id)
+        members = self.business_member_repo.get_my_business_members(current_user.id)
+
+        result = []
+        for member in members:
+            result.append(self.appointment_repo.get_appointment_by_photographer(member_id=member.id))
+        return result
 
     def get_appointments_by_business(self,business_id: int, current_user: User) -> List[Appointment]:
         if not self.business_guard.ensure_is_a_member(business_id=business_id, user_id=current_user.id):
@@ -60,8 +67,10 @@ class AppointmentService:
         if not appointment or appointment.business_id != business_id:
             raise AppointmentError()
 
-        is_admin = self.business_guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
-        is_assigned = appointment.user_id == current_user.id
+        member = self.business_member_repo.get_member(business_id, current_user.id)
+
+        is_admin = member.role in [MemberRole.OWNER, MemberRole.ADMIN]
+        is_assigned = appointment.member_id == member.id
 
         if not (is_assigned or is_admin):
             raise AppointmentError()
@@ -77,12 +86,12 @@ class AppointmentService:
             raise AppointmentError()
 
         is_admin = self.business_guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
-        is_assigned = appointment.user_id == current_user.id
+        is_assigned = appointment.member_id == current_user.id
 
         if not (is_assigned or is_admin):
             raise AppointmentError()
 
-        if not self.business_member_repo.get_member(business_id, appointment.user_id):
+        if not self.business_member_repo.get_member(business_id, appointment.member_id):
             raise AppointmentError()
 
         return self.appointment_repo.update(appointment_data=appointment, appointment_id=appointment.id);

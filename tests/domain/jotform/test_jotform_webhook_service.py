@@ -80,7 +80,7 @@ class TestProcessSubmission:
             result = service.process_submission(webhook_token="tok-123", raw_request=RAW_REQUEST)
 
             assert result.status == "pending"
-            assert result.user_id == 7
+            assert result.member_id == 7
             assert result.package_id == 1
             assert result.price_at_booking == 500.0
 
@@ -108,7 +108,7 @@ class TestProcessSubmission:
             result = service.process_submission(webhook_token="tok-123", raw_request=RAW_REQUEST)
 
             assert result.status == "needs_assignment"
-            assert result.user_id is None
+            assert result.member_id is None
             assert result.price_at_booking is None
 
     def test_ambiguous_assignment_creates_needs_assignment_with_package_set(
@@ -135,7 +135,7 @@ class TestProcessSubmission:
 
             assert result.status == "needs_assignment"
             assert result.package_id == 1
-            assert result.user_id is None
+            assert result.member_id is None
 
     def test_invalid_token_raises(self, service, jotform_guard):
         jotform_guard.ensure_webhook_token_valid.side_effect = JotformDomainError()

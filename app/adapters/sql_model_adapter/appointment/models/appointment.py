@@ -12,7 +12,7 @@ class Appointment(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     #keys
     business_id: int = Field(foreign_key='businesses.id')
-    user_id: Optional[int] = Field(default=None, foreign_key="business_members.id")
+    member_id: Optional[int] = Field(default=None, foreign_key="business_members.id")
     form_id: int = Field(foreign_key='jotform_forms.id')
 
 
@@ -52,7 +52,7 @@ def _to_domain(row: Appointment) -> AppointmentEntity:
     return AppointmentEntity(
         id=row.id,
         business_id=row.business_id,
-        user_id=row.user_id,
+        member_id=row.member_id,
         package_id=row.package_id,
         package_price_id=row.package_price_id,
         form_id=row.form_id,
@@ -97,5 +97,5 @@ def _apply_to_row(row: Appointment, entity: AppointmentEntity) -> None:
     row.privacy_opt_out = entity.privacy_opt_out
     row.adds_ons = entity.adds_ons
 
-    row.user_id = entity.user_id
+    row.member_id = entity.member_id
     row.status = entity.status

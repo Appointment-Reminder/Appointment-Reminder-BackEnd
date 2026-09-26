@@ -13,6 +13,7 @@ class Config(BaseSettings):
     DB_PORT: str = ""
     DB_NAME: str = ""
     JOTFORM_API: str = ""
+    SECRET_KEY: str = ""
 
     @property
     def db_url(self):
