@@ -23,18 +23,30 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
         sql_appointment = AppointmentSQL(
             business_id=appointment.business_id,
             user_id=appointment.user_id,
+            form_id=appointment.form_id,
+
             package_id=appointment.package_id,
             package_price_id=appointment.package_price_id,
-            form_id=appointment.form_id,
-            client_name=appointment.client_name,
+
+            client_first_name=appointment.client_first_name,
+            client_last_name=appointment.client_last_name,
             client_email=appointment.client_email,
             client_phone=appointment.client_phone,
+
             price_at_booking=appointment.price_at_booking,
             deposit_amount=appointment.deposit_amount,
             remaining_amount=appointment.remaining_amount,
             commission_percent_at_booking = appointment.commission_percent_at_booking,
             commision_amount_at_booking = appointment.commission_amount_at_booking,
+
             appointment_date = appointment.appointment_date,
+            appointment_location = appointment.appointment_location,
+            appointment_duration = appointment.appointment_duration,
+            appointment_note = appointment.appointment_note,
+            number_of_persons = appointment.number_of_persons,
+            privacy_opt_out = appointment.privacy_opt_out,
+            adds_ons = appointment.adds_ons,
+
             status = appointment.status,
             created_at = appointment.created_at,
             updated_at = appointment.updated_at,

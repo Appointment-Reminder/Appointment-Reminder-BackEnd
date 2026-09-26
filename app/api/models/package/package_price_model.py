@@ -8,7 +8,6 @@ class PackagePriceCreate(BaseModel):
     total_price:int
     deposit_amount: int
     remaining_amount: int
-    is_personal: bool
     effective_from: datetime
 
 class PackagePriceRead(BaseModel):
@@ -17,7 +16,6 @@ class PackagePriceRead(BaseModel):
     total_price: int
     deposit_amount: int
     remaining_amount: int
-    is_personal: bool
     effective_from: datetime
 
 
@@ -27,5 +25,4 @@ class PackagePriceUpdate(BaseModel):
     total_price: int
     deposit_amount: int
     remaining_amount: int
-    is_personal: bool
     effective_from: datetime

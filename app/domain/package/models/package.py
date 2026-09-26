@@ -11,4 +11,5 @@ class Package:
     is_active: bool
 
     jotform_alias: str
+    package_duration: Optional[int] = None
     id: Optional[int] = None

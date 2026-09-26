@@ -171,7 +171,7 @@ def get_prices_history(
         service: FromDishka[PackageService],
         current_user: FromDishka[User]):
     """Get the history of package prices for business, owner and admin only"""
-    return service.get_price(package_id=package_id, current_user=current_user, is_current=False, is_personal=None)
+    return service.get_price(package_id=package_id, current_user=current_user, is_current=False)
 
 @business_router.get("/packages/{package_id}/prices/current", response_model=PackagePriceRead, status_code=200, tags=["business - package - price"])
 def get_current_price_of_package(
@@ -179,7 +179,7 @@ def get_current_price_of_package(
         service: FromDishka[PackageService],
         current_user: FromDishka[User]):
     """Get the current price of package, owner and admin only"""
-    return service.get_price(package_id=package_id, current_user=current_user, is_current=True, is_personal=None)
+    return service.get_price(package_id=package_id, current_user=current_user, is_current=True)
 
 @business_router.get("/{business_id}/packages/prices/current", status_code=200,response_model=List[PackagePriceRead] , tags=["business - package - price"])
 def get_current_price_of_business(
@@ -188,7 +188,7 @@ def get_current_price_of_business(
         current_user: FromDishka[User]
 ):
     """Get the current price of business, owner and admin only"""
-    return service.get_price_for_business(business_id=business_id, current_user=current_user, is_current=True, is_personal=None)
+    return service.get_price_for_business(business_id=business_id, current_user=current_user, is_current=True)
 
 ##Category
 @business_router.post("/categories", status_code=201, response_model=PackageCategoryRead, tags=["business - package - category"])

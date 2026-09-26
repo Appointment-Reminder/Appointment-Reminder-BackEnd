@@ -9,6 +9,5 @@ class PackagePrice:
     total_price: int
     deposit_amount: int
     remaining_amount: int
-    is_personal: bool
     effective_from: datetime
     id: Optional[int] = None

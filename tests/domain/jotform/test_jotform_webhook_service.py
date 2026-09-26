@@ -72,7 +72,7 @@ class TestProcessSubmission:
                 package_id=1, category_id=2, member_id=7, package_price_id=1,
                 price_at_booking=500.0, deposit_amount=100.0, remaining_amount=400.0,
                 commission_percent_at_booking=10.0, commission_amount_at_booking=50.0,
-                is_personal=False, fully_resolved=True,
+                fully_resolved=True,
             ),
         ):
             appointment_repo.create.side_effect = lambda a: a
@@ -100,7 +100,7 @@ class TestProcessSubmission:
                 package_id=None, category_id=None, member_id=None, package_price_id=None,
                 price_at_booking=None, deposit_amount=None, remaining_amount=None,
                 commission_percent_at_booking=None, commission_amount_at_booking=None,
-                is_personal=None, fully_resolved=False,
+                fully_resolved=False,
             ),
         ):
             appointment_repo.create.side_effect = lambda a: a
@@ -126,7 +126,7 @@ class TestProcessSubmission:
                 package_id=1, category_id=2, member_id=None, package_price_id=None,
                 price_at_booking=None, deposit_amount=None, remaining_amount=None,
                 commission_percent_at_booking=None, commission_amount_at_booking=None,
-                is_personal=None, fully_resolved=False,
+                fully_resolved=False,
             ),
         ):
             appointment_repo.create.side_effect = lambda a: a

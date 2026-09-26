@@ -25,6 +25,7 @@ class SQLModelPackageRepositoryAdapter(PackageRepositoryPort):
             name=package.name,
             description=package.description,
             is_active=package.is_active,
+            package_duration=package.package_duration,
             jotform_alias=package.jotform_alias,
         )
         self.db.add(sql_obj)
@@ -114,6 +115,7 @@ class SQLModelPackageRepositoryAdapter(PackageRepositoryPort):
             .where(PackageSQL.jotform_alias == alias_raw_value.strip())
         ).first()
 
+        print(f"Package find : {result}")
         return package_to_domain(result) if result else None
 
     def get_category_by_id(self, category_id: int) -> Optional[PackageCategoryEntity]:

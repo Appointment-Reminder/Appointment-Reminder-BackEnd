@@ -12,7 +12,6 @@ class PackagePrice(SQLModel, table=True):
     total_price: int
     deposit_amount: int
     remaining_amount: int
-    is_personal: bool
     effective_from: datetime
 
 def _to_domain(sql: PackagePrice) -> PackagePriceEntity:
@@ -22,7 +21,6 @@ def _to_domain(sql: PackagePrice) -> PackagePriceEntity:
         total_price=sql.total_price,
         deposit_amount=sql.deposit_amount,
         remaining_amount=sql.remaining_amount,
-        is_personal=sql.is_personal,
         effective_from=sql.effective_from,
     )
 
@@ -31,5 +29,4 @@ def _apply_sql(sql: PackagePrice, obj: PackagePriceEntity) -> None:
     sql.total_price = obj.total_price
     sql.deposit_amount = obj.deposit_amount
     sql.remaining_amount = obj.remaining_amount
-    sql.is_personal = obj.is_personal
     sql.effective_from = obj.effective_from

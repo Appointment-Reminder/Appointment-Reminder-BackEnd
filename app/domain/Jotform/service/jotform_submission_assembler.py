@@ -14,6 +14,7 @@ from app.domain.Jotform.guard.jotform_guard import JotformGuard
 class ResolvedBookingContext:
     """What we managed to resolve from the submission — None fields mean unresolved -> needs_assignment"""
     package_id: Optional[int]
+    package_duration: Optional[int]
     category_id: Optional[int]
     member_id: Optional[int]
     package_price_id: Optional[int]
@@ -22,7 +23,6 @@ class ResolvedBookingContext:
     remaining_amount: Optional[float]
     commission_percent_at_booking: Optional[float]
     commission_amount_at_booking: Optional[float]
-    is_personal: Optional[bool]
     fully_resolved: bool
 
 
@@ -37,32 +37,32 @@ def resolve_booking_context(
 ) -> ResolvedBookingContext:
 
     package = package_guard.resolve_package_by_submission_alias(business_id, package_alias_raw)
+    print(f" package : {package}")
     if package is None:
         return ResolvedBookingContext(
-            package_id=None, category_id=None, member_id=None, package_price_id=None,
+            package_id=None, package_duration= 0 ,category_id=None, member_id=None, package_price_id=None,
             price_at_booking=None, deposit_amount=None, remaining_amount=None,
             commission_percent_at_booking=None, commission_amount_at_booking=None,
-            is_personal=None, fully_resolved=False,
+            fully_resolved=False,
         )
 
     assignment = jotform_guard.resolve_assignment_or_unknown(form_id, package.category_id)
     if assignment is None:
         return ResolvedBookingContext(
-            package_id=package.id, category_id=package.category_id, member_id=None, package_price_id=None,
+            package_id=package.id, package_duration= package.package_duration, category_id=package.category_id, member_id=None, package_price_id=None,
             price_at_booking=None, deposit_amount=None, remaining_amount=None,
             commission_percent_at_booking=None, commission_amount_at_booking=None,
-            is_personal=None, fully_resolved=False,
+            fully_resolved=False,
         )
 
     current_price = price_repo.get_current_price(package.id)
     if current_price is None:
-        # package exists but has no price configured yet — also unresolved
         return ResolvedBookingContext(
-            package_id=package.id, category_id=package.category_id, member_id=assignment.business_member_id,
+            package_id=package.id, package_duration= package.package_duration, category_id=package.category_id, member_id=assignment.business_member_id,
             package_price_id=None,
             price_at_booking=None, deposit_amount=None, remaining_amount=None,
             commission_percent_at_booking=None, commission_amount_at_booking=None,
-            is_personal=None, fully_resolved=False,
+            fully_resolved=False,
         )
 
     commission = member_repo.get_current_commission(assignment.business_member_id, package.id)
@@ -78,6 +78,7 @@ def resolve_booking_context(
 
     return ResolvedBookingContext(
         package_id=package.id,
+        package_duration= package.package_duration,
         category_id=package.category_id,
         member_id=assignment.business_member_id,
         package_price_id=current_price.id,
@@ -86,6 +87,5 @@ def resolve_booking_context(
         remaining_amount=float(current_price.remaining_amount),
         commission_percent_at_booking=commission_percent,
         commission_amount_at_booking=commission_amount,
-        is_personal=current_price.is_personal,
         fully_resolved=True,
     )

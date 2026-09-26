@@ -15,7 +15,8 @@ class Package(SQLModel, table= True):
     description: str
     is_active: bool
 
-    jotform_alias: Optional[str] = None
+    package_duration: Optional[int] = Field(default=None)
+    jotform_alias: Optional[str] = Field(default=None)
 
 
 def _to_domain(sql: Package) -> PackageEntity:
@@ -26,6 +27,7 @@ def _to_domain(sql: Package) -> PackageEntity:
         name=sql.name,
         description=sql.description,
         is_active=sql.is_active,
+        package_duration=sql.package_duration,
         jotform_alias=sql.jotform_alias,
     )
 
@@ -34,6 +36,7 @@ def _apply_sql(sql: Package, obj: PackageEntity) -> None:
     sql.category_id = obj.category_id
     sql.name = obj.name
     sql.description = obj.description
+    sql.package_duration = obj.package_duration
     sql.jotform_alias = obj.jotform_alias
 
 

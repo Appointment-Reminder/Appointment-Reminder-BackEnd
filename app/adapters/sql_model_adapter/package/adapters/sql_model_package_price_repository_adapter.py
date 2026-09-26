@@ -21,7 +21,6 @@ class SQLModelPackagePriceRepositoryAdapter(PackagePriceRepositoryPort):
             total_price=package_price.total_price,
             deposit_amount=package_price.deposit_amount,
             remaining_amount=package_price.remaining_amount,
-            is_personal=package_price.is_personal,
             effective_from=package_price.effective_from,
         )
         self.db.add(sql_obj)
