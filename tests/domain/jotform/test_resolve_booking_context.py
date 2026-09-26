@@ -34,7 +34,7 @@ def _assignment(member_id=7):
     return JotformFormAssignment(id=1, form_id=10, business_member_id=member_id, category_id=2)
 
 def _price(package_id=1, total=500, deposit=100, remaining=400, personal=False):
-    return PackagePrice(id=1, package_id=package_id, total_price=total, deposit_amount=deposit, remaining_amount=remaining, is_personal=personal, effective_from=datetime.now())
+    return PackagePrice(id=1, package_id=package_id, total_price=total, deposit_amount=deposit, remaining_amount=remaining, effective_from=datetime.now())
 
 def _commission(amount=10, is_pct=True):
     return MemberCommission(id=1, business_member_id=7, package_id=1, commission_amount=amount, commission_isPercentage=is_pct, effective_from=datetime.now())
@@ -154,16 +154,3 @@ class TestResolveBookingContext:
         assert result.commission_amount_at_booking == 75.0
         assert result.commission_percent_at_booking is None
 
-    def test_is_personal_passed_through(self, package_guard, jotform_guard, member_repo, price_repo):
-        package_guard.resolve_package_by_submission_alias.return_value = _package()
-        jotform_guard.resolve_assignment_or_unknown.return_value = _assignment()
-        price_repo.get_current_price.return_value = _price(personal=True)
-        member_repo.get_current_commission.return_value = None
-
-        result = resolve_booking_context(
-            business_id=100, form_id=10, package_alias_raw="Gold Package",
-            package_guard=package_guard, jotform_guard=jotform_guard,
-            member_repo=member_repo, price_repo=price_repo,
-        )
-
-        assert result.is_personal is True

@@ -127,7 +127,6 @@ class PackageService:
             total_price=data.total_price,
             deposit_amount=data.deposit_amount,
             remaining_amount=data.remaining_amount,
-            is_personal=data.is_personal,
             effective_from=data.effective_from,
         )
         return self.price_repo.create(package_price=packagePrice)
@@ -147,7 +146,7 @@ class PackageService:
         self.price_repo.delete(price_id)
         return True
 
-    def get_price(self, package_id:int, current_user: User, is_personal: Optional[bool], is_current: Optional[bool]) -> List[PackagePrice]:
+    def get_price(self, package_id:int, current_user: User, is_current: Optional[bool]) -> List[PackagePrice]:
         package = self.packages_guard.ensure_package_exist(package_id)
         business = self.business_guard.ensure_admin_or_owner(package.business_id, current_user.id)
 
@@ -156,13 +155,13 @@ class PackageService:
 
         return self.price_repo.get_price_history(package_id=package_id)
 
-    def get_price_for_business(self, business_id:int, current_user: User, is_personal: Optional[bool], is_current: Optional[bool]) -> List[PackagePrice]:
+    def get_price_for_business(self, business_id:int, current_user: User, is_current: Optional[bool]) -> List[PackagePrice]:
         business = self.business_guard.ensure_admin_or_owner(business_id, current_user.id)
         packages = self.list(business_id, current_user=current_user)
 
         prices = []
         for package in packages:
-            price = self.get_price(package.id, current_user=current_user, is_personal=is_personal, is_current=is_current)
+            price = self.get_price(package.id, current_user=current_user, is_current=is_current)
             if price is not None:
                 prices.append(price)
 

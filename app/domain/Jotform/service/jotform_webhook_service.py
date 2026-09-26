@@ -53,22 +53,34 @@ class JotformWebhookService:
         status = "pending" if booking.fully_resolved else "needs_assignment"
 
         appointment = Appointment(
-            id=None,
-            business_id=business_id,
-            user_id=booking.member_id,
-            package_id=booking.package_id,
+            id = None,
+            business_id = business_id,
+            user_id= booking.member_id,
+            form_id = form.id,
+
+            package_id= booking.package_id,
             package_price_id=booking.package_price_id,
-            form_id=form.id,
-            client_name=resolved.get("client_name") or "",
-            client_email="",  # not yet in SUBMISSION_FIELDS — see note below
-            client_phone=None,
+
+            client_first_name=resolved.get("client_first_name") or "",
+            client_last_name=resolved.get("client_last_name") or "",
+            client_phone= resolved.get("client_country_phone") or "" + resolved.get("client_phone") or "",
+            client_email=resolved.get("client_email") or "",
+
             price_at_booking=booking.price_at_booking,
             deposit_amount=booking.deposit_amount,
             remaining_amount=booking.remaining_amount,
             commission_percent_at_booking=booking.commission_percent_at_booking,
             commission_amount_at_booking=booking.commission_amount_at_booking,
-            is_personal=booking.is_personal,
-            appointment_date=resolved.get("appointment_date"),
+
+            appointment_date=resolved.get("appointment_date") or "",
+            appointment_location=resolved.get("appointment_location") or "",
+            appointment_duration=booking.package_duration,
+            appointment_note=resolved.get("appointment_note") or "",
+            number_of_persons=resolved.get("guest_count") or "",
+            privacy_opt_out = resolved.get("privacy_opt_out") or "",
+            adds_ons=resolved.get("add_ons") or "",
+
+
             status=status,
             created_at=datetime.now(),
             updated_at=datetime.now(),

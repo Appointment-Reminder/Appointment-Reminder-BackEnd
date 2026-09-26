@@ -8,6 +8,7 @@ class PackageCreate(BaseModel):
     description: str
     business_id: int
     category_id: int
+    package_duration: Optional[int] = None
 
 class PackageRead(BaseModel):
     id: int
@@ -16,6 +17,7 @@ class PackageRead(BaseModel):
     name: str
     description: str
     is_active: bool
+    package_duration: Optional[int] = None
     jotform_alias: Optional[str]
 
 
@@ -23,6 +25,7 @@ class PackageUpdate(BaseModel):
     id: int
     name: str
     description: str
+    package_duration: Optional[int] = None
     jotform_alias: Optional[str] = None
 
 
