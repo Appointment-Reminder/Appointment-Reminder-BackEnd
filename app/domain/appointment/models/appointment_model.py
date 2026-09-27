@@ -10,7 +10,7 @@ class Appointment:
     id: Optional[int]
     business_id: int
     member_id: Optional[int]
-    form_id: int
+    form_id: Optional[int]
 
     # PACKAGE INFORMATION
     package_id: Optional[int]
@@ -32,7 +32,7 @@ class Appointment:
     #APPOINTMENT
     appointment_date: datetime
     appointment_location: Optional[str]
-    appointment_duration: Optional[str]
+    appointment_duration: Optional[int]
     appointment_note: Optional[str]
     number_of_persons: Optional[int]
     privacy_opt_out: Optional[str]

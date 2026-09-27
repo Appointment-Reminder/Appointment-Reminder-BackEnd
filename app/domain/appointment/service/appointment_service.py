@@ -54,7 +54,7 @@ class AppointmentService:
         if self.business_guard.ensure_admin_or_owner(business_id, current_user.id):
             appointments = self.appointment_repo.find_by_business(business_id)
         else:
-            appointments = self.appointment_repo.get_appointments_by_photographer(current_user.id, business_id)
+            appointments = self.appointment_repo.get_appointment_by_photographer(current_user.id, business_id)
 
         return appointments
 
