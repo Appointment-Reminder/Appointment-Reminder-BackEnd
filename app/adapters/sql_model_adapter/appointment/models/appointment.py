@@ -13,7 +13,7 @@ class Appointment(SQLModel, table=True):
     #keys
     business_id: int = Field(foreign_key='businesses.id')
     member_id: Optional[int] = Field(default=None, foreign_key="business_members.id")
-    form_id: int = Field(foreign_key='jotform_forms.id')
+    form_id: Optional[int] = Field(foreign_key='jotform_forms.id')
 
 
     package_id: int = Field(foreign_key='package.id')
@@ -36,7 +36,7 @@ class Appointment(SQLModel, table=True):
     #appointment details
     appointment_date: datetime
     appointment_location: Optional[str]
-    appointment_duration: Optional[str]
+    appointment_duration: Optional[int]
     appointment_note: Optional[str]
     number_of_persons: Optional[int] = Field(default = 0)
     privacy_opt_out: Optional[str]

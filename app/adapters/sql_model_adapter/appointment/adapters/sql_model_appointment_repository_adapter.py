@@ -63,7 +63,7 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
         if status:
             query = query.where(AppointmentSQL.status == status)
         result = self.db.exec(query).all()
-        return [ _to_domain(row) for row in result ] if result else None
+        return [ _to_domain(row) for row in result ] if result else []
 
     def get_appointment_by_photographer(self, member_id: int, business_id: Optional[int] = None,
                                         status: Optional[str] = None) -> Optional[AppointmentEntity]:
