@@ -91,7 +91,7 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
         _apply_to_row(row, appointment)
         row.updated_at = datetime.now()
         self.db.commit()
-        self.db.refresh(row, attribute_names=["user"])
+        self.db.refresh(row)
         return _to_domain(row)
 
     def delete(self, appointment_id: int) -> bool:

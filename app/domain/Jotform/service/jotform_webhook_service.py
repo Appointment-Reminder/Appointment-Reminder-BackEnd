@@ -65,6 +65,7 @@ class JotformWebhookService:
             client_last_name=resolved.get("client_last_name") or "",
             client_phone=  (resolved.get("client_country_phone") or "") + (resolved.get("client_phone") or ""),
             client_email=resolved.get("client_email") or "",
+            referral_source=resolved.get("referral_source") or "",
 
             price_at_booking=booking.price_at_booking,
             deposit_amount=booking.deposit_amount,

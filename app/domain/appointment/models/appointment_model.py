@@ -21,6 +21,7 @@ class Appointment:
     client_last_name: str
     client_phone: Optional[str]
     client_email: Optional[str]
+    referral_source: Optional[str]
 
     #PRICE
     price_at_booking: Optional[float]
