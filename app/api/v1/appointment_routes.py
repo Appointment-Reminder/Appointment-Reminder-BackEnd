@@ -75,7 +75,8 @@ def update_single_appointment(
     return appointment_service.update_single_appointment(
         current_user=current_user,
         business_id=business_id,
-        appointment_data=appointment_data,
+        appointment_id = appointment_id,
+        appointment=appointment_data,
     )
 
 @appointment_router.delete("/{appointment_id}", status_code=200)

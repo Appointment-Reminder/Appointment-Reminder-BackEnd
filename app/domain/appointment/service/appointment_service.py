@@ -77,16 +77,16 @@ class AppointmentService:
 
         return appointment;
 
-    def update_single_appointment(self, business_id: int, appointment: Appointment,  current_user: User) -> Appointment:
+    def update_single_appointment(self, business_id: int, appointment_id:int, appointment: Appointment,  current_user: User) -> Appointment:
         if not self.business_guard.ensure_is_a_member(business_id, current_user.id):
             raise AppointmentError()
 
-        appointment = self.appointment_repo.get_appointment_by_id(appointment.id)
-        if not appointment or appointment.business_id != business_id:
+        found_appointment = self.appointment_repo.get_appointment_by_id(appointment_id)
+        if not found_appointment:
             raise AppointmentError()
 
         is_admin = self.business_guard.ensure_admin_or_owner(business_id=business_id, user_id=current_user.id)
-        is_assigned = appointment.member_id == current_user.id
+        is_assigned = found_appointment.member_id == current_user.id
 
         if not (is_assigned or is_admin):
             raise AppointmentError()
@@ -94,7 +94,7 @@ class AppointmentService:
         if not self.business_member_repo.get_member(business_id, appointment.member_id):
             raise AppointmentError()
 
-        return self.appointment_repo.update(appointment_data=appointment, appointment_id=appointment.id);
+        return self.appointment_repo.update(appointment=appointment, appointment_id=appointment_id);
 
     def delete_single_appointment(self, appointment_id: int, current_user: User) :
         appointment = self.appointment_repo.get_appointment_by_id(appointment_id)

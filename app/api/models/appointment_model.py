@@ -51,6 +51,7 @@ class AppointmentRead(BaseModel):
     client_last_name: str
     client_phone: Optional[str]
     client_email: Optional[str]
+    referral_source: Optional[datetime]
 
     # PRICE
     price_at_booking: Optional[float]
@@ -76,18 +77,18 @@ class AppointmentRead(BaseModel):
         from_attributes = True
 
 class AppointmentUpdate(BaseModel):
-    client_first_name: Optional[str]
-    client_last_name: Optional[str]
-    client_email: Optional[EmailStr]
-    client_phone: Optional[str]
+    client_first_name: Optional[str] = None
+    client_last_name: Optional[str] = None
+    client_email: Optional[EmailStr] = None
+    client_phone: Optional[str] = None
 
-    appointment_date: Optional[datetime]
-    appointment_location: Optional[str]
-    appointment_duration: Optional[str]
-    appointment_note: Optional[str]
-    number_of_persons: Optional[int]
-    privacy_opt_out: Optional[str]
-    adds_ons: Optional[str]
+    appointment_date: Optional[datetime] = None
+    appointment_location: Optional[str] = None
+    appointment_duration: Optional[str] = None
+    appointment_note: Optional[str] = None
+    number_of_persons: Optional[int] = None
+    privacy_opt_out: Optional[str] = None
+    adds_ons: Optional[str] = None
 
-    member_id: Optional[int]
+    member_id: Optional[int] = None
 
