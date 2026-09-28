@@ -2,10 +2,11 @@ import datetime
 from dataclasses import dataclass
 from typing import Optional
 
+from app.domain.appointment.models.appointment_state_machine import AppointmentStatus, AppointmentEvent, appointment_sm
 from app.domain.user.models.user import User
 
 
-@dataclass(frozen=True)
+@dataclass()
 class Appointment:
     id: Optional[int]
     business_id: int
@@ -39,6 +40,9 @@ class Appointment:
     privacy_opt_out: Optional[str]
     adds_ons: Optional[str]
 
-    status: str
+    status: AppointmentStatus
     created_at: datetime
     updated_at: datetime
+
+    def handle(self, event: AppointmentEvent) -> None:
+        self.status = appointment_sm.handle(self.id, self.status, event)
