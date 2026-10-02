@@ -24,10 +24,15 @@ class StateMachine[S: Enum, E:Enum, C]:
         action(ctx)
         return next_state
 
-    def transition(self, from_state: S, event: E, to_state: S):
+    def transition(self, from_state: S | Iterable[S], event: E, to_state: S):
+        if not isinstance(from_state, Iterable):
+            from_state = (from_state,)
+
         def decorator(func: Action[C]) -> Action[C]:
-            self.add_transition(from_state, event, to_state, func)
+            for s in from_state:
+                self.add_transition(s, event, to_state, func)
             return func
+
         return decorator
 
 
@@ -39,6 +44,8 @@ class AppointmentStatus(str, Enum):
     PENDING_EDITING = "pending_editing"
     PENDING_REVIEW = "pending_review"
     COMPLETED = "completed"
+    CANCELED = "canceled"
+    REFUNDED = "refunded"
 
 class AppointmentEvent(str, Enum):
     CREATE = "create"
@@ -47,6 +54,11 @@ class AppointmentEvent(str, Enum):
     SELECTION = "selection"
     EDITING = "editing"
     REVIEW = "review"
+    CANCEL = "canceled"
+    REFUND = "refund"
+    UNASSIGN = "unassigned"
+    REMOVE_SELECTION = "remove_selection"
+    REMOVE_EDITING = "remove_editing"
 
 @dataclass
 class AppointmentCtx:
@@ -64,6 +76,9 @@ def _create(ctx): ctx.audit.append(f"{ctx.appointment_id} -> NEEDS_ASSIGNMENT")
 @appointment_sm.transition(S.NEEDS_ASSIGNMENT, E.ASSIGN, S.PENDING)
 def _assign(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING")
 
+@appointment_sm.transition(S.NEEDS_ASSIGNMENT, E.ASSIGN, S.PENDING)
+def _assign(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING")
+
 @appointment_sm.transition(S.PENDING, E.PHOTOSHOOT, S.PENDING_SELECTION)
 def _shoot(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING_SELECTION")
 
@@ -75,3 +90,33 @@ def _edit(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING_REVIEW")
 
 @appointment_sm.transition(S.PENDING_REVIEW, E.REVIEW, S.COMPLETED)
 def _review(ctx): ctx.audit.append(f"{ctx.appointment_id} -> COMPLETED")
+
+@appointment_sm.transition(S.PENDING_REVIEW, E.REMOVE_EDITING, S.PENDING_REVIEW)
+def _unedit(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING_REVIEW")
+
+@appointment_sm.transition(S.PENDING_EDITING, E.REMOVE_SELECTION, S.PENDING_SELECTION)
+def _unselect(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING_SELECTION")
+
+@appointment_sm.transition( (
+    S.NEW,
+    S.PENDING_SELECTION,
+    S.PENDING,
+    S.PENDING_EDITING,
+    S.PENDING_REVIEW,
+    S.NEEDS_ASSIGNMENT,
+    S.COMPLETED,),
+    E.CANCEL,
+    S.CANCELED)
+def _cancel(ctx): ctx.audit.append(f"{ctx.appointment_id} -> CANCELED")
+
+@appointment_sm.transition( (
+    S.NEW,
+    S.PENDING_SELECTION,
+    S.PENDING,
+    S.PENDING_EDITING,
+    S.PENDING_REVIEW,
+    S.NEEDS_ASSIGNMENT,
+    S.COMPLETED,),
+    E.REFUND,
+    S.REFUNDED)
+def _cancel(ctx): ctx.audit.append(f"{ctx.appointment_id} -> REFUND")
