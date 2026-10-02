@@ -16,14 +16,11 @@ class StateMachine[S: Enum, E:Enum, C]:
     def add_transition(self, from_state: S, event: E, to_state: S, action: Action[C]) -> None:
         self.transitions[(from_state, event)] = (to_state, action)
 
-    def next_transition(self, state: S, event: E) -> tuple[S, Action[C]]:
+    def handle(self, ctx: C, state: S, event: E) -> S:
         try:
-            return self.transitions[(state, event)]
+            next_state, action = self.transitions[(state, event)]
         except KeyError as e:
             raise InvalidTransition(f"Cannot {event.name} when {state.name}") from e
-
-    def handle(self, ctx: C, state: S, event: E) -> S:
-        next_state, action  = self.next_transition(state, event)
         action(ctx)
         return next_state
 
@@ -31,9 +28,7 @@ class StateMachine[S: Enum, E:Enum, C]:
         def decorator(func: Action[C]) -> Action[C]:
             self.add_transition(from_state, event, to_state, func)
             return func
-
         return decorator
-
 
 
 class AppointmentStatus(str, Enum):
@@ -60,26 +55,23 @@ class AppointmentCtx:
 
 appointment_sm: StateMachine[AppointmentStatus, AppointmentEvent, AppointmentCtx] = StateMachine()
 
-@appointment_sm.transition(AppointmentStatus.New, AppointmentEvent.CREATE, AppointmentStatus.NEEDS_ASSIGNMENT)
-def create(ctx: AppointmentCtx) -> None:
-    ctx.audit.append(f"{ctx.appointment_id} -> NEEDS_ASSIGNMENT")
+S, E = AppointmentStatus, AppointmentEvent
 
-@appointment_sm.transition(AppointmentStatus.NEEDS_ASSIGNMENT, AppointmentEvent.ASSIGN, AppointmentStatus.PENDING)
-def assign(ctx: AppointmentCtx) -> None:
-    ctx.audit.append(f"{ctx.appointment_id} -> PENDING")
 
-@appointment_sm.transitions(AppointmentStatus.PENDING, AppointmentEvent.PHOTOSHOOT, AppointmentStatus.PENDING_SELECTION)
-def shoot(ctx: AppointmentCtx) -> None:
-    ctx.audit.append(f"{ctx.appointment_id} -> PHOTOSHOOT done PENDING SELECTION")
+@appointment_sm.transition(S.NEW, E.CREATE, S.NEEDS_ASSIGNMENT)
+def _create(ctx): ctx.audit.append(f"{ctx.appointment_id} -> NEEDS_ASSIGNMENT")
 
-@appointment_sm.transitions(AppointmentStatus.PENDING_SELECTION, AppointmentEvent.SELECTION, AppointmentStatus.PENDING_EDITING)
-def select(ctx: AppointmentCtx) -> None:
-    ctx.audit.append(f"{ctx.appointment_id} -> SELECTION done PENDING_EDITING")
+@appointment_sm.transition(S.NEEDS_ASSIGNMENT, E.ASSIGN, S.PENDING)
+def _assign(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING")
 
-@appointment_sm.transitions(AppointmentStatus.PENDING_EDITING, AppointmentEvent.EDITING, AppointmentEvent.REVIEW)
-def edit(ctx: AppointmentCtx) -> None:
-    ctx.audit.append(f"{ctx.appointment_id} -> EDITING done PENDINGH REVIEW")
+@appointment_sm.transition(S.PENDING, E.PHOTOSHOOT, S.PENDING_SELECTION)
+def _shoot(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING_SELECTION")
 
-@appointment_sm.transitions(AppointmentStatus.PENDING_REVIEW, AppointmentEvent.REVIEW, AppointmentStatus.COMPLETED)
-def review(ctx: AppointmentCtx) -> None:
-    ctx.audit.append(f"{ctx.appointment_id} -> REVIEW done -> DONE")
+@appointment_sm.transition(S.PENDING_SELECTION, E.SELECTION, S.PENDING_EDITING)
+def _select(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING_EDITING")
+
+@appointment_sm.transition(S.PENDING_EDITING, E.EDITING, S.PENDING_REVIEW)
+def _edit(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING_REVIEW")
+
+@appointment_sm.transition(S.PENDING_REVIEW, E.REVIEW, S.COMPLETED)
+def _review(ctx): ctx.audit.append(f"{ctx.appointment_id} -> COMPLETED")

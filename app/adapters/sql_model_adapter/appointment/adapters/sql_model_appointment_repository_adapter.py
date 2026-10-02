@@ -94,6 +94,14 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
         self.db.refresh(row)
         return _to_domain(row)
 
+    def update_status(self, appointment: AppointmentEntity) -> AppointmentEntity:
+        row = self.db.get(AppointmentSQL, appointment.id)
+        row.status = appointment.status.value
+        row.updated_at = datetime.now()
+        self.db.commit()
+        self.db.refresh(row)
+        return _to_domain(row)
+
     def delete(self, appointment_id: int) -> bool:
         appointment = self.db.get(AppointmentSQL, appointment_id)
 
