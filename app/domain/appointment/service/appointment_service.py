@@ -2,6 +2,7 @@ from typing import List
 
 from app.domain.appointment.errors.appointment_error import AppointmentError
 from app.domain.appointment.models.appointment_model import Appointment
+from app.domain.appointment.models.appointment_state_machine import AppointmentEvent, AppointmentStatus
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
 from app.domain.business.guard import business_guard
 from app.domain.business.guard.business_guard import BusinessGuard
@@ -94,6 +95,11 @@ class AppointmentService:
         if not self.business_member_repo.get_member(business_id, appointment.member_id):
             raise AppointmentError()
 
+        if found_appointment.status == AppointmentStatus.NEEDS_ASSIGNMENT and appointment.member_id is not None:
+            found_appointment.handle(AppointmentEvent.ASSIGN)
+            self.appointment_repo.update_status(found_appointment)
+
+
         return self.appointment_repo.update(appointment=appointment, appointment_id=appointment_id);
 
     def delete_single_appointment(self, appointment_id: int, current_user: User) :
@@ -109,3 +115,8 @@ class AppointmentService:
             raise AppointmentError()
 
         self.appointment_repo.delete(appointment_id)
+
+    def advance(self, business_id: int, appointment_id: int, event: AppointmentEvent, current_user: User) -> Appointment:
+        appointment = self.get_single_appointment(business_id, appointment_id, current_user)
+        appointment.handle(event)
+        return self.appointment_repo.update_status(appointment)

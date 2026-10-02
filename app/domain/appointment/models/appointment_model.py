@@ -1,8 +1,9 @@
-import datetime
+from datetime import datetime
 from dataclasses import dataclass
 from typing import Optional
 
-from app.domain.appointment.models.appointment_state_machine import AppointmentStatus, AppointmentEvent, appointment_sm
+from app.domain.appointment.models.appointment_state_machine import AppointmentStatus, AppointmentEvent, appointment_sm, \
+    AppointmentCtx
 from app.domain.user.models.user import User
 
 
@@ -41,8 +42,11 @@ class Appointment:
     adds_ons: Optional[str]
 
     status: AppointmentStatus
+
     created_at: datetime
     updated_at: datetime
 
-    def handle(self, event: AppointmentEvent) -> None:
-        self.status = appointment_sm.handle(self.id, self.status, event)
+    def handle(self, event: AppointmentEvent) -> AppointmentCtx:
+        ctx = AppointmentCtx(appointment_id=self.id)
+        self.status = appointment_sm.handle(ctx, AppointmentStatus(self.status), event)
+        return ctx

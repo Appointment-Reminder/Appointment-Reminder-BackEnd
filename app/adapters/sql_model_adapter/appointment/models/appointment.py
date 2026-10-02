@@ -5,6 +5,8 @@ from typing import Optional
 
 from app.domain.appointment.models.appointment_model import Appointment as AppointmentEntity
 from app.adapters.sql_model_adapter.user.models.user import _to_domain as user_to_domain
+from app.domain.appointment.models.appointment_state_machine import AppointmentStatus
+
 
 class Appointment(SQLModel, table=True):
     __tablename__ = 'appointments'
@@ -78,7 +80,7 @@ def _to_domain(row: Appointment) -> AppointmentEntity:
         privacy_opt_out=row.privacy_opt_out,
         adds_ons=row.adds_ons,
 
-        status=row.status,
+        status=AppointmentStatus(row.status),
         created_at=row.created_at,
         updated_at=row.updated_at,
     )

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Query, Depends
 from typing import Optional, List
 
 from app.api.models.appointment_model import AppointmentRead, AppointmentCreate, AppointmentUpdate
+from app.domain.appointment.models.appointment_state_machine import AppointmentEvent
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
 from app.domain.appointment.service.appointment_service import AppointmentService
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
@@ -78,6 +79,11 @@ def update_single_appointment(
         appointment_id = appointment_id,
         appointment=appointment_data,
     )
+
+@appointment_router.post("/business/{business_id}/appointments/{appointment_id}/{event}", response_model=AppointmentRead)
+def advance_appointment(business_id: int, appointment_id: int, event: AppointmentEvent,
+                        service: FromDishka[AppointmentService], current_user: FromDishka[User]):
+    return service.advance(business_id, appointment_id, event, current_user)
 
 @appointment_router.delete("/{appointment_id}", status_code=200)
 def delete_single_appointment(

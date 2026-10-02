@@ -6,6 +6,7 @@ from app.domain.Jotform.service.jotform_webhook_parser import parse_jotform_raw_
 from app.domain.Jotform.service.jotform_submission_assembler import resolve_booking_context
 from app.domain.Jotform.service.jotform_service import JotformService
 from app.domain.appointment.models.appointment_model import Appointment
+from app.domain.appointment.models.appointment_state_machine import AppointmentStatus, AppointmentEvent
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
@@ -50,8 +51,6 @@ class JotformWebhookService:
             price_repo=self.price_repo,
         )
 
-        status = "pending" if booking.fully_resolved else "needs_assignment"
-
         appointment = Appointment(
             id = None,
             business_id = business_id,
@@ -82,9 +81,13 @@ class JotformWebhookService:
             adds_ons=resolved.get("add_ons") or "",
 
 
-            status=status,
+            status=AppointmentStatus.NEW,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
+
+        appointment.handle(AppointmentEvent.CREATE)
+        if booking.fully_resolved:
+            appointment.handle(AppointmentEvent.ASSIGN)
 
         return self.appointment_repo.create(appointment)

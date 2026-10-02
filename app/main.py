@@ -57,7 +57,10 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:9100",
         "http://127.0.0.1:9100",
-        "https://app.yourdomain.com"
+        "http://127.0.0.1:61755",
+        "https://app.yourdomain.com",
+        "*"
+
     ],
     allow_credentials=True,
     allow_methods=["*"],
