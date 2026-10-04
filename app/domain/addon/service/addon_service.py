@@ -4,7 +4,9 @@ from typing import List, Optional
 
 from app.domain.addon.guard.addon_guard import AddonGuard, normalize_alias
 from app.domain.addon.models.addon import Addon
+from app.domain.addon.models.addon_commission import AddonCommission, commission_in_effect
 from app.domain.addon.models.addon_price import AddonPrice, price_in_effect
+from app.domain.addon.port.addon_commission_repository_port import AddonCommissionRepositoryPort
 from app.domain.addon.port.addon_price_repository_port import AddonPriceRepositoryPort
 from app.domain.addon.port.addon_repository_port import AddonRepositoryPort
 from app.domain.business.guard.business_guard import BusinessGuard
@@ -20,12 +22,14 @@ class AddonService:
         self,
         addon_repo: AddonRepositoryPort,
         price_repo: AddonPriceRepositoryPort,
+        commission_repo: AddonCommissionRepositoryPort,
         business_guard: BusinessGuard,
         package_guard: PackageGuard,
         addon_guard: AddonGuard,
     ):
         self.addon_repo = addon_repo
         self.price_repo = price_repo
+        self.commission_repo = commission_repo
         self.business_guard = business_guard
         self.package_guard = package_guard
         self.addon_guard = addon_guard
@@ -79,6 +83,32 @@ class AddonService:
     def get_price_history(self, addon_id: int, current_user: User) -> List[AddonPrice]:
         self.get(addon_id, current_user)
         return self.price_repo.get_history(addon_id)
+
+    # COMMISSION
+    def create_commission(self, data: AddonCommission, current_user: User) -> AddonCommission:
+        addon = self.get(data.addon_id, current_user)
+        member = self.business_guard.ensure_member_exist(member_id=data.business_member_id)
+        if member.business_id != addon.business_id:
+            raise AddonError()
+        if data.commission_amount < 0 or (data.commission_isPercentage and data.commission_amount > 100):
+            raise AddonError()
+
+        return self.commission_repo.create(AddonCommission(
+            business_member_id=data.business_member_id,
+            addon_id=data.addon_id,
+            commission_amount=data.commission_amount,
+            commission_isPercentage=data.commission_isPercentage,
+            effective_from=data.effective_from,
+        ))
+
+    def get_current_commission(self, member_id: int, addon_id: int, current_user: User,
+                               at: Optional[datetime] = None) -> AddonCommission:
+        addon = self.get(addon_id, current_user)
+        member = self.business_guard.ensure_member_exist(member_id=member_id)
+        if member.business_id != addon.business_id:
+            raise AddonError()
+        history = self.commission_repo.get_history(member_id, addon_id)
+        return commission_in_effect(history, member_id, addon_id, at or datetime.now())
 
     def _normalized(self, data: Addon, business_id: int, is_active: bool) -> Addon:
         return Addon(

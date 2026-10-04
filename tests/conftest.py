@@ -19,6 +19,7 @@ from app.adapters.sql_model_adapter.package.models.package_category import Packa
 from app.adapters.sql_model_adapter.package.models.package_price import PackagePrice
 from app.adapters.sql_model_adapter.addon.models.addon import Addon
 from app.adapters.sql_model_adapter.addon.models.addon_price import AddonPrice
+from app.adapters.sql_model_adapter.addon.models.addon_commission import AddonCommission
 from app.adapters.sql_model_adapter.appointment.models.appointment import Appointment
 from app.adapters.sql_model_adapter.jotform.models.jotform import (
     JotformCredential, JotformForm, JotformFormAssignment,
