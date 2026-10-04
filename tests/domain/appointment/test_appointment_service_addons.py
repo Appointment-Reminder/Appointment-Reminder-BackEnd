@@ -102,11 +102,6 @@ class TestAddonCommissionFollowsTheAssignedMember:
         found, member_id = addon_service.assign_member.call_args.args
         assert (found.id, member_id) == (1, 8)
 
-    def test_keeping_the_same_member_changes_nothing(self, member_service, addon_service):
-        member_service.update_single_appointment(100, 1, Mock(member_id=7), Mock(id=9))
-
-        addon_service.assign_member.assert_not_called()
-
     def test_an_update_without_a_member_changes_nothing(self, member_service, addon_service):
         member_service.update_single_appointment(100, 1, Mock(member_id=None), Mock(id=9))
 

@@ -2,6 +2,7 @@ import datetime
 from typing import List, Optional
 
 from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
+from app.domain.addon.service.appointment_addon_hydration import attach_addons
 from app.domain.addon.service.appointment_addon_service import AppointmentAddonService
 from app.domain.appointment.errors.appointment_error import AppointmentError
 from app.domain.appointment.models.appointment_model import Appointment
@@ -28,13 +29,7 @@ class AppointmentService:
         self.appointment_addon_service = appointment_addon_service
 
     def _with_addons(self, appointments: List[Appointment]) -> List[Appointment]:
-        ids = [a.id for a in appointments]
-        addons = self.appointment_addon_repo.list_for_appointments(ids)
-        unresolved = self.appointment_addon_repo.list_unresolved_addons_for_appointments(ids)
-        for appointment in appointments:
-            appointment.addons = addons.get(appointment.id, [])
-            appointment.unresolved_addons = unresolved.get(appointment.id, [])
-        return appointments
+        return attach_addons(appointments, self.appointment_addon_repo)
 
     def create_appointment(self, appointment: Appointment) -> Appointment:
         if appointment.business_id is None:
@@ -122,8 +117,7 @@ class AppointmentService:
             if found.status == AppointmentStatus.NEEDS_ASSIGNMENT:
                 found.handle(AppointmentEvent.ASSIGN)
                 self.appointment_repo.update_status(found)
-            if target.id != found.member_id:
-                self.appointment_addon_service.assign_member(found, target.id)
+            self.appointment_addon_service.assign_member(found, target.id)
 
         updated = self.appointment_repo.update(appointment=appointment, appointment_id=appointment_id)
         return self._with_addons([updated])[0]

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Optional
 
 from app.domain.addon.models.addon import Addon
@@ -74,24 +74,17 @@ def snapshot_appointment_addon(
 
 def with_quantity(line: AppointmentAddon, quantity: int) -> AppointmentAddon:
     """Same line at another quantity, recomputed from the frozen unit values (the catalogue is never re-read)."""
-    return AppointmentAddon(
-        id=line.id, appointment_id=line.appointment_id, addon_id=line.addon_id,
-        addon_price_id=line.addon_price_id, quantity=quantity, unit_price=line.unit_price,
-        unit_duration=line.unit_duration, unit_commission_percent=line.unit_commission_percent,
-        unit_commission_amount=line.unit_commission_amount, raw_label=line.raw_label,
-        price_total=line.unit_price * quantity,
+    return replace(
+        line, quantity=quantity, price_total=line.unit_price * quantity,
         commission_total=_commission_total(line.unit_price, quantity, line.unit_commission_percent,
-                                         line.unit_commission_amount),
+                                           line.unit_commission_amount),
     )
 
 
 def with_commission(line: AppointmentAddon, commission: Optional[AddonCommission]) -> AppointmentAddon:
     """Same line with another member's commission (None clears it). Price and quantity stay as frozen."""
     percent, flat = _unit_commission(commission)
-    return AppointmentAddon(
-        id=line.id, appointment_id=line.appointment_id, addon_id=line.addon_id,
-        addon_price_id=line.addon_price_id, quantity=line.quantity, unit_price=line.unit_price,
-        unit_duration=line.unit_duration, raw_label=line.raw_label, price_total=line.price_total,
-        unit_commission_percent=percent, unit_commission_amount=flat,
+    return replace(
+        line, unit_commission_percent=percent, unit_commission_amount=flat,
         commission_total=_commission_total(line.unit_price, line.quantity, percent, flat),
     )

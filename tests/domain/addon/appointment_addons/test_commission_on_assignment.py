@@ -100,6 +100,16 @@ class TestAssigning:
 
         assert booked.commission_amount_at_booking == 17.0
 
+    def test_assigning_the_member_already_assigned_changes_nothing(self, service, booked, lines, appointment_repo):
+        service.assign_member(booked, 7)
+        appointment_repo.update_totals.reset_mock()
+        before = (booked.commission_amount_at_booking, [l.commission_total for l in lines.lines])
+
+        service.assign_member(booked, 7)
+
+        assert (booked.commission_amount_at_booking, [l.commission_total for l in lines.lines]) == before
+        appointment_repo.update_totals.assert_not_called()
+
     def test_the_frozen_unit_price_is_used_not_the_current_catalogue_price(self, service, catalogue, booked, lines):
         catalogue.reprice(1, 500)
 
