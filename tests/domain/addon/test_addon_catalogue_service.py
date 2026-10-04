@@ -140,3 +140,49 @@ class TestDeactivateAddon:
 
     def test_service_offers_no_hard_delete(self, service):
         assert not hasattr(service, "delete")
+
+
+class TestAddonTypeLockedOnceBooked:
+    @pytest.fixture
+    def stored(self, addon_repo):
+        addon = _addon(id=1, has_duration=True, duration_minutes=30, has_quantity=False)
+        addon_repo.get_by_id.return_value = addon
+        return addon
+
+    @pytest.fixture
+    def booked(self, appointment_addon_repo):
+        appointment_addon_repo.exists_for_addon.return_value = True
+
+    def test_flags_of_a_never_booked_addon_can_change(self, service, stored, user):
+        updated = service.update(_addon(id=1, has_duration=False, has_quantity=True), user)
+
+        assert (updated.has_duration, updated.has_quantity) == (False, True)
+
+    def test_changing_has_duration_on_a_booked_addon_is_rejected(self, service, stored, booked, addon_repo, user):
+        with pytest.raises(AddonError):
+            service.update(_addon(id=1, has_duration=False, has_quantity=False), user)
+        addon_repo.update.assert_not_called()
+
+    def test_changing_has_quantity_on_a_booked_addon_is_rejected(self, service, stored, booked, addon_repo, user):
+        with pytest.raises(AddonError):
+            service.update(_addon(id=1, has_duration=True, duration_minutes=30, has_quantity=True), user)
+        addon_repo.update.assert_not_called()
+
+    def test_other_fields_stay_editable_after_booking(self, service, stored, booked, user):
+        updated = service.update(
+            _addon(id=1, name="Renamed", jotform_alias="new alias", category_id=None,
+                   has_duration=True, duration_minutes=45, has_quantity=False), user)
+
+        assert (updated.name, updated.jotform_alias, updated.duration_minutes) == ("Renamed", "new alias", 45)
+
+    def test_a_booked_addon_can_still_be_deactivated_and_reactivated(self, service, stored, booked, user):
+        assert service.deactivate(1, user).is_active is False
+        assert service.update(_addon(id=1, is_active=True, has_duration=True, duration_minutes=30), user).is_active is True
+
+    def test_submitting_the_unchanged_flags_of_a_booked_addon_is_fine(self, service, stored, booked, user):
+        service.update(_addon(id=1, has_duration=True, duration_minutes=30, has_quantity=False), user)
+
+    def test_there_is_no_hard_delete_for_a_booked_addon(self, service):
+        from app.domain.addon.port.addon_repository_port import AddonRepositoryPort
+        assert not hasattr(service, "delete")
+        assert not hasattr(AddonRepositoryPort, "delete")
