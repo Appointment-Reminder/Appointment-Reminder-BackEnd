@@ -1,7 +1,13 @@
 from datetime import datetime
-from typing import Iterable, Optional, TypeVar
+from typing import Iterable, Optional, Protocol, TypeVar
 
-V = TypeVar("V")
+
+class Versioned(Protocol):
+    @property
+    def effective_from(self) -> datetime: ...
+
+
+V = TypeVar("V", bound=Versioned)
 
 
 def latest_in_effect(versions: Iterable[V], at: datetime) -> Optional[V]:
