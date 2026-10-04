@@ -7,10 +7,14 @@ from app.adapters.sql_model_adapter.addon.adapters.sql_model_addon_price_reposit
     SQLModelAddonPriceRepositoryAdapter
 from app.adapters.sql_model_adapter.addon.adapters.sql_model_addon_commission_repository_adapter import (
     SQLModelAddonCommissionRepositoryAdapter)
+from app.adapters.sql_model_adapter.addon.adapters.sql_model_appointment_addon_repository_adapter import (
+    SQLModelAppointmentAddonRepositoryAdapter)
 from app.domain.addon.guard.addon_guard import AddonGuard
 from app.domain.addon.port.addon_commission_repository_port import AddonCommissionRepositoryPort
 from app.domain.addon.port.addon_price_repository_port import AddonPriceRepositoryPort
 from app.domain.addon.port.addon_repository_port import AddonRepositoryPort
+from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
+from app.domain.addon.service.addon_booking import AddonBookingResolver
 from app.domain.addon.service.addon_service import AddonService
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.package.guard.package_guard import PackageGuard
@@ -30,6 +34,17 @@ class AddonProvider(Provider):
     @provide
     def get_addon_commission_repo(self, db: Session) -> AddonCommissionRepositoryPort:
         return SQLModelAddonCommissionRepositoryAdapter(db=db)
+
+    @provide
+    def get_appointment_addon_repo(self, db: Session) -> AppointmentAddonRepositoryPort:
+        return SQLModelAppointmentAddonRepositoryAdapter(db=db)
+
+    @provide
+    def get_addon_booking_resolver(self,
+                                   addon_repo: AddonRepositoryPort,
+                                   price_repo: AddonPriceRepositoryPort,
+                                   commission_repo: AddonCommissionRepositoryPort) -> AddonBookingResolver:
+        return AddonBookingResolver(addon_repo=addon_repo, price_repo=price_repo, commission_repo=commission_repo)
 
     @provide
     def get_addon_guard(self, addon_repo: AddonRepositoryPort) -> AddonGuard:

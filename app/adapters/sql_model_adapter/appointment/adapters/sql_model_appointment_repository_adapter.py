@@ -45,7 +45,6 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
             appointment_note = appointment.appointment_note,
             number_of_persons = appointment.number_of_persons,
             privacy_opt_out = appointment.privacy_opt_out,
-            adds_ons = appointment.adds_ons,
 
             status = appointment.status,
             created_at = appointment.created_at,
