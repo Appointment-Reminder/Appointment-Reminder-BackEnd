@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List
 
 from dishka import FromDishka
@@ -92,10 +91,8 @@ def correct_addon_commission(data: AddonCommissionUpdate, service: FromDishka[Ad
                              current_user: FromDishka[User]):
     """Fix a commission version in place instead of adding a new dated one, owner and admin only"""
     return service.correct_commission(
-        data=AddonCommission(
-            id=data.id, business_member_id=0, addon_id=0, commission_amount=data.commission_amount,
-            commission_isPercentage=data.commission_isPercentage, effective_from=datetime.min),
-        current_user=current_user)
+        commission_id=data.id, commission_amount=data.commission_amount,
+        commission_isPercentage=data.commission_isPercentage, current_user=current_user)
 
 
 @addon_router.get("/addons/{addon_id}/members/{member_id}/commission", response_model=AddonCommissionRead)

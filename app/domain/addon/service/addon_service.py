@@ -110,16 +110,18 @@ class AddonService:
             effective_from=data.effective_from,
         ))
 
-    def correct_commission(self, data: AddonCommission, current_user: User) -> AddonCommission:
+    def correct_commission(self, commission_id: int, commission_amount: int, commission_isPercentage: bool,
+                           current_user: User) -> AddonCommission:
         """Fix the amount and kind of an existing version in place. Booked Appointment Add-ons keep their frozen one."""
-        stored = self.commission_repo.get_by_id(data.id) if data.id is not None else None
+        stored = self.commission_repo.get_by_id(commission_id)
         if stored is None:
             raise AddonError()
         self._get_for_admin(stored.addon_id, current_user)
-        self._ensure_commission_valid(data)
+        corrected = replace(
+            stored, commission_amount=commission_amount, commission_isPercentage=commission_isPercentage)
+        self._ensure_commission_valid(corrected)
 
-        return self.commission_repo.update(replace(
-            stored, commission_amount=data.commission_amount, commission_isPercentage=data.commission_isPercentage))
+        return self.commission_repo.update(corrected)
 
     def get_current_commission(self, member_id: int, addon_id: int, current_user: User,
                                at: Optional[datetime] = None) -> AddonCommission:
