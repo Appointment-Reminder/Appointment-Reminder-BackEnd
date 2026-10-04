@@ -22,6 +22,7 @@ class FakeAppointmentAddonRepo:
     def __init__(self):
         self.lines = []
         self.unresolved = []
+        self.applied = []  # the appointments whose changes were written through apply_changes
         self._next = 1
 
     def add(self, line):
@@ -37,6 +38,15 @@ class FakeAppointmentAddonRepo:
     def remove(self, appointment_addon_id):
         self.lines = [l for l in self.lines if l.id != appointment_addon_id]
         return True
+
+    def apply_changes(self, appointment, removed_ids, updated, added):
+        self.applied.append(appointment)
+        for line_id in removed_ids:
+            self.remove(line_id)
+        for line in updated:
+            self.update(line)
+        for line in added:
+            self.add(line)
 
     def get(self, appointment_id, addon_id):
         return next((l for l in self.lines if l.appointment_id == appointment_id and l.addon_id == addon_id), None)

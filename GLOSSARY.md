@@ -36,5 +36,9 @@ _Avoid_: Booked extra
 The share of a Package's or Add-on's price earned by a business member, either a percentage or a flat amount, defined per member and per Package or Add-on. A missing commission means 0.
 _Avoid_: Cut, fee
 
+**Commission Correction**:
+Fixing a mistake in an existing Commission version in place, instead of adding a new dated version. It only affects bookings made afterwards: Appointment Add-ons keep the commission frozen when they were booked.
+_Avoid_: Commission update (ambiguous with adding a new version)
+
 **Unresolved Add-on**:
 An Add-on label from a Jotform submission that matched no Add-on Alias. It is kept on the appointment and flagged for manual resolution without blocking the Package booking.
