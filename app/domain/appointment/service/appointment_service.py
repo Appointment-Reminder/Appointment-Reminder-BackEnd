@@ -99,16 +99,16 @@ class AppointmentService:
         return self._with_addons([appointment])[0]
 
     def update_single_appointment(self, business_id: int, appointment_id:int, appointment: Appointment,  current_user: User) -> Appointment:
-        member = self.business_guard.ensure_is_a_member(business_id, current_user.id)
+        member = self.business_guard.ensure_is_a_member(business_id=business_id, user_id=current_user.id)
         found = self.appointment_repo.get_appointment_by_id(appointment_id)
-        if not found or found.business_id != business_id:  # you forgot this tenant check
+        if not found or found.business_id != business_id:
             raise AppointmentError()
 
         is_admin = member.role in (MemberRole.OWNER, MemberRole.ADMIN)
         if not (is_admin or found.member_id == member.id):
             raise AppointmentError()
 
-        if appointment.member_id is not None:  # reassigning: admin only
+        if appointment.member_id is not None:
             if not is_admin:
                 raise AppointmentError()
             target = self.business_member_repo.get_member_by_id(appointment.member_id)

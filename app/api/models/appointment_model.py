@@ -86,7 +86,7 @@ class AppointmentUpdate(BaseModel):
 
     appointment_date: Optional[datetime] = None
     appointment_location: Optional[str] = None
-    appointment_duration: Optional[str] = None
+    appointment_duration: Optional[int] = None
     appointment_note: Optional[str] = None
     number_of_persons: Optional[int] = None
     privacy_opt_out: Optional[str] = None
