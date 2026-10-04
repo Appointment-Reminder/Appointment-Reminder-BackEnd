@@ -78,3 +78,6 @@ docker-compose.override.yml
 
 # Local issue tracker and specs
 /.scratch/
+
+# Local data export
+/scripts/appointments.xlsx
