@@ -5,7 +5,7 @@ from app.domain.Jotform.models.jotform_field_mapping import SUBMISSION_FIELDS, S
 class TestSubmissionFieldRegistry:
     def test_contains_expected_keys(self):
         expected = {
-            "appointment_date", "package", "client_name", "client_email",
+            "appointment_date", "package", "client_first_name", "client_last_name", "client_email",
             "privacy_opt_out", "client_source_location", "referral_source",
             "add_ons", "guest_count",
         }
@@ -18,7 +18,7 @@ class TestSubmissionFieldRegistry:
 
     def test_required_fields_are_exactly_expected(self):
         required = {f.key for f in SUBMISSION_FIELDS if f.required}
-        assert required == {"appointment_date", "package", "client_name", "client_email"}
+        assert required == {"appointment_date", "appointment_location", "package", "client_first_name","client_last_name"}
 
     def test_submission_field_keys_matches_definitions(self):
         assert SUBMISSION_FIELD_KEYS == {f.key for f in SUBMISSION_FIELDS}

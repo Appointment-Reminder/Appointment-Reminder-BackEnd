@@ -15,13 +15,13 @@ def jotform_repo():
 def guard(jotform_repo):
     return JotformGuard(jotform_repo=jotform_repo)
 
-def _mapping(target_key="client_name", qid="1", priority=0, subkey=None):
+def _mapping(target_key="client_first_name", qid="1", priority=0, subkey=None):
     return JotformFieldMapping(form_id=10, target_key=target_key, qid=qid, priority=priority, subkey=subkey)
 
 
 class TestEnsureMappingValid:
     def test_passes_for_valid_target_keys(self, guard):
-        mappings = [_mapping(target_key="client_name"), _mapping(target_key="package", qid="2")]
+        mappings = [_mapping(target_key="client_first_name"), _mapping(target_key="package", qid="2")]
         guard.ensure_mapping_valid(mappings)  # no raise
 
     def test_raises_on_unknown_target_key(self, guard):

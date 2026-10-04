@@ -326,7 +326,7 @@ class TestGetSubmissionFieldDefs:
 
         assert result == SUBMISSION_FIELDS
         assert any(f.key == "appointment_date" for f in result)
-        assert any(f.key == "client_name" for f in result)
+        assert any(f.key == "client_first_name" for f in result)
 
 
 # ---------- resolve_submission ----------
