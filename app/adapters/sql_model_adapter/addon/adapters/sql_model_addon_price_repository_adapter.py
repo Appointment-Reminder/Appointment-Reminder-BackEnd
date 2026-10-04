@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from sqlalchemy.orm import Session
 from sqlmodel import select
@@ -31,3 +31,16 @@ class SQLModelAddonPriceRepositoryAdapter(AddonPriceRepositoryPort):
             .order_by(AddonPriceSQL.effective_from.desc())
         ).all()
         return [_to_domain(row) for row in rows]
+
+    def get_histories(self, addon_ids: List[int]) -> Dict[int, List[AddonPriceEntity]]:
+        if not addon_ids:
+            return {}
+        rows = self.db.exec(
+            select(AddonPriceSQL)
+            .where(AddonPriceSQL.addon_id.in_(addon_ids))
+            .order_by(AddonPriceSQL.effective_from.desc())
+        ).all()
+        histories: Dict[int, List[AddonPriceEntity]] = {}
+        for row in rows:
+            histories.setdefault(row.addon_id, []).append(_to_domain(row))
+        return histories

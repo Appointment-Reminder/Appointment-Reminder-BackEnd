@@ -5,6 +5,7 @@ from unittest.mock import Mock
 from app.domain.addon.guard.addon_guard import AddonGuard
 from app.domain.addon.models.addon import Addon
 from app.domain.addon.service.addon_service import AddonService
+from app.domain.business.models.business_member_model import MemberRole
 from app.domain.package.models.package_category_model import PackageCategory
 
 
@@ -21,6 +22,7 @@ def price_repo():
     repo = Mock()
     repo.create.side_effect = lambda p: p
     repo.get_history.return_value = []
+    repo.get_histories.return_value = {}
     return repo
 
 @pytest.fixture
@@ -38,7 +40,9 @@ def appointment_addon_repo():
 
 @pytest.fixture
 def business_guard():
-    return Mock()
+    guard = Mock()
+    guard.ensure_is_a_member.return_value = Mock(id=5, role=MemberRole.OWNER)
+    return guard
 
 @pytest.fixture
 def package_guard():

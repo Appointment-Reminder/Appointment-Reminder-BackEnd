@@ -13,3 +13,4 @@ class Addon:
     has_quantity: bool = False
     duration_minutes: Optional[int] = None
     id: Optional[int] = None
+    current_price: Optional[int] = None  # read-side only, never stored

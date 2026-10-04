@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Callable, Optional
+from typing import Callable, List, Optional, Tuple
 
 from app.domain.addon.errors.addon_errors import (
     AddonError, AppointmentAddonsLocked, AppointmentNotPriced, NoAddonPriceInEffect)
@@ -86,6 +86,44 @@ class AppointmentAddonService:
         fold_in_addon(appointment, updated)
         return self._save(appointment)
 
+    def replace_addons(self, business_id: int, appointment_id: int, desired: List[Tuple[int, int]],
+                       current_user: User) -> Appointment:
+        """Make the appointment carry exactly the desired (addon_id, quantity) set, all or nothing.
+
+        Lines already booked keep their frozen price and commission (only the quantity moves), new ones are frozen
+        now, missing ones are removed. Everything is checked before anything is written, then written in one go.
+        """
+        appointment = self._load_editable(business_id, appointment_id, current_user)
+        addon_ids = [addon_id for addon_id, _ in desired]
+        if len(set(addon_ids)) != len(addon_ids):
+            raise AddonError()
+
+        current = {line.addon_id: line for line in self.appointment_addon_repo.list_for_appointment(appointment_id)}
+        removed = [line for addon_id, line in current.items() if addon_id not in addon_ids]
+        requantified: List[Tuple[AppointmentAddon, AppointmentAddon]] = []
+        added: List[AppointmentAddon] = []
+        for addon_id, quantity in desired:
+            line = current.get(addon_id)
+            if line is None:
+                added.append(self._new_line(appointment, addon_id, quantity))
+                continue
+            self._ensure_quantity_allowed(self.addon_guard.ensure_addon_exist(addon_id), quantity)
+            if quantity != line.quantity:
+                requantified.append((line, with_quantity(line, quantity)))
+
+        for line in removed:
+            fold_out_addon(appointment, line)
+        for old, new in requantified:
+            fold_out_addon(appointment, old)
+            fold_in_addon(appointment, new)
+        for line in added:
+            fold_in_addon(appointment, line)
+
+        self.appointment_addon_repo.apply_changes(
+            appointment, removed_ids=[line.id for line in removed],
+            updated=[new for _, new in requantified], added=added)
+        return attach_addons([appointment], self.appointment_addon_repo)[0]
+
     def resolve_unresolved_addon(self, business_id: int, appointment_id: int, unresolved_id: int, addon_id: int,
                            current_user: User, quantity: int = 1) -> Appointment:
         """Book the picked Add-on for an Unresolved Add-on, at today's price and the assigned member's commission."""
@@ -125,16 +163,22 @@ class AppointmentAddonService:
     # helpers
     def _book(self, appointment: Appointment, addon_id: int, quantity: int, raw_label: Optional[str] = None) -> None:
         """Freeze the add-on as an Appointment Add-on of the appointment and fold it into the totals."""
+        line = self._new_line(appointment, addon_id, quantity, raw_label=raw_label)
+        if self.appointment_addon_repo.get(appointment.id, addon_id) is not None:
+            raise AddonError()
+        fold_in_addon(appointment, self.appointment_addon_repo.add(line))
+
+    def _new_line(self, appointment: Appointment, addon_id: int, quantity: int,
+                  raw_label: Optional[str] = None) -> AppointmentAddon:
+        """The checked, frozen line for an Add-on about to be booked; nothing is written."""
         if appointment.price_at_booking is None:
             raise AppointmentNotPriced()
         addon = self._ensure_bookable(addon_id, appointment.business_id, appointment)
         self._ensure_quantity_allowed(addon, quantity)
-        if self.appointment_addon_repo.get(appointment.id, addon_id) is not None:
-            raise AddonError()
 
         line = self._snapshot(appointment, addon, quantity, raw_label=raw_label)
         line.appointment_id = appointment.id
-        fold_in_addon(appointment, self.appointment_addon_repo.add(line))
+        return line
 
     def _recommission(self, appointment: Appointment, line: AppointmentAddon, commission) -> None:
         updated = with_commission(line, commission)

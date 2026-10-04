@@ -92,6 +92,14 @@ def add_appointment_addon(business_id: int, appointment_id: int, data: Appointme
     """Add an Add-on to an appointment. Allowed until the appointment is completed, canceled or refunded."""
     return service.add_addon(business_id, appointment_id, data.addon_id, data.quantity, current_user)
 
+@appointment_router.put("/business/{business_id}/appointments/{appointment_id}/addons", response_model=AppointmentRead)
+def replace_appointment_addons(business_id: int, appointment_id: int, data: List[AppointmentAddonCreate],
+                               service: FromDishka[AppointmentAddonService], current_user: FromDishka[User]):
+    """Replace the whole set of Add-ons of an appointment, all or nothing. Allowed until the appointment is completed,
+    canceled or refunded."""
+    return service.replace_addons(
+        business_id, appointment_id, [(line.addon_id, line.quantity) for line in data], current_user)
+
 @appointment_router.patch("/business/{business_id}/appointments/{appointment_id}/addons/{addon_id}", response_model=AppointmentRead)
 def change_appointment_addon_quantity(business_id: int, appointment_id: int, addon_id: int,
                                       data: AppointmentAddonQuantityUpdate,

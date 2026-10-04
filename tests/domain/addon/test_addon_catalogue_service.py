@@ -73,15 +73,15 @@ class TestCreateAddon:
 
 
 class TestReadAddons:
-    def test_list_requires_admin_of_that_business(self, service, business_guard, addon_repo, user):
+    def test_list_requires_membership_of_that_business(self, service, business_guard, addon_repo, user):
         addon_repo.list_by_business.return_value = [_addon(id=1)]
 
         assert service.list(100, user) == [_addon(id=1)]
-        business_guard.ensure_admin_or_owner.assert_called_with(100, 9)
+        business_guard.ensure_is_a_member.assert_called_with(100, 9)
 
     def test_addon_of_another_business_is_not_visible(self, service, business_guard, addon_repo, user):
         addon_repo.get_by_id.return_value = _addon(id=1, business_id=555)
-        business_guard.ensure_admin_or_owner.side_effect = BusinessError()
+        business_guard.ensure_is_a_member.side_effect = BusinessError()
 
         with pytest.raises(BusinessError):
             service.get(1, user)

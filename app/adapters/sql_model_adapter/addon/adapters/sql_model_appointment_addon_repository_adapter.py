@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Set
 
 from sqlalchemy.orm import Session
@@ -8,9 +9,26 @@ from app.adapters.sql_model_adapter.addon.models.appointment_addon import Appoin
 from app.adapters.sql_model_adapter.addon.models.unresolved_addon import UnresolvedAddon as UnresolvedAddonSQL, \
     _to_domain as unresolved_to_domain
 from app.adapters.sql_model_adapter.appointment.models.appointment import Appointment as AppointmentSQL
+from app.domain.appointment.models.appointment_model import Appointment as AppointmentEntity
 from app.domain.addon.models.appointment_addon import AppointmentAddon as AppointmentAddonEntity
 from app.domain.addon.models.unresolved_addon import UnresolvedAddon as UnresolvedAddonEntity
 from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
+
+
+def _to_sql(line: AppointmentAddonEntity) -> AppointmentAddonSQL:
+    return AppointmentAddonSQL(
+        appointment_id=line.appointment_id,
+        addon_id=line.addon_id,
+        addon_price_id=line.addon_price_id,
+        quantity=line.quantity,
+        unit_price=line.unit_price,
+        unit_duration=line.unit_duration,
+        unit_commission_percent=line.unit_commission_percent,
+        unit_commission_amount=line.unit_commission_amount,
+        price_total=line.price_total,
+        commission_total=line.commission_total,
+        raw_label=line.raw_label,
+    )
 
 
 class SQLModelAppointmentAddonRepositoryAdapter(AppointmentAddonRepositoryPort):
@@ -19,19 +37,7 @@ class SQLModelAppointmentAddonRepositoryAdapter(AppointmentAddonRepositoryPort):
         self.db = db
 
     def add(self, line: AppointmentAddonEntity) -> AppointmentAddonEntity:
-        sql_obj = AppointmentAddonSQL(
-            appointment_id=line.appointment_id,
-            addon_id=line.addon_id,
-            addon_price_id=line.addon_price_id,
-            quantity=line.quantity,
-            unit_price=line.unit_price,
-            unit_duration=line.unit_duration,
-            unit_commission_percent=line.unit_commission_percent,
-            unit_commission_amount=line.unit_commission_amount,
-            price_total=line.price_total,
-            commission_total=line.commission_total,
-            raw_label=line.raw_label,
-        )
+        sql_obj = _to_sql(line)
         self.db.add(sql_obj)
         self.db.commit()
         self.db.refresh(sql_obj)
@@ -53,6 +59,30 @@ class SQLModelAppointmentAddonRepositoryAdapter(AppointmentAddonRepositoryPort):
         self.db.delete(existing)
         self.db.commit()
         return True
+
+    def apply_changes(self, appointment: AppointmentEntity, removed_ids: List[int],
+                      updated: List[AppointmentAddonEntity], added: List[AppointmentAddonEntity]) -> None:
+        try:
+            for line_id in removed_ids:
+                row = self.db.get(AppointmentAddonSQL, line_id)
+                if row:
+                    self.db.delete(row)
+            for line in updated:
+                row = self.db.get(AppointmentAddonSQL, line.id)
+                if row:
+                    _apply_sql(row, line)
+            self.db.add_all([_to_sql(line) for line in added])
+
+            totals = self.db.get(AppointmentSQL, appointment.id)
+            totals.price_at_booking = appointment.price_at_booking
+            totals.remaining_amount = appointment.remaining_amount
+            totals.commision_amount_at_booking = appointment.commission_amount_at_booking
+            totals.appointment_duration = appointment.appointment_duration
+            totals.updated_at = datetime.now()
+            self.db.commit()
+        except Exception:
+            self.db.rollback()
+            raise
 
     def get(self, appointment_id: int, addon_id: int) -> Optional[AppointmentAddonEntity]:
         row = self.db.exec(
