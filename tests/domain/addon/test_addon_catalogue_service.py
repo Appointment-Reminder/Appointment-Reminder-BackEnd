@@ -10,38 +10,6 @@ from app.domain.business.errors.business_errors import BusinessError
 from app.domain.package.models.package_category_model import PackageCategory
 
 
-@pytest.fixture
-def addon_repo():
-    repo = Mock()
-    repo.find_by_alias.return_value = []
-    repo.create.side_effect = lambda a: Addon(**{**a.__dict__, "id": 1})
-    repo.update.side_effect = lambda a: a
-    return repo
-
-@pytest.fixture
-def business_guard():
-    return Mock()
-
-@pytest.fixture
-def package_guard():
-    guard = Mock()
-    guard.ensure_category_exist.return_value = PackageCategory(id=3, business_id=100, name="Wedding")
-    return guard
-
-@pytest.fixture
-def service(addon_repo, business_guard, package_guard):
-    return AddonService(
-        addon_repo=addon_repo,
-        business_guard=business_guard,
-        package_guard=package_guard,
-        addon_guard=AddonGuard(addon_repo=addon_repo),
-    )
-
-@pytest.fixture
-def user():
-    return Mock(id=9)
-
-
 def _addon(**overrides):
     values = dict(
         id=None, business_id=100, name="Extra photos", jotform_alias="10 extra photos",
