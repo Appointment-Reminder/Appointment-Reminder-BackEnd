@@ -205,3 +205,85 @@ class TestNoAddons:
             member_repo=member_repo, price_repo=price_repo,
         )
         assert result.addons == [] and result.price_at_booking == 500.0
+
+
+class TestUnresolvedAddons:
+    def test_unknown_label_is_kept_as_unresolved_and_the_package_is_still_booked(self, book, catalogue):
+        result = book(["Mystery extra"])
+
+        assert result.unresolved_addon_labels == ["Mystery extra"]
+        assert result.addons == []
+        assert result.fully_resolved is True
+        assert result.price_at_booking == 500.0
+
+    def test_ambiguous_alias_is_unresolved(self, book, catalogue):
+        catalogue.add(1, "Album", price=50).add(2, "Album", price=80)
+
+        result = book(["Album"])
+
+        assert result.unresolved_addon_labels == ["Album"]
+        assert result.addons == []
+
+    def test_label_matching_only_an_inactive_addon_is_unresolved(self, book, catalogue):
+        catalogue.add(1, "Retired extra", price=50, is_active=False)
+
+        result = book(["Retired extra"])
+
+        assert result.unresolved_addon_labels == ["Retired extra"]
+
+    def test_an_active_addon_wins_over_an_inactive_one_with_the_same_alias(self, book, catalogue):
+        catalogue.add(1, "Album", price=50, is_active=False).add(2, "Album", price=80)
+
+        result = book(["Album"])
+
+        assert [l.addon_id for l in result.addons] == [2]
+        assert result.unresolved_addon_labels == []
+
+    def test_addon_with_no_price_in_effect_is_unresolved(self, book, catalogue):
+        catalogue.add(1, "Unpriced", price=None)
+
+        assert book(["Unpriced"]).unresolved_addon_labels == ["Unpriced"]
+
+    def test_addon_with_only_a_future_price_is_unresolved(self, book, catalogue):
+        catalogue.add(1, "Soon", price=50, price_days=+3)
+
+        result = book(["Soon"])
+
+        assert result.unresolved_addon_labels == ["Soon"]
+        assert result.addons == []
+
+    def test_addon_restricted_to_another_package_category_is_unresolved(self, book, catalogue):
+        catalogue.add(1, "Wedding album", price=50, category_id=99)
+
+        assert book(["Wedding album"]).unresolved_addon_labels == ["Wedding album"]
+
+    def test_addon_restricted_to_the_package_category_is_booked(self, book, catalogue):
+        catalogue.add(1, "Gold album", price=50, category_id=2)
+
+        assert len(book(["Gold album"]).addons) == 1
+
+    def test_matched_labels_in_the_same_submission_are_still_booked(self, book, catalogue):
+        catalogue.add(1, "A", price=50)
+
+        result = book(["A", "Mystery", "Unpriced"])
+
+        assert [l.addon_id for l in result.addons] == [1]
+        assert result.unresolved_addon_labels == ["Mystery", "Unpriced"]
+        assert result.price_at_booking == 550.0
+
+    def test_unresolved_labels_never_turn_a_resolved_booking_into_needs_assignment(self, book, catalogue):
+        assert book(["Mystery"]).fully_resolved is True
+
+    def test_unresolved_labels_are_kept_even_when_the_package_is_unresolved(self, book, catalogue, package_guard):
+        package_guard.resolve_package_by_submission_alias.return_value = None
+
+        result = book(["Mystery"])
+
+        assert result.fully_resolved is False
+        assert result.unresolved_addon_labels == ["Mystery"]
+
+    def test_the_raw_label_is_kept_as_submitted_apart_from_surrounding_whitespace(self, book, catalogue):
+        assert book(["  Mystery extra "]).unresolved_addon_labels == ["Mystery extra"]
+
+    def test_the_same_unknown_label_twice_is_kept_once(self, book, catalogue):
+        assert book(["Mystery", "Mystery"]).unresolved_addon_labels == ["Mystery"]

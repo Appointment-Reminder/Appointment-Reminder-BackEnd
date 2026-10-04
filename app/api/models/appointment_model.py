@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime
 from typing import List, Optional
 
-from app.api.models.addon.appointment_addon_model import AppointmentAddonRead
+from app.api.models.addon.appointment_addon_model import AppointmentAddonRead, UnresolvedAddonRead
 from app.api.models.userModel import UserRead
 
 
@@ -69,6 +69,7 @@ class AppointmentRead(BaseModel):
     number_of_persons: Optional[int]
     privacy_opt_out: Optional[str]
     addons: List[AppointmentAddonRead] = []
+    unresolved_addons: List[UnresolvedAddonRead] = []
 
     status: str
     created_at: datetime

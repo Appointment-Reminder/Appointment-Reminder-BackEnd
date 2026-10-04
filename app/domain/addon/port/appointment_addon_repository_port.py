@@ -1,6 +1,7 @@
-from typing import Protocol, Optional, List, Dict, Iterable
+from typing import Protocol, Optional, List, Dict, Iterable, Set
 
 from app.domain.addon.models.appointment_addon import AppointmentAddon
+from app.domain.addon.models.unresolved_addon import UnresolvedAddon
 
 
 class AppointmentAddonRepositoryPort(Protocol):
@@ -12,3 +13,12 @@ class AppointmentAddonRepositoryPort(Protocol):
     def list_for_appointments(self, appointment_ids: Iterable[int]) -> Dict[int, List[AppointmentAddon]]: ...
     def exists_for_addon(self, addon_id: int) -> bool:
         """True once any Appointment Add-on references the add-on."""
+
+    def add_unresolved(self, unresolved: UnresolvedAddon) -> UnresolvedAddon: ...
+    def get_unresolved(self, unresolved_id: int) -> Optional[UnresolvedAddon]: ...
+    def update_unresolved(self, unresolved: UnresolvedAddon) -> UnresolvedAddon: ...
+    def list_unresolved_for_appointments(
+        self, appointment_ids: Iterable[int]
+    ) -> Dict[int, List[UnresolvedAddon]]:
+        """Only the Unresolved Add-ons still waiting for resolution."""
+    def appointment_ids_with_unresolved(self, business_id: int) -> Set[int]: ...

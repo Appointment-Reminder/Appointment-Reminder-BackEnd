@@ -1,11 +1,15 @@
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Set
 
 from sqlalchemy.orm import Session
 from sqlmodel import select
 
 from app.adapters.sql_model_adapter.addon.models.appointment_addon import AppointmentAddon as AppointmentAddonSQL, \
     _to_domain, _apply_sql
+from app.adapters.sql_model_adapter.addon.models.unresolved_addon import UnresolvedAddon as UnresolvedAddonSQL, \
+    _to_domain as unresolved_to_domain
+from app.adapters.sql_model_adapter.appointment.models.appointment import Appointment as AppointmentSQL
 from app.domain.addon.models.appointment_addon import AppointmentAddon as AppointmentAddonEntity
+from app.domain.addon.models.unresolved_addon import UnresolvedAddon as UnresolvedAddonEntity
 from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
 
 
@@ -79,3 +83,51 @@ class SQLModelAppointmentAddonRepositoryAdapter(AppointmentAddonRepositoryPort):
         return self.db.exec(
             select(AppointmentAddonSQL.id).where(AppointmentAddonSQL.addon_id == addon_id).limit(1)
         ).first() is not None
+
+    def add_unresolved(self, unresolved: UnresolvedAddonEntity) -> UnresolvedAddonEntity:
+        sql_obj = UnresolvedAddonSQL(appointment_id=unresolved.appointment_id, raw_label=unresolved.raw_label)
+        self.db.add(sql_obj)
+        self.db.commit()
+        self.db.refresh(sql_obj)
+        return unresolved_to_domain(sql_obj)
+
+    def get_unresolved(self, unresolved_id: int) -> Optional[UnresolvedAddonEntity]:
+        row = self.db.get(UnresolvedAddonSQL, unresolved_id)
+        return unresolved_to_domain(row) if row else None
+
+    def update_unresolved(self, unresolved: UnresolvedAddonEntity) -> Optional[UnresolvedAddonEntity]:
+        existing = self.db.get(UnresolvedAddonSQL, unresolved.id)
+        if not existing:
+            return None
+        existing.resolved_addon_id = unresolved.resolved_addon_id
+        existing.resolved_at = unresolved.resolved_at
+        self.db.commit()
+        self.db.refresh(existing)
+        return unresolved_to_domain(existing)
+
+    def list_unresolved_for_appointments(
+        self, appointment_ids: Iterable[int]
+    ) -> Dict[int, List[UnresolvedAddonEntity]]:
+        ids = list(appointment_ids)
+        grouped: Dict[int, List[UnresolvedAddonEntity]] = {}
+        if not ids:
+            return grouped
+        rows = self.db.exec(
+            select(UnresolvedAddonSQL)
+            .where(UnresolvedAddonSQL.appointment_id.in_(ids))
+            .where(UnresolvedAddonSQL.resolved_at.is_(None))
+            .order_by(UnresolvedAddonSQL.id)
+        ).all()
+        for row in rows:
+            grouped.setdefault(row.appointment_id, []).append(unresolved_to_domain(row))
+        return grouped
+
+    def appointment_ids_with_unresolved(self, business_id: int) -> Set[int]:
+        rows = self.db.exec(
+            select(UnresolvedAddonSQL.appointment_id)
+            .join(AppointmentSQL, AppointmentSQL.id == UnresolvedAddonSQL.appointment_id)
+            .where(AppointmentSQL.business_id == business_id)
+            .where(UnresolvedAddonSQL.resolved_at.is_(None))
+            .distinct()
+        ).all()
+        return set(rows)

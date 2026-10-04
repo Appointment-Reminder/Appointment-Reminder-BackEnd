@@ -18,3 +18,11 @@ class AppointmentAddonRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UnresolvedAddonRead(BaseModel):
+    id: int
+    raw_label: str
+
+    class Config:
+        from_attributes = True

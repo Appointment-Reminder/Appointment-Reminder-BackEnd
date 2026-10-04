@@ -43,11 +43,14 @@ def get_appointment_for_business(
         appointment_service: FromDishka[AppointmentService],
         current_user : FromDishka[User],
         business_id: int,
-        status: Optional[str] = Query(None, description="Filter by status: pending confirmed etc")):
+        status: Optional[str] = Query(None, description="Filter by status: pending confirmed etc"),
+        has_unresolved_addons: Optional[bool] = Query(
+            None, description="Only appointments with (true) or without (false) Unresolved Add-ons")):
     """Get all appointments for the currently loggedin user for business"""
     return appointment_service.get_appointments_by_business(
         current_user=current_user,
         business_id=business_id,
+        has_unresolved_addons=has_unresolved_addons,
     )
 
 @appointment_router.get("/business/{business_id}/appointments/{appointment_id}", response_model=AppointmentRead, status_code=200)
