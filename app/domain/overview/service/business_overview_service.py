@@ -38,6 +38,23 @@ def _day(moment: datetime) -> date:
     return _paris(moment).date()
 
 
+def _is_active(a: Appointment) -> bool:
+    return AppointmentStatus(a.status) not in _INACTIVE
+
+
+def _balance(a: Appointment) -> float:
+    return a.remaining_amount or 0.0
+
+
+def _deposit_income(a: Appointment) -> float:
+    """A refunded appointment returns its deposit, a canceled one keeps it (Retained Deposit)."""
+    return 0.0 if AppointmentStatus(a.status) == AppointmentStatus.REFUNDED else a.deposit_amount or 0.0
+
+
+def _balance_is_due(a: Appointment, now: datetime) -> bool:
+    return _is_active(a) and _paris(a.appointment_date) <= now
+
+
 def _percent_change(current: float, previous: float) -> Optional[float]:
     return None if not previous else round((current - previous) / previous * 100, 2)
 
@@ -79,6 +96,10 @@ class _Totals:
     @property
     def income(self) -> float:
         return self.deposit_income + self.balance_income
+
+    @property
+    def owner_take(self) -> float:
+        return self.income - self.commission_payable
 
     @property
     def average_value(self) -> float:
@@ -165,14 +186,6 @@ class BusinessOverviewService:
 
     # PER APPOINTMENT ARITHMETIC
     @staticmethod
-    def _is_active(a: Appointment) -> bool:
-        return AppointmentStatus(a.status) not in _INACTIVE
-
-    @staticmethod
-    def _balance(a: Appointment) -> float:
-        return a.remaining_amount or 0.0
-
-    @staticmethod
     def _owes_commission(a: Appointment, roles: Dict[int, MemberRole]) -> bool:
         return a.member_id is not None and roles.get(a.member_id) != MemberRole.OWNER
 
@@ -188,25 +201,24 @@ class BusinessOverviewService:
                 else:
                     t.appointments_made += 1
                     t.booked_revenue += a.price_at_booking or 0.0
-                if status != AppointmentStatus.REFUNDED:
-                    t.deposit_income += a.deposit_amount or 0.0
-            if self._is_active(a) and start <= _day(a.appointment_date) <= end:
+                t.deposit_income += _deposit_income(a)
+            if _is_active(a) and start <= _day(a.appointment_date) <= end:
                 owes = self._owes_commission(a, roles)
-                if _paris(a.appointment_date) <= now:
-                    t.balance_income += self._balance(a)
+                if _balance_is_due(a, now):
+                    t.balance_income += _balance(a)
                     t.addon_income += sum(line.price_total for line in a.addons)
                     if owes:
                         t.commission_payable += a.commission_amount_at_booking or 0.0
                 else:
-                    t.outstanding_balance += self._balance(a)
-                if owes and (a.commission_amount_at_booking or 0.0) > self._balance(a):
+                    t.outstanding_balance += _balance(a)
+                if owes and (a.commission_amount_at_booking or 0.0) > _balance(a):
                     t.commissions_above_balance += 1
         return t
 
     # BUSINESS VIEW
     def _business_figures(self, business_id: int, appointments: List[Appointment], t: _Totals, is_owner: bool,
                           start: date, end: date) -> BusinessFigures:
-        made = [a for a in appointments if self._is_active(a) and start <= _day(a.created_at) <= end]
+        made = [a for a in appointments if _is_active(a) and start <= _day(a.created_at) <= end]
         packages = self.read_repo.package_labels(business_id)
         addon_names = self.read_repo.addon_names(business_id)
 
@@ -243,7 +255,7 @@ class BusinessOverviewService:
             booked_revenue=_money(t.booked_revenue),
             appointments_made=t.appointments_made,
             commission_payable=_money(t.commission_payable),
-            owner_take=_money(t.income - t.commission_payable) if is_owner else None,
+            owner_take=_money(t.owner_take) if is_owner else None,
             average_appointment_value=_money(t.average_value),
             cancellation_rate=t.cancellation_rate,
             addon_attach_rate=_rate(with_addons, len(made)),
@@ -280,7 +292,7 @@ class BusinessOverviewService:
             total_income=_money(t.income), deposit_income=_money(t.deposit_income),
             balance_income=_money(t.balance_income), booked_revenue=_money(t.booked_revenue),
             appointments_made=t.appointments_made, commission_payable=_money(t.commission_payable),
-            owner_take=_money(t.income - t.commission_payable) if is_owner else None)
+            owner_take=_money(t.owner_take) if is_owner else None)
 
     def _comparison(self, appointments: List[Appointment], roles: Dict[int, MemberRole], current: _Totals,
                     is_owner: bool, start: date, end: date, now: datetime) -> Comparison:
@@ -302,11 +314,11 @@ class BusinessOverviewService:
 
         for a in appointments:
             booked = _day(a.created_at)
-            if start <= booked <= end and AppointmentStatus(a.status) != AppointmentStatus.REFUNDED:
-                buckets[_bucket_start(booked, group_by)].deposit_income += a.deposit_amount or 0.0
+            if start <= booked <= end:
+                buckets[_bucket_start(booked, group_by)].deposit_income += _deposit_income(a)
             shoot = _day(a.appointment_date)
-            if self._is_active(a) and start <= shoot <= end and _paris(a.appointment_date) <= now:
-                buckets[_bucket_start(shoot, group_by)].balance_income += self._balance(a)
+            if start <= shoot <= end and _balance_is_due(a, now):
+                buckets[_bucket_start(shoot, group_by)].balance_income += _balance(a)
 
         return [SeriesPoint(start=key, income=_money(b.deposit_income + b.balance_income),
                             deposit_income=_money(b.deposit_income), balance_income=_money(b.balance_income))

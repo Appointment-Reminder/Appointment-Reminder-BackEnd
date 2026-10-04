@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy.orm import selectinload
-from sqlmodel import select, Session
+from sqlmodel import or_, select, Session
 
 from app.domain.appointment.models.appointment_model import Appointment as AppointmentEntity
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
@@ -63,6 +63,15 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
             query = query.where(AppointmentSQL.status == status)
         result = self.db.exec(query).all()
         return [ _to_domain(row) for row in result ] if result else []
+
+    def find_booked_or_dated_between(self, business_id: int, start: datetime, end: datetime) -> List[AppointmentEntity]:
+        rows = self.db.exec(
+            self._base_query()
+            .where(AppointmentSQL.business_id == business_id)
+            .where(or_(AppointmentSQL.created_at.between(start, end),
+                       AppointmentSQL.appointment_date.between(start, end)))
+        ).all()
+        return [_to_domain(row) for row in rows]
 
     def get_appointment_by_photographer(self, member_id: int, business_id: Optional[int] = None,
                                         status: Optional[str] = None) -> Optional[AppointmentEntity]:

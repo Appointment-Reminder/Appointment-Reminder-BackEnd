@@ -1,15 +1,15 @@
 from datetime import datetime
 from typing import Dict, List
 
-from sqlmodel import Session, or_, select
+from sqlmodel import Session, select
 
 from app.adapters.sql_model_adapter.addon.models.addon import Addon as AddonSQL
-from app.adapters.sql_model_adapter.appointment.models.appointment import Appointment as AppointmentSQL, _to_domain
 from app.adapters.sql_model_adapter.package.models.package import Package as PackageSQL
 from app.adapters.sql_model_adapter.package.models.package_category import PackageCategory as PackageCategorySQL
 from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
 from app.domain.addon.service.appointment_addon_hydration import attach_addons
 from app.domain.appointment.models.appointment_model import Appointment
+from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
 from app.domain.overview.models.overview import PackageLabel
 from app.domain.overview.port.overview_read_port import OverviewReadPort
 
@@ -17,18 +17,15 @@ from app.domain.overview.port.overview_read_port import OverviewReadPort
 class SQLModelOverviewReadAdapter(OverviewReadPort):
     """Fetches rows for the overview service, which does all the arithmetic."""
 
-    def __init__(self, db: Session, appointment_addon_repo: AppointmentAddonRepositoryPort) -> None:
+    def __init__(self, db: Session, appointment_repo: AppointmentRepositoryPort,
+                 appointment_addon_repo: AppointmentAddonRepositoryPort) -> None:
         self.db = db
+        self.appointment_repo = appointment_repo
         self.appointment_addon_repo = appointment_addon_repo
 
     def appointments_touching(self, business_id: int, start: datetime, end: datetime) -> List[Appointment]:
-        rows = self.db.exec(
-            select(AppointmentSQL)
-            .where(AppointmentSQL.business_id == business_id)
-            .where(or_(AppointmentSQL.created_at.between(start, end),
-                       AppointmentSQL.appointment_date.between(start, end)))
-        ).all()
-        return attach_addons([_to_domain(row) for row in rows], self.appointment_addon_repo)
+        appointments = self.appointment_repo.find_booked_or_dated_between(business_id, start, end)
+        return attach_addons(appointments, self.appointment_addon_repo)
 
     def package_labels(self, business_id: int) -> Dict[int, PackageLabel]:
         categories = {c.id: c.name for c in self.db.exec(
