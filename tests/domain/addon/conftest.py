@@ -24,6 +24,13 @@ def price_repo():
     return repo
 
 @pytest.fixture
+def commission_repo():
+    repo = Mock()
+    repo.create.side_effect = lambda c: c
+    repo.get_history.return_value = []
+    return repo
+
+@pytest.fixture
 def business_guard():
     return Mock()
 
@@ -34,10 +41,11 @@ def package_guard():
     return guard
 
 @pytest.fixture
-def service(addon_repo, price_repo, business_guard, package_guard):
+def service(addon_repo, price_repo, commission_repo, business_guard, package_guard):
     return AddonService(
         addon_repo=addon_repo,
         price_repo=price_repo,
+        commission_repo=commission_repo,
         business_guard=business_guard,
         package_guard=package_guard,
         addon_guard=AddonGuard(addon_repo=addon_repo),

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Iterable, Optional
 
+from app.domain.addon.models.effective import latest_in_effect
+
 
 @dataclass
 class AddonPrice:
@@ -13,5 +15,4 @@ class AddonPrice:
 
 def price_in_effect(prices: Iterable[AddonPrice], at: datetime) -> Optional[AddonPrice]:
     """The latest price whose effective date has passed; None when there is none (no price, or only future-dated)."""
-    started = [p for p in prices if p.effective_from <= at]
-    return max(started, key=lambda p: p.effective_from, default=None)
+    return latest_in_effect(prices, at)

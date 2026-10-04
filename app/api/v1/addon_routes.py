@@ -5,8 +5,10 @@ from dishka.integrations.fastapi import DishkaSyncRoute
 from fastapi import APIRouter, Depends
 
 from app.api.models.addon.addon_model import AddonCreate, AddonRead, AddonUpdate
+from app.api.models.addon.addon_commission_model import AddonCommissionCreate, AddonCommissionRead
 from app.api.models.addon.addon_price_model import AddonPriceCreate, AddonPriceRead
 from app.domain.addon.models.addon import Addon
+from app.domain.addon.models.addon_commission import AddonCommission
 from app.domain.addon.models.addon_price import AddonPrice
 from app.domain.addon.service.addon_service import AddonService
 from app.domain.user.models.user import User
@@ -66,3 +68,17 @@ def get_addon_price_history(addon_id: int, service: FromDishka[AddonService], cu
 def get_addon_current_price(addon_id: int, service: FromDishka[AddonService], current_user: FromDishka[User]):
     """The price in effect now. 400 when the add-on has no price in effect."""
     return service.get_current_price(addon_id=addon_id, current_user=current_user)
+
+
+@addon_router.post("/addons/commissions", response_model=AddonCommissionRead, status_code=201)
+def create_addon_commission(data: AddonCommissionCreate, service: FromDishka[AddonService],
+                            current_user: FromDishka[User]):
+    """Set a member's commission on an add-on (percentage or flat), owner and admin only"""
+    return service.create_commission(data=AddonCommission(**data.model_dump()), current_user=current_user)
+
+
+@addon_router.get("/addons/{addon_id}/members/{member_id}/commission", response_model=AddonCommissionRead)
+def get_member_addon_commission(addon_id: int, member_id: int, service: FromDishka[AddonService],
+                                current_user: FromDishka[User]):
+    """The member's commission in effect on the add-on. A flat 0 when the member has no row."""
+    return service.get_current_commission(member_id=member_id, addon_id=addon_id, current_user=current_user)
