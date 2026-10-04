@@ -145,3 +145,15 @@ class TestUnassigning:
 
         assert _line(lines, 1).line_commission == 5.0
         assert assigned.commission_amount_at_booking == 67.0
+
+
+class TestUnassigningWithoutAPackageCommission:
+    def test_the_commission_total_goes_back_to_unset_not_zero(self, service, catalogue, booked):
+        booked.commission_amount_at_booking = None     # needs_assignment: nothing was ever computed
+        catalogue.commission(7, 1, 10, pct=True)
+        service.assign_member(booked, 7)
+        assert booked.commission_amount_at_booking == 5.0
+
+        service.unassign_member(booked)
+
+        assert booked.commission_amount_at_booking is None

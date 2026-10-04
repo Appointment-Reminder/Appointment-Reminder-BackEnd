@@ -272,3 +272,49 @@ class TestAccess:
     def test_an_unknown_appointment_is_not_found(self, service, user):
         with pytest.raises(AddonError):
             service.add_addon(100, 404, addon_id=1, quantity=1, current_user=user)
+
+
+class TestCategoryRestriction:
+    """The fixture package belongs to category 2."""
+
+    def test_an_addon_restricted_to_the_package_category_can_be_added(self, service, catalogue, user):
+        catalogue.add(1, price=50, category_id=2)
+        service.add_addon(100, 1, addon_id=1, quantity=1, current_user=user)
+
+    def test_an_addon_restricted_to_another_category_is_rejected(self, service, catalogue, appointment, user):
+        catalogue.add(1, price=50, category_id=99)
+        with pytest.raises(AddonError):
+            service.add_addon(100, 1, addon_id=1, quantity=1, current_user=user)
+        assert appointment.price_at_booking == 500.0
+
+    def test_an_unrestricted_addon_fits_any_package(self, service, catalogue, user):
+        catalogue.add(1, price=50, category_id=None)
+        service.add_addon(100, 1, addon_id=1, quantity=1, current_user=user)
+
+    def test_a_restricted_addon_is_rejected_when_the_appointment_has_no_package(
+        self, service, catalogue, appointment, user
+    ):
+        appointment.package_id = None
+        catalogue.add(1, price=50, category_id=2)
+        with pytest.raises(AddonError):
+            service.add_addon(100, 1, addon_id=1, quantity=1, current_user=user)
+
+    def test_resolving_onto_a_restricted_addon_of_another_category_is_rejected(
+        self, service, catalogue, lines, user
+    ):
+        from app.domain.addon.models.unresolved_addon import UnresolvedAddon
+        catalogue.add(1, price=50, category_id=99)
+        pending = lines.add_unresolved(UnresolvedAddon(appointment_id=1, raw_label="x"))
+        with pytest.raises(AddonError):
+            service.resolve_unresolved(100, 1, pending.id, addon_id=1, current_user=user)
+        assert not lines.get_unresolved(pending.id).is_resolved
+
+
+class TestCommissionRounding:
+    def test_a_percentage_commission_is_rounded_to_cents_like_the_totals(self, service, catalogue, appointment, user):
+        catalogue.add(1, price=33, has_quantity=True).commission(7, 1, 7, pct=True)   # 2.31 per unit
+
+        line = service.add_addon(100, 1, addon_id=1, quantity=3, current_user=user).addons[0]
+
+        assert line.line_commission == 6.93
+        assert appointment.commission_amount_at_booking == 56.93

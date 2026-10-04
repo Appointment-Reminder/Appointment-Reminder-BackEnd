@@ -19,6 +19,7 @@ from app.domain.appointment.models.appointment_state_machine import AppointmentS
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.business.models.business_member_model import MemberRole
+from app.domain.package.port.package_repository_port import PackageRepositoryPort
 from app.domain.user.models.user import User
 
 # Add-ons are plain edits, open until the appointment is closed out.
@@ -40,6 +41,7 @@ class AppointmentAddonService:
         appointment_repo: AppointmentRepositoryPort,
         appointment_addon_repo: AppointmentAddonRepositoryPort,
         addon_repo: AddonRepositoryPort,
+        package_repo: PackageRepositoryPort,
         price_repo: AddonPriceRepositoryPort,
         commission_repo: AddonCommissionRepositoryPort,
         business_guard: BusinessGuard,
@@ -49,6 +51,7 @@ class AppointmentAddonService:
         self.appointment_repo = appointment_repo
         self.appointment_addon_repo = appointment_addon_repo
         self.addon_repo = addon_repo
+        self.package_repo = package_repo
         self.price_repo = price_repo
         self.commission_repo = commission_repo
         self.business_guard = business_guard
@@ -58,7 +61,7 @@ class AppointmentAddonService:
     def add_addon(self, business_id: int, appointment_id: int, addon_id: int, quantity: int,
                   current_user: User) -> Appointment:
         appointment = self._load_editable(business_id, appointment_id, current_user)
-        addon = self._ensure_bookable(addon_id, business_id)
+        addon = self._ensure_bookable(addon_id, business_id, appointment)
         self._ensure_quantity_allowed(addon, quantity)
         if self.appointment_addon_repo.get(appointment_id, addon_id) is not None:
             raise AddonError()
@@ -97,7 +100,7 @@ class AppointmentAddonService:
         if unresolved is None or unresolved.appointment_id != appointment_id or unresolved.is_resolved:
             raise AddonError()
 
-        addon = self._ensure_bookable(addon_id, business_id)
+        addon = self._ensure_bookable(addon_id, business_id, appointment)
         self._ensure_quantity_allowed(addon, quantity)
         if self.appointment_addon_repo.get(appointment_id, addon_id) is not None:
             raise AddonError()
@@ -127,6 +130,8 @@ class AppointmentAddonService:
         appointment.member_id = None
         for line in self.appointment_addon_repo.list_for_appointment(appointment.id):
             self._recommission(appointment, line, None)
+        if (appointment.commission_amount_at_booking or 0) <= 0:
+            appointment.commission_amount_at_booking = None
         return self._save(appointment)
 
     # helpers
@@ -149,11 +154,19 @@ class AppointmentAddonService:
             raise AppointmentAddonsLocked()
         return appointment
 
-    def _ensure_bookable(self, addon_id: int, business_id: int) -> Addon:
+    def _ensure_bookable(self, addon_id: int, business_id: int, appointment: Appointment) -> Addon:
         addon = self.addon_guard.ensure_addon_exist(addon_id)
         if addon.business_id != business_id or not addon.is_active:
             raise AddonError()
+        if addon.category_id is not None and addon.category_id != self._package_category_id(appointment):
+            raise AddonError()
         return addon
+
+    def _package_category_id(self, appointment: Appointment) -> Optional[int]:
+        if appointment.package_id is None:
+            return None
+        package = self.package_repo.get_package_by_id(appointment.package_id)
+        return package.category_id if package else None
 
     @staticmethod
     def _ensure_quantity_allowed(addon: Addon, quantity: int) -> None:

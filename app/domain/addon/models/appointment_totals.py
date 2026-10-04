@@ -18,7 +18,18 @@ def fold_out_addon(appointment, line: AppointmentAddon) -> None:
     _fold(appointment, line, sign=-1)
 
 
+def fold_in_addon_amounts(target, line: AppointmentAddon) -> None:
+    """Fold only the money of the line (price, remaining, commission) into anything carrying those totals."""
+    _fold_amounts(target, line, sign=1)
+
+
 def _fold(appointment, line: AppointmentAddon, sign: int) -> None:
+    _fold_amounts(appointment, line, sign)
+    if line.line_duration:
+        appointment.appointment_duration = max(0, (appointment.appointment_duration or 0) + sign * line.line_duration)
+
+
+def _fold_amounts(appointment, line: AppointmentAddon, sign: int) -> None:
     if appointment.price_at_booking is not None:
         appointment.price_at_booking = _money(appointment.price_at_booking + sign * line.line_total)
     if appointment.remaining_amount is not None:
@@ -26,8 +37,6 @@ def _fold(appointment, line: AppointmentAddon, sign: int) -> None:
     if line.line_commission is not None:
         appointment.commission_amount_at_booking = _money(
             (appointment.commission_amount_at_booking or 0) + sign * line.line_commission)
-    if line.line_duration:
-        appointment.appointment_duration = max(0, (appointment.appointment_duration or 0) + sign * line.line_duration)
 
 
 def swap_addon_commission(appointment, old: AppointmentAddon, new: AppointmentAddon) -> None:

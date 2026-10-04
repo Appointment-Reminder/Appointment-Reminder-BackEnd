@@ -20,6 +20,7 @@ from app.domain.addon.service.appointment_addon_service import AppointmentAddonS
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.package.guard.package_guard import PackageGuard
+from app.domain.package.port.package_repository_port import PackageRepositoryPort
 
 
 class AddonProvider(Provider):
@@ -76,6 +77,7 @@ class AddonProvider(Provider):
                                       appointment_repo: AppointmentRepositoryPort,
                                       appointment_addon_repo: AppointmentAddonRepositoryPort,
                                       addon_repo: AddonRepositoryPort,
+                                      package_repo: PackageRepositoryPort,
                                       price_repo: AddonPriceRepositoryPort,
                                       commission_repo: AddonCommissionRepositoryPort,
                                       business_guard: BusinessGuard,
@@ -84,6 +86,7 @@ class AddonProvider(Provider):
             appointment_repo=appointment_repo,
             appointment_addon_repo=appointment_addon_repo,
             addon_repo=addon_repo,
+            package_repo=package_repo,
             price_repo=price_repo,
             commission_repo=commission_repo,
             business_guard=business_guard,

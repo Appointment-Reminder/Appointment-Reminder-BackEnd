@@ -137,13 +137,14 @@ def business_guard():
 
 @pytest.fixture
 def service(appointment_repo, lines, catalogue, business_guard):
-    addon_repo, price_repo, commission_repo = Mock(), Mock(), Mock()
+    addon_repo, price_repo, commission_repo, package_repo = Mock(), Mock(), Mock(), Mock()
+    package_repo.get_package_by_id.return_value = Mock(category_id=2)
     addon_repo.get_by_id.side_effect = lambda addon_id: catalogue.addons.get(addon_id)
     price_repo.get_history.side_effect = lambda addon_id: list(catalogue.prices.get(addon_id, []))
     commission_repo.get_history.side_effect = lambda m, a: list(catalogue.commissions.get((m, a), []))
     return AppointmentAddonService(
         appointment_repo=appointment_repo, appointment_addon_repo=lines, addon_repo=addon_repo,
-        price_repo=price_repo, commission_repo=commission_repo, business_guard=business_guard,
+        package_repo=package_repo, price_repo=price_repo, commission_repo=commission_repo, business_guard=business_guard,
         addon_guard=AddonGuard(addon_repo=addon_repo), clock=lambda: NOW,
     )
 

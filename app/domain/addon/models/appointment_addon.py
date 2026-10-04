@@ -32,9 +32,9 @@ def _line_commission(
 ) -> Optional[float]:
     """A flat commission applies per unit, a percentage applies to the line total. None when unset."""
     if percent is not None:
-        return unit_price * quantity * percent / 100
+        return round(unit_price * quantity * percent / 100, 2)
     if flat is not None:
-        return flat * quantity
+        return round(flat * quantity, 2)
     return None
 
 
