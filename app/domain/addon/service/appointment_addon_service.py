@@ -7,9 +7,9 @@ from app.domain.addon.models.addon import Addon
 from app.domain.addon.models.addon_commission import commission_in_effect
 from app.domain.addon.models.addon_price import price_in_effect
 from app.domain.addon.models.appointment_addon import (
-    AppointmentAddon, snapshot_appointment_addon, with_quantity,
+    AppointmentAddon, snapshot_appointment_addon, with_commission, with_quantity,
 )
-from app.domain.addon.models.appointment_totals import fold_in_addon, fold_out_addon
+from app.domain.addon.models.appointment_totals import fold_in_addon, fold_out_addon, swap_addon_commission
 from app.domain.addon.port.addon_commission_repository_port import AddonCommissionRepositoryPort
 from app.domain.addon.port.addon_price_repository_port import AddonPriceRepositoryPort
 from app.domain.addon.port.addon_repository_port import AddonRepositoryPort
@@ -112,7 +112,29 @@ class AppointmentAddonService:
         self.appointment_addon_repo.update_unresolved(unresolved)
         return self._save(appointment)
 
+    def assign_member(self, appointment: Appointment, member_id: int) -> Appointment:
+        """Make the member the commission recipient: each Appointment Add-on takes the member's commission now."""
+        now = self.clock()
+        appointment.member_id = member_id
+        for line in self.appointment_addon_repo.list_for_appointment(appointment.id):
+            commission = commission_in_effect(
+                self.commission_repo.get_history(member_id, line.addon_id), member_id, line.addon_id, now)
+            self._recommission(appointment, line, commission)
+        return self._save(appointment)
+
+    def unassign_member(self, appointment: Appointment) -> Appointment:
+        """Nobody earns the Add-ons any more: their commission goes back to unset."""
+        appointment.member_id = None
+        for line in self.appointment_addon_repo.list_for_appointment(appointment.id):
+            self._recommission(appointment, line, None)
+        return self._save(appointment)
+
     # helpers
+    def _recommission(self, appointment: Appointment, line: AppointmentAddon, commission) -> None:
+        updated = with_commission(line, commission)
+        self.appointment_addon_repo.update(updated)
+        swap_addon_commission(appointment, line, updated)
+
     def _load_editable(self, business_id: int, appointment_id: int, current_user: User) -> Appointment:
         member = self.business_guard.ensure_is_a_member(business_id, current_user.id)
         appointment = self.appointment_repo.get_appointment_by_id(appointment_id)
