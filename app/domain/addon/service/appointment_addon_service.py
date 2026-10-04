@@ -9,6 +9,7 @@ from app.domain.addon.models.addon_price import price_in_effect
 from app.domain.addon.models.appointment_addon import (
     AppointmentAddon, snapshot_appointment_addon, with_commission, with_quantity,
 )
+from app.domain.addon.service.appointment_addon_hydration import attach_addons
 from app.domain.addon.service.appointment_totals import fold_in_addon, fold_out_addon, swap_addon_commission
 from app.domain.addon.port.addon_commission_repository_port import AddonCommissionRepositoryPort
 from app.domain.addon.port.addon_price_repository_port import AddonPriceRepositoryPort
@@ -61,15 +62,7 @@ class AppointmentAddonService:
     def add_addon(self, business_id: int, appointment_id: int, addon_id: int, quantity: int,
                   current_user: User) -> Appointment:
         appointment = self._load_editable(business_id, appointment_id, current_user)
-        addon = self._ensure_bookable(addon_id, business_id, appointment)
-        self._ensure_quantity_allowed(addon, quantity)
-        if self.appointment_addon_repo.get(appointment_id, addon_id) is not None:
-            raise AddonError()
-
-        line = self._snapshot(appointment, addon, quantity)
-        line.appointment_id = appointment_id
-        line = self.appointment_addon_repo.add(line)
-        fold_in_addon(appointment, line)
+        self._book(appointment, addon_id, quantity)
         return self._save(appointment)
 
     def remove_addon(self, business_id: int, appointment_id: int, addon_id: int, current_user: User) -> Appointment:
@@ -100,15 +93,7 @@ class AppointmentAddonService:
         if unresolved is None or unresolved.appointment_id != appointment_id or unresolved.is_resolved:
             raise AddonError()
 
-        addon = self._ensure_bookable(addon_id, business_id, appointment)
-        self._ensure_quantity_allowed(addon, quantity)
-        if self.appointment_addon_repo.get(appointment_id, addon_id) is not None:
-            raise AddonError()
-
-        line = self._snapshot(appointment, addon, quantity, raw_label=unresolved.raw_label)
-        line.appointment_id = appointment_id
-        line = self.appointment_addon_repo.add(line)
-        fold_in_addon(appointment, line)
+        self._book(appointment, addon_id, quantity, raw_label=unresolved.raw_label)
 
         unresolved.resolved_addon_id = addon_id
         unresolved.resolved_at = self.clock()
@@ -117,6 +102,8 @@ class AppointmentAddonService:
 
     def assign_member(self, appointment: Appointment, member_id: int) -> Appointment:
         """Make the member the commission recipient: each Appointment Add-on takes the member's commission now."""
+        if appointment.member_id == member_id:
+            return appointment
         now = self.clock()
         appointment.member_id = member_id
         for line in self.appointment_addon_repo.list_for_appointment(appointment.id):
@@ -135,6 +122,17 @@ class AppointmentAddonService:
         return self._save(appointment)
 
     # helpers
+    def _book(self, appointment: Appointment, addon_id: int, quantity: int, raw_label: Optional[str] = None) -> None:
+        """Freeze the add-on as an Appointment Add-on of the appointment and fold it into the totals."""
+        addon = self._ensure_bookable(addon_id, appointment.business_id, appointment)
+        self._ensure_quantity_allowed(addon, quantity)
+        if self.appointment_addon_repo.get(appointment.id, addon_id) is not None:
+            raise AddonError()
+
+        line = self._snapshot(appointment, addon, quantity, raw_label=raw_label)
+        line.appointment_id = appointment.id
+        fold_in_addon(appointment, self.appointment_addon_repo.add(line))
+
     def _recommission(self, appointment: Appointment, line: AppointmentAddon, commission) -> None:
         updated = with_commission(line, commission)
         self.appointment_addon_repo.update(updated)
@@ -195,7 +193,4 @@ class AppointmentAddonService:
 
     def _save(self, appointment: Appointment) -> Appointment:
         self.appointment_repo.update_totals(appointment)
-        appointment.addons = self.appointment_addon_repo.list_for_appointment(appointment.id)
-        appointment.unresolved_addons = self.appointment_addon_repo.list_unresolved_addons_for_appointments(
-            [appointment.id]).get(appointment.id, [])
-        return appointment
+        return attach_addons([appointment], self.appointment_addon_repo)[0]
