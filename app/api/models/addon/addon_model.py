@@ -33,3 +33,4 @@ class AddonRead(BaseModel):
     has_duration: bool
     has_quantity: bool
     duration_minutes: Optional[int]
+    current_price: Optional[int] = None
