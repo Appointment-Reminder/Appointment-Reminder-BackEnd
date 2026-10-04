@@ -124,6 +124,22 @@ class AddonService:
     def _is_admin(member) -> bool:
         return member.role in (MemberRole.OWNER, MemberRole.ADMIN)
 
+    def list_member_addon_commissions(self, business_id: int, member_id: int,
+                                      current_user: User) -> List[AddonCommission]:
+        """The commission in effect now for each active add-on, a flat 0 where the member has no row."""
+        self.business_guard.ensure_exists(business_id)
+        self.business_guard.ensure_admin_or_owner(business_id, current_user.id)
+        member = self.business_guard.ensure_member_exist(member_id=member_id)
+        if member.business_id != business_id:
+            raise AddonError()
+
+        histories = self.commission_repo.get_histories_for_member(member_id)
+        now = datetime.now()
+        return [
+            commission_in_effect(histories.get(addon.id, []), member_id, addon.id, now)
+            for addon in self.addon_repo.list_by_business(business_id, is_active=True)
+        ]
+
     def _get_for_admin(self, addon_id: int, current_user: User) -> Addon:
         addon = self.addon_guard.ensure_addon_exist(addon_id)
         self.business_guard.ensure_admin_or_owner(addon.business_id, current_user.id)

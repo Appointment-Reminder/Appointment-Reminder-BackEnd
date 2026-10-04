@@ -30,8 +30,16 @@ def create_addon(data: AddonCreate, service: FromDishka[AddonService], current_u
 
 @addon_router.get("/{business_id}/addons", response_model=List[AddonRead])
 def list_addons(business_id: int, service: FromDishka[AddonService], current_user: FromDishka[User]):
-    """List the add-ons of a business, owner and admin only"""
+    """List the add-ons of a business: every member sees the active ones, owner and admin all of them"""
     return service.list(business_id=business_id, current_user=current_user)
+
+
+@addon_router.get("/{business_id}/members/{member_id}/addon-commissions", response_model=List[AddonCommissionRead])
+def list_member_addon_commissions(business_id: int, member_id: int, service: FromDishka[AddonService],
+                                  current_user: FromDishka[User]):
+    """The member's commission in effect on every active add-on, a flat 0 where there is no row. Owner and admin only."""
+    return service.list_member_addon_commissions(
+        business_id=business_id, member_id=member_id, current_user=current_user)
 
 
 @addon_router.get("/addons/{addon_id}", response_model=AddonRead)
