@@ -1,6 +1,7 @@
 import datetime
 from typing import List
 
+from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
 from app.domain.appointment.errors.appointment_error import AppointmentError
 from app.domain.appointment.models.appointment_model import Appointment
 from app.domain.appointment.models.appointment_state_machine import AppointmentEvent, AppointmentStatus
@@ -16,10 +17,18 @@ class AppointmentService:
                  appointment_repo: AppointmentRepositoryPort,
                  business_member_repo: BusinessMemberRepositoryPort,
                  business_guard: BusinessGuard,
+                 appointment_addon_repo: AppointmentAddonRepositoryPort,
                  ):
         self.appointment_repo = appointment_repo
         self.business_member_repo = business_member_repo
         self.business_guard = business_guard
+        self.appointment_addon_repo = appointment_addon_repo
+
+    def _with_addons(self, appointments: List[Appointment]) -> List[Appointment]:
+        grouped = self.appointment_addon_repo.list_for_appointments([a.id for a in appointments])
+        for appointment in appointments:
+            appointment.addons = grouped.get(appointment.id, [])
+        return appointments
 
     def create_appointment(self, appointment: Appointment) -> Appointment:
         if appointment.business_id is None:
@@ -41,7 +50,7 @@ class AppointmentService:
         entity = Appointment(
             id=None, form_id=None, referral_source=None,
             appointment_location=None, appointment_duration=None, appointment_note=None,
-            number_of_persons=None, privacy_opt_out=None, adds_ons=None,
+            number_of_persons=None, privacy_opt_out=None,
             status=AppointmentStatus.NEW, created_at=now, updated_at=now,
             **appointment.model_dump(),
         )
@@ -54,13 +63,13 @@ class AppointmentService:
         result = []
         for member in self.business_member_repo.get_my_business_members(current_user.id):
             result.extend(self.appointment_repo.get_appointment_by_photographer(member_id=member.id) or [])
-        return result
+        return self._with_addons(result)
 
     def get_appointments_by_business(self,business_id: int, current_user: User) -> List[Appointment]:
         member = self.business_guard.ensure_is_a_member(business_id, current_user.id)
         if member.role in (MemberRole.OWNER, MemberRole.ADMIN):
-            return self.appointment_repo.find_by_business(business_id)
-        return self.appointment_repo.get_appointment_by_photographer(member.id, business_id) or []
+            return self._with_addons(self.appointment_repo.find_by_business(business_id))
+        return self._with_addons(self.appointment_repo.get_appointment_by_photographer(member.id, business_id) or [])
 
     def get_single_appointment(self, business_id: int, appointment_id: int, current_user: User) -> Appointment:
         if not self.business_guard.ensure_is_a_member(business_id, current_user.id):
@@ -79,7 +88,7 @@ class AppointmentService:
         if not (is_assigned or is_admin):
             raise AppointmentError()
 
-        return appointment;
+        return self._with_addons([appointment])[0]
 
     def update_single_appointment(self, business_id: int, appointment_id:int, appointment: Appointment,  current_user: User) -> Appointment:
         member = self.business_guard.ensure_is_a_member(business_id, current_user.id)

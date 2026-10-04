@@ -1,6 +1,8 @@
 from datetime import datetime
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import List, Optional
+
+from app.domain.addon.models.appointment_addon import AppointmentAddon
 
 from app.domain.appointment.models.appointment_state_machine import AppointmentStatus, AppointmentEvent, appointment_sm, \
     AppointmentCtx
@@ -39,12 +41,13 @@ class Appointment:
     appointment_note: Optional[str]
     number_of_persons: Optional[int]
     privacy_opt_out: Optional[str]
-    adds_ons: Optional[str]
 
     status: AppointmentStatus
 
     created_at: datetime
     updated_at: datetime
+
+    addons: List[AppointmentAddon] = field(default_factory=list)
 
     def handle(self, event: AppointmentEvent) -> AppointmentCtx:
         ctx = AppointmentCtx(appointment_id=self.id)

@@ -1,7 +1,8 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
+from app.api.models.addon.appointment_addon_model import AppointmentAddonRead
 from app.api.models.userModel import UserRead
 
 
@@ -67,7 +68,7 @@ class AppointmentRead(BaseModel):
     appointment_note: Optional[str]
     number_of_persons: Optional[int]
     privacy_opt_out: Optional[str]
-    adds_ons: Optional[str]
+    addons: List[AppointmentAddonRead] = []
 
     status: str
     created_at: datetime
@@ -88,7 +89,6 @@ class AppointmentUpdate(BaseModel):
     appointment_note: Optional[str] = None
     number_of_persons: Optional[int] = None
     privacy_opt_out: Optional[str] = None
-    adds_ons: Optional[str] = None
 
     member_id: Optional[int] = None
 

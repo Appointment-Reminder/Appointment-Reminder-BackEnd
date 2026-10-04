@@ -43,7 +43,6 @@ class Appointment(SQLModel, table=True):
     appointment_note: Optional[str]
     number_of_persons: Optional[int] = Field(default = 0)
     privacy_opt_out: Optional[str]
-    adds_ons: Optional[str]
 
     #status
     status: str = Field(default='pending')
@@ -78,7 +77,6 @@ def _to_domain(row: Appointment) -> AppointmentEntity:
         appointment_note=row.appointment_note,
         number_of_persons=row.number_of_persons,
         privacy_opt_out=row.privacy_opt_out,
-        adds_ons=row.adds_ons,
 
         status=AppointmentStatus(row.status),
         created_at=row.created_at,
@@ -110,7 +108,5 @@ def _apply_to_row(row: Appointment, entity: AppointmentEntity) -> None:
         row.number_of_persons = entity.number_of_persons
     if entity.privacy_opt_out is not None:
         row.privacy_opt_out = entity.privacy_opt_out
-    if entity.adds_ons is not None:
-        row.adds_ons = entity.adds_ons
     if entity.member_id is not None:
         row.member_id = entity.member_id
