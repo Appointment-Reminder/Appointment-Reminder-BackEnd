@@ -89,6 +89,29 @@ class AppointmentAddonService:
         fold_in_addon(appointment, updated)
         return self._save(appointment)
 
+    def resolve_unresolved(self, business_id: int, appointment_id: int, unresolved_id: int, addon_id: int,
+                           current_user: User, quantity: int = 1) -> Appointment:
+        """Book the picked Add-on for an Unresolved Add-on, at today's price and the assigned member's commission."""
+        appointment = self._load_editable(business_id, appointment_id, current_user)
+        unresolved = self.appointment_addon_repo.get_unresolved(unresolved_id)
+        if unresolved is None or unresolved.appointment_id != appointment_id or unresolved.is_resolved:
+            raise AddonError()
+
+        addon = self._ensure_bookable(addon_id, business_id)
+        self._ensure_quantity_allowed(addon, quantity)
+        if self.appointment_addon_repo.get(appointment_id, addon_id) is not None:
+            raise AddonError()
+
+        line = self._snapshot(appointment, addon, quantity, raw_label=unresolved.raw_label)
+        line.appointment_id = appointment_id
+        line = self.appointment_addon_repo.add(line)
+        fold_in_addon(appointment, line)
+
+        unresolved.resolved_addon_id = addon_id
+        unresolved.resolved_at = self.clock()
+        self.appointment_addon_repo.update_unresolved(unresolved)
+        return self._save(appointment)
+
     # helpers
     def _load_editable(self, business_id: int, appointment_id: int, current_user: User) -> Appointment:
         member = self.business_guard.ensure_is_a_member(business_id, current_user.id)
