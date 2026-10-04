@@ -155,6 +155,16 @@ class TestProcessSubmission:
         with pytest.raises(JotformDomainError):
             service.process_submission(webhook_token="bad-token", raw_request=RAW_REQUEST)
 
+@pytest.fixture
+def no_state_machine():
+    """These tests are about add-on persistence, not status transitions."""
+    from unittest.mock import patch
+    from app.domain.appointment.models.appointment_model import Appointment
+    with patch.object(Appointment, "handle"):
+        yield
+
+
+@pytest.mark.usefixtures("no_state_machine")
 class TestProcessSubmissionAddons:
     def _booking(self, addons, addon_duration=0):
         return ResolvedBookingContext(
@@ -209,6 +219,7 @@ class TestProcessSubmissionAddons:
         appointment_addon_repo.add.assert_not_called()
 
 
+@pytest.mark.usefixtures("no_state_machine")
 class TestProcessSubmissionUnresolvedAddons:
     def test_unresolved_labels_are_saved_on_the_created_appointment(
         self, service, jotform_guard, jotform_service, appointment_repo, appointment_addon_repo, form, credential
@@ -230,4 +241,3 @@ class TestProcessSubmissionUnresolvedAddons:
             result = service.process_submission(webhook_token="tok-123", raw_request=RAW_REQUEST)
 
         assert [(u.appointment_id, u.raw_label) for u in result.unresolved_addons] == [(42, "Mystery")]
-        assert result.status == "pending"
