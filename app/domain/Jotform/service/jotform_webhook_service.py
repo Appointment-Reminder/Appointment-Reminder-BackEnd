@@ -5,6 +5,7 @@ from app.domain.Jotform.guard.jotform_guard import JotformGuard
 from app.domain.Jotform.service.jotform_webhook_parser import parse_jotform_raw_request
 from app.domain.Jotform.service.jotform_submission_assembler import resolve_booking_context
 from app.domain.Jotform.service.jotform_service import JotformService
+from app.domain.addon.models.unresolved_addon import UnresolvedAddon
 from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
 from app.domain.addon.service.addon_booking import AddonBookingResolver
 from app.domain.appointment.models.appointment_model import Appointment
@@ -101,4 +102,8 @@ class JotformWebhookService:
         for line in booking.addons:
             line.appointment_id = created.id
             created.addons.append(self.appointment_addon_repo.add(line))
+        created.unresolved_addons = [
+            self.appointment_addon_repo.add_unresolved(UnresolvedAddon(appointment_id=created.id, raw_label=label))
+            for label in booking.unresolved_addon_labels
+        ]
         return created

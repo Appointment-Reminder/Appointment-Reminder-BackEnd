@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
 from app.domain.appointment.errors.appointment_error import AppointmentError
@@ -25,9 +25,12 @@ class AppointmentService:
         self.appointment_addon_repo = appointment_addon_repo
 
     def _with_addons(self, appointments: List[Appointment]) -> List[Appointment]:
-        grouped = self.appointment_addon_repo.list_for_appointments([a.id for a in appointments])
+        ids = [a.id for a in appointments]
+        addons = self.appointment_addon_repo.list_for_appointments(ids)
+        unresolved = self.appointment_addon_repo.list_unresolved_for_appointments(ids)
         for appointment in appointments:
-            appointment.addons = grouped.get(appointment.id, [])
+            appointment.addons = addons.get(appointment.id, [])
+            appointment.unresolved_addons = unresolved.get(appointment.id, [])
         return appointments
 
     def create_appointment(self, appointment: Appointment) -> Appointment:
@@ -65,11 +68,18 @@ class AppointmentService:
             result.extend(self.appointment_repo.get_appointment_by_photographer(member_id=member.id) or [])
         return self._with_addons(result)
 
-    def get_appointments_by_business(self,business_id: int, current_user: User) -> List[Appointment]:
+    def get_appointments_by_business(self, business_id: int, current_user: User,
+                                     has_unresolved_addons: Optional[bool] = None) -> List[Appointment]:
         member = self.business_guard.ensure_is_a_member(business_id, current_user.id)
         if member.role in (MemberRole.OWNER, MemberRole.ADMIN):
-            return self._with_addons(self.appointment_repo.find_by_business(business_id))
-        return self._with_addons(self.appointment_repo.get_appointment_by_photographer(member.id, business_id) or [])
+            appointments = self.appointment_repo.find_by_business(business_id)
+        else:
+            appointments = self.appointment_repo.get_appointment_by_photographer(member.id, business_id) or []
+
+        if has_unresolved_addons is not None:
+            flagged = self.appointment_addon_repo.appointment_ids_with_unresolved(business_id)
+            appointments = [a for a in appointments if (a.id in flagged) == has_unresolved_addons]
+        return self._with_addons(appointments)
 
     def get_single_appointment(self, business_id: int, appointment_id: int, current_user: User) -> Appointment:
         if not self.business_guard.ensure_is_a_member(business_id, current_user.id):
