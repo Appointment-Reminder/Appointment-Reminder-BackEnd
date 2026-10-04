@@ -101,6 +101,18 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
         self.db.refresh(row)
         return _to_domain(row)
 
+    def update_totals(self, appointment: AppointmentEntity) -> AppointmentEntity:
+        row = self.db.get(AppointmentSQL, appointment.id)
+        row.price_at_booking = appointment.price_at_booking
+        row.remaining_amount = appointment.remaining_amount
+        row.commision_amount_at_booking = appointment.commission_amount_at_booking
+        row.appointment_duration = appointment.appointment_duration
+        row.member_id = appointment.member_id
+        row.updated_at = datetime.now()
+        self.db.commit()
+        self.db.refresh(row)
+        return _to_domain(row)
+
     def delete(self, appointment_id: int) -> bool:
         appointment = self.db.get(AppointmentSQL, appointment_id)
 
