@@ -35,3 +35,8 @@ class AppointmentAddonCreate(BaseModel):
 
 class AppointmentAddonQuantityUpdate(BaseModel):
     quantity: int
+
+
+class UnresolvedAddonResolve(BaseModel):
+    addon_id: int
+    quantity: int = 1

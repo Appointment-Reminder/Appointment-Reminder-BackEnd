@@ -2,7 +2,8 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka, DishkaSyncRoute
 from fastapi import APIRouter, Query, Depends
 from typing import Optional, List
 
-from app.api.models.addon.appointment_addon_model import AppointmentAddonCreate, AppointmentAddonQuantityUpdate
+from app.api.models.addon.appointment_addon_model import (
+    AppointmentAddonCreate, AppointmentAddonQuantityUpdate, UnresolvedAddonResolve)
 from app.api.models.appointment_model import AppointmentRead, AppointmentCreate, AppointmentUpdate
 from app.domain.addon.service.appointment_addon_service import AppointmentAddonService
 from app.domain.appointment.models.appointment_state_machine import AppointmentEvent
@@ -103,6 +104,14 @@ def remove_appointment_addon(business_id: int, appointment_id: int, addon_id: in
                              service: FromDishka[AppointmentAddonService], current_user: FromDishka[User]):
     """Remove an Add-on from the appointment."""
     return service.remove_addon(business_id, appointment_id, addon_id, current_user)
+
+@appointment_router.post("/business/{business_id}/appointments/{appointment_id}/unresolved-addons/{unresolved_id}/resolve",
+                         response_model=AppointmentRead)
+def resolve_unresolved_addon(business_id: int, appointment_id: int, unresolved_id: int, data: UnresolvedAddonResolve,
+                             service: FromDishka[AppointmentAddonService], current_user: FromDishka[User]):
+    """Resolve an Unresolved Add-on by picking an Add-on from the catalogue."""
+    return service.resolve_unresolved(business_id, appointment_id, unresolved_id, data.addon_id, current_user,
+                                      quantity=data.quantity)
 
 @appointment_router.post("/business/{business_id}/appointments/{appointment_id}/{event}", response_model=AppointmentRead)
 def advance_appointment(business_id: int, appointment_id: int, event: AppointmentEvent,
