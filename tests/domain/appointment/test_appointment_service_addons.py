@@ -27,8 +27,8 @@ def _appointment(id):
 def addon_repo():
     repo = Mock()
     repo.list_for_appointments.return_value = {}
-    repo.list_unresolved_for_appointments.return_value = {}
-    repo.appointment_ids_with_unresolved.return_value = {2}
+    repo.list_unresolved_addons_for_appointments.return_value = {}
+    repo.appointment_ids_with_unresolved_addons.return_value = {2}
     return repo
 
 
@@ -54,7 +54,7 @@ class TestAppointmentsExposeAddons:
         line = Mock(spec=AppointmentAddon)
         pending = UnresolvedAddon(id=5, appointment_id=2, raw_label="Mystery")
         addon_repo.list_for_appointments.return_value = {1: [line]}
-        addon_repo.list_unresolved_for_appointments.return_value = {2: [pending]}
+        addon_repo.list_unresolved_addons_for_appointments.return_value = {2: [pending]}
 
         first, second = service.get_appointments_by_business(100, Mock(id=9))
 

@@ -178,7 +178,7 @@ class TestProcessSubmissionAddons:
         from app.domain.addon.models.appointment_addon import AppointmentAddon
         return AppointmentAddon(
             addon_id=addon_id, addon_price_id=10, quantity=1, unit_price=50.0, unit_duration=30,
-            unit_commission_percent=10.0, unit_commission_amount=None, line_total=50.0, line_commission=5.0)
+            unit_commission_percent=10.0, unit_commission_amount=None, price_total=50.0, commission_total=5.0)
 
     def test_addon_rows_are_saved_against_the_created_appointment(
         self, service, jotform_guard, jotform_service, appointment_repo, appointment_addon_repo, addon_resolver,
@@ -229,7 +229,7 @@ class TestProcessSubmissionUnresolvedAddons:
         jotform_guard.ensure_credential_exists.return_value = credential
         jotform_service.resolve_submission.return_value = {"package": "Gold Package", "add_ons": ["Mystery"]}
         appointment_repo.create.side_effect = lambda a: setattr(a, "id", 42) or a
-        appointment_addon_repo.add_unresolved.side_effect = lambda u: u
+        appointment_addon_repo.add_unresolved_addon.side_effect = lambda u: u
 
         booking = ResolvedBookingContext(
             package_duration=60, package_id=1, category_id=2, member_id=7, package_price_id=1,

@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Iterable, List, Optional, Union
 
-from app.domain.addon.guard.addon_guard import normalize_alias
+from app.domain.addon.models.addon_alias import normalize_alias
 from app.domain.addon.models.addon_commission import commission_in_effect
 from app.domain.addon.models.addon_price import price_in_effect
 from app.domain.addon.models.appointment_addon import AppointmentAddon, snapshot_appointment_addon

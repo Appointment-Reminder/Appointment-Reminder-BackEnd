@@ -32,7 +32,7 @@ class TestWithoutAMember:
     def test_the_addon_commission_is_unset_not_zero(self, booked, lines):
         for addon_id in (1, 2, 3):
             line = _line(lines, addon_id)
-            assert (line.unit_commission_percent, line.unit_commission_amount, line.line_commission) == (None, None, None)
+            assert (line.unit_commission_percent, line.unit_commission_amount, line.commission_total) == (None, None, None)
 
     def test_the_appointment_commission_only_carries_the_package_commission(self, booked):
         assert booked.commission_amount_at_booking == 50.0
@@ -49,14 +49,14 @@ class TestAssigning:
     def test_assigning_computes_the_commission_of_each_appointment_addon(self, service, booked, lines):
         service.assign_member(booked, 7)
 
-        assert (_line(lines, 1).unit_commission_percent, _line(lines, 1).line_commission) == (10.0, 5.0)
-        assert (_line(lines, 2).unit_commission_amount, _line(lines, 2).line_commission) == (4.0, 12.0)
+        assert (_line(lines, 1).unit_commission_percent, _line(lines, 1).commission_total) == (10.0, 5.0)
+        assert (_line(lines, 2).unit_commission_amount, _line(lines, 2).commission_total) == (4.0, 12.0)
 
     def test_a_member_with_no_row_for_an_addon_contributes_zero_for_it(self, service, booked, lines):
         service.assign_member(booked, 7)
 
         line = _line(lines, 3)
-        assert (line.unit_commission_amount, line.unit_commission_percent, line.line_commission) == (0.0, None, 0.0)
+        assert (line.unit_commission_amount, line.unit_commission_percent, line.commission_total) == (0.0, None, 0.0)
 
     def test_the_commission_is_folded_into_the_appointment_total_and_the_member_is_set(
         self, service, booked, appointment_repo
@@ -70,14 +70,14 @@ class TestAssigning:
     def test_the_result_exposes_the_refreshed_addon_rows(self, service, booked):
         result = service.assign_member(booked, 7)
 
-        assert [l.line_commission for l in result.addons] == [5.0, 12.0, 0.0]
+        assert [l.commission_total for l in result.addons] == [5.0, 12.0, 0.0]
 
     def test_reassigning_replaces_the_previous_members_commission(self, service, booked, lines):
         service.assign_member(booked, 7)
         service.assign_member(booked, 8)
 
-        assert _line(lines, 1).line_commission == 10.0
-        assert (_line(lines, 2).line_commission, _line(lines, 3).line_commission) == (0.0, 0.0)
+        assert _line(lines, 1).commission_total == 10.0
+        assert (_line(lines, 2).commission_total, _line(lines, 3).commission_total) == (0.0, 0.0)
         assert booked.commission_amount_at_booking == 50.0 + 10.0
 
     def test_assigning_does_not_touch_price_or_duration(self, service, booked):
@@ -105,7 +105,7 @@ class TestAssigning:
 
         service.assign_member(booked, 7)
 
-        assert _line(lines, 1).line_commission == 5.0
+        assert _line(lines, 1).commission_total == 5.0
 
 
 class TestUnassigning:
@@ -121,7 +121,7 @@ class TestUnassigning:
 
         for addon_id in (1, 2, 3):
             line = _line(lines, addon_id)
-            assert (line.unit_commission_percent, line.unit_commission_amount, line.line_commission) == (None, None, None)
+            assert (line.unit_commission_percent, line.unit_commission_amount, line.commission_total) == (None, None, None)
 
     def test_the_appointment_total_drops_back_and_the_member_is_cleared(self, service, assigned, appointment_repo):
         service.unassign_member(assigned)
@@ -135,7 +135,7 @@ class TestUnassigning:
 
         service.set_quantity(100, 1, addon_id=2, quantity=5, current_user=user)
 
-        assert _line(lines, 2).line_commission is None
+        assert _line(lines, 2).commission_total is None
         assert assigned.commission_amount_at_booking == 50.0
 
     def test_reassigning_after_unassigning_computes_it_again(self, service, assigned, lines):
@@ -143,7 +143,7 @@ class TestUnassigning:
 
         service.assign_member(assigned, 7)
 
-        assert _line(lines, 1).line_commission == 5.0
+        assert _line(lines, 1).commission_total == 5.0
         assert assigned.commission_amount_at_booking == 67.0
 
 

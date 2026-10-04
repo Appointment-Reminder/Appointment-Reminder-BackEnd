@@ -21,8 +21,8 @@ class AppointmentAddon(SQLModel, table=True):
     unit_duration: int = Field(default=0)
     unit_commission_percent: Optional[float] = Field(default=None)
     unit_commission_amount: Optional[float] = Field(default=None)
-    line_total: float
-    line_commission: Optional[float] = Field(default=None)
+    price_total: float
+    commission_total: Optional[float] = Field(default=None)
 
     raw_label: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.now)
@@ -39,8 +39,8 @@ def _to_domain(sql: AppointmentAddon) -> AppointmentAddonEntity:
         unit_duration=sql.unit_duration,
         unit_commission_percent=sql.unit_commission_percent,
         unit_commission_amount=sql.unit_commission_amount,
-        line_total=sql.line_total,
-        line_commission=sql.line_commission,
+        price_total=sql.price_total,
+        commission_total=sql.commission_total,
         raw_label=sql.raw_label,
     )
 
@@ -49,5 +49,5 @@ def _apply_sql(sql: AppointmentAddon, obj: AppointmentAddonEntity) -> None:
     sql.quantity = obj.quantity
     sql.unit_commission_percent = obj.unit_commission_percent
     sql.unit_commission_amount = obj.unit_commission_amount
-    sql.line_total = obj.line_total
-    sql.line_commission = obj.line_commission
+    sql.price_total = obj.price_total
+    sql.commission_total = obj.commission_total

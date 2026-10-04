@@ -103,7 +103,7 @@ class JotformWebhookService:
             line.appointment_id = created.id
             created.addons.append(self.appointment_addon_repo.add(line))
         created.unresolved_addons = [
-            self.appointment_addon_repo.add_unresolved(UnresolvedAddon(appointment_id=created.id, raw_label=label))
+            self.appointment_addon_repo.add_unresolved_addon(UnresolvedAddon(appointment_id=created.id, raw_label=label))
             for label in booking.unresolved_addon_labels
         ]
         return created

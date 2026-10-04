@@ -25,22 +25,22 @@ def fold_in_addon_amounts(target, line: AppointmentAddon) -> None:
 
 def _fold(appointment, line: AppointmentAddon, sign: int) -> None:
     _fold_amounts(appointment, line, sign)
-    if line.line_duration:
-        appointment.appointment_duration = max(0, (appointment.appointment_duration or 0) + sign * line.line_duration)
+    if line.duration_total:
+        appointment.appointment_duration = max(0, (appointment.appointment_duration or 0) + sign * line.duration_total)
 
 
 def _fold_amounts(appointment, line: AppointmentAddon, sign: int) -> None:
     if appointment.price_at_booking is not None:
-        appointment.price_at_booking = _money(appointment.price_at_booking + sign * line.line_total)
+        appointment.price_at_booking = _money(appointment.price_at_booking + sign * line.price_total)
     if appointment.remaining_amount is not None:
-        appointment.remaining_amount = _money(appointment.remaining_amount + sign * line.line_total)
-    if line.line_commission is not None:
+        appointment.remaining_amount = _money(appointment.remaining_amount + sign * line.price_total)
+    if line.commission_total is not None:
         appointment.commission_amount_at_booking = _money(
-            (appointment.commission_amount_at_booking or 0) + sign * line.line_commission)
+            (appointment.commission_amount_at_booking or 0) + sign * line.commission_total)
 
 
 def swap_addon_commission(appointment, old: AppointmentAddon, new: AppointmentAddon) -> None:
     """Replace the line's commission in the appointment commission total (an unset commission counts as nothing)."""
-    delta = (new.line_commission or 0) - (old.line_commission or 0)
-    if delta or new.line_commission is not None:
+    delta = (new.commission_total or 0) - (old.commission_total or 0)
+    if delta or new.commission_total is not None:
         appointment.commission_amount_at_booking = _money((appointment.commission_amount_at_booking or 0) + delta)

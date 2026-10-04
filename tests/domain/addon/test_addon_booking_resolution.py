@@ -110,10 +110,10 @@ class TestMatchedAddons:
 
         first, second = result.addons
         assert (first.addon_id, first.addon_price_id, first.quantity) == (1, 10, 1)
-        assert (first.unit_price, first.line_total) == (50.0, 50.0)
-        assert (first.unit_commission_percent, first.line_commission) == (10.0, 5.0)
+        assert (first.unit_price, first.price_total) == (50.0, 50.0)
+        assert (first.unit_commission_percent, first.commission_total) == (10.0, 5.0)
         assert (second.addon_id, second.quantity, second.unit_price) == (2, 1, 30.0)
-        assert (second.unit_commission_amount, second.line_commission) == (4.0, 4.0)
+        assert (second.unit_commission_amount, second.commission_total) == (4.0, 4.0)
         assert result.unresolved_addon_labels == []
 
     def test_totals_include_addons_and_the_deposit_is_unchanged(self, book, catalogue):
@@ -142,7 +142,7 @@ class TestMatchedAddons:
 
         line = book(["A"]).addons[0]
 
-        assert (line.unit_commission_amount, line.unit_commission_percent, line.line_commission) == (0.0, None, 0.0)
+        assert (line.unit_commission_amount, line.unit_commission_percent, line.commission_total) == (0.0, None, 0.0)
 
     def test_without_an_assigned_member_the_addon_commission_is_unset(self, book, catalogue, jotform_guard):
         jotform_guard.resolve_assignment_or_unknown.return_value = None
@@ -151,7 +151,7 @@ class TestMatchedAddons:
         result = book(["A"])
 
         line = result.addons[0]
-        assert (line.unit_commission_percent, line.unit_commission_amount, line.line_commission) == (None, None, None)
+        assert (line.unit_commission_percent, line.unit_commission_amount, line.commission_total) == (None, None, None)
         assert result.fully_resolved is False
         assert result.member_id is None
 
@@ -161,7 +161,7 @@ class TestMatchedAddons:
 
         catalogue.prices[1].append(AddonPrice(id=99, addon_id=1, price=500, effective_from=NOW - timedelta(days=1)))
 
-        assert (line.unit_price, line.line_total, line.addon_price_id) == (50.0, 50.0, 10)
+        assert (line.unit_price, line.price_total, line.addon_price_id) == (50.0, 50.0, 10)
 
     def test_the_same_addon_chosen_twice_is_booked_once(self, book, catalogue):
         catalogue.add(1, "A", price=50)

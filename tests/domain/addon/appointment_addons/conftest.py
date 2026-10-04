@@ -34,8 +34,8 @@ class FakeAppointmentAddonRepo:
         self.lines = [line if l.id == line.id else l for l in self.lines]
         return line
 
-    def remove(self, line_id):
-        self.lines = [l for l in self.lines if l.id != line_id]
+    def remove(self, appointment_addon_id):
+        self.lines = [l for l in self.lines if l.id != appointment_addon_id]
         return True
 
     def get(self, appointment_id, addon_id):
@@ -50,19 +50,19 @@ class FakeAppointmentAddonRepo:
     def exists_for_addon(self, addon_id):
         return any(l.addon_id == addon_id for l in self.lines)
 
-    def add_unresolved(self, u):
+    def add_unresolved_addon(self, u):
         u.id = self._next
         self._next += 1
         self.unresolved.append(u)
         return u
 
-    def get_unresolved(self, unresolved_id):
+    def get_unresolved_addon(self, unresolved_id):
         return next((u for u in self.unresolved if u.id == unresolved_id), None)
 
-    def update_unresolved(self, u):
+    def update_unresolved_addon(self, u):
         return u
 
-    def list_unresolved_for_appointments(self, ids):
+    def list_unresolved_addons_for_appointments(self, ids):
         return {i: [u for u in self.unresolved if u.appointment_id == i and not u.is_resolved] for i in ids}
 
 
