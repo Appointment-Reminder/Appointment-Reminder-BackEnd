@@ -26,3 +26,12 @@ class UnresolvedAddonRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AppointmentAddonCreate(BaseModel):
+    addon_id: int
+    quantity: int = 1
+
+
+class AppointmentAddonQuantityUpdate(BaseModel):
+    quantity: int
