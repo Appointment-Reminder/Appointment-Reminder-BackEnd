@@ -28,3 +28,10 @@ def _fold(appointment, line: AppointmentAddon, sign: int) -> None:
             (appointment.commission_amount_at_booking or 0) + sign * line.line_commission)
     if line.line_duration:
         appointment.appointment_duration = max(0, (appointment.appointment_duration or 0) + sign * line.line_duration)
+
+
+def swap_addon_commission(appointment, old: AppointmentAddon, new: AppointmentAddon) -> None:
+    """Replace the line's commission in the appointment commission total (an unset commission counts as nothing)."""
+    delta = (new.line_commission or 0) - (old.line_commission or 0)
+    if delta or new.line_commission is not None:
+        appointment.commission_amount_at_booking = _money((appointment.commission_amount_at_booking or 0) + delta)

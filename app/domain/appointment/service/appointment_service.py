@@ -2,6 +2,7 @@ import datetime
 from typing import List, Optional
 
 from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
+from app.domain.addon.service.appointment_addon_service import AppointmentAddonService
 from app.domain.appointment.errors.appointment_error import AppointmentError
 from app.domain.appointment.models.appointment_model import Appointment
 from app.domain.appointment.models.appointment_state_machine import AppointmentEvent, AppointmentStatus
@@ -18,11 +19,13 @@ class AppointmentService:
                  business_member_repo: BusinessMemberRepositoryPort,
                  business_guard: BusinessGuard,
                  appointment_addon_repo: AppointmentAddonRepositoryPort,
+                 appointment_addon_service: AppointmentAddonService,
                  ):
         self.appointment_repo = appointment_repo
         self.business_member_repo = business_member_repo
         self.business_guard = business_guard
         self.appointment_addon_repo = appointment_addon_repo
+        self.appointment_addon_service = appointment_addon_service
 
     def _with_addons(self, appointments: List[Appointment]) -> List[Appointment]:
         ids = [a.id for a in appointments]
@@ -119,8 +122,11 @@ class AppointmentService:
             if found.status == AppointmentStatus.NEEDS_ASSIGNMENT:
                 found.handle(AppointmentEvent.ASSIGN)
                 self.appointment_repo.update_status(found)
+            if target.id != found.member_id:
+                self.appointment_addon_service.assign_member(found, target.id)
 
-        return self.appointment_repo.update(appointment=appointment, appointment_id=appointment_id)
+        updated = self.appointment_repo.update(appointment=appointment, appointment_id=appointment_id)
+        return self._with_addons([updated])[0]
 
     def delete_single_appointment(self, appointment_id: int, current_user: User) :
         appointment = self.appointment_repo.get_appointment_by_id(appointment_id)
@@ -141,4 +147,6 @@ class AppointmentService:
 
         appointment = self.get_single_appointment(business_id, appointment_id, current_user)
         appointment.handle(event)
-        return self.appointment_repo.update_status(appointment)
+        if event == AppointmentEvent.UNASSIGN:
+            self.appointment_addon_service.unassign_member(appointment)
+        return self._with_addons([self.appointment_repo.update_status(appointment)])[0]

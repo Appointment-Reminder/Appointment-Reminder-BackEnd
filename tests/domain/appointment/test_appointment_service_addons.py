@@ -45,7 +45,7 @@ def service(appointment_repo, addon_repo):
     business_guard.ensure_is_a_member.return_value = Mock(id=7, role=MemberRole.OWNER)
     return AppointmentService(
         appointment_repo=appointment_repo, business_member_repo=Mock(), business_guard=business_guard,
-        appointment_addon_repo=addon_repo,
+        appointment_addon_repo=addon_repo, appointment_addon_service=Mock(),
     )
 
 
@@ -73,3 +73,59 @@ class TestFilterByUnresolvedAddons:
 
     def test_no_filter_returns_everything(self, service):
         assert [a.id for a in service.get_appointments_by_business(100, Mock(id=9))] == [1, 2]
+
+
+class TestAddonCommissionFollowsTheAssignedMember:
+    @pytest.fixture
+    def addon_service(self):
+        return Mock()
+
+    @pytest.fixture
+    def member_service(self, appointment_repo, addon_repo, addon_service):
+        business_guard = Mock()
+        business_guard.ensure_is_a_member.return_value = Mock(id=1, role=MemberRole.OWNER)
+        member_repo = Mock()
+        member_repo.get_member_by_id.side_effect = lambda member_id: Mock(id=member_id, business_id=100)
+        member_repo.get_member.return_value = Mock(id=1, role=MemberRole.OWNER)
+        appointment_repo.get_appointment_by_id.side_effect = lambda appointment_id, **kw: _appointment(appointment_id)
+        appointment_repo.update.side_effect = lambda appointment, appointment_id: _appointment(appointment_id)
+        appointment_repo.update_status.side_effect = lambda a: a
+        return AppointmentService(
+            appointment_repo=appointment_repo, business_member_repo=member_repo, business_guard=business_guard,
+            appointment_addon_repo=addon_repo, appointment_addon_service=addon_service,
+        )
+
+    def test_assigning_another_member_recomputes_the_addon_commission(self, member_service, addon_service):
+        member_service.update_single_appointment(100, 1, Mock(member_id=8), Mock(id=9))
+
+        addon_service.assign_member.assert_called_once()
+        found, member_id = addon_service.assign_member.call_args.args
+        assert (found.id, member_id) == (1, 8)
+
+    def test_keeping_the_same_member_changes_nothing(self, member_service, addon_service):
+        member_service.update_single_appointment(100, 1, Mock(member_id=7), Mock(id=9))
+
+        addon_service.assign_member.assert_not_called()
+
+    def test_an_update_without_a_member_changes_nothing(self, member_service, addon_service):
+        member_service.update_single_appointment(100, 1, Mock(member_id=None), Mock(id=9))
+
+        addon_service.assign_member.assert_not_called()
+
+    def test_the_unassign_event_clears_the_addon_commission(self, member_service, addon_service):
+        from unittest.mock import patch
+        from app.domain.appointment.models.appointment_state_machine import AppointmentEvent
+
+        with patch.object(Appointment, "handle"):
+            member_service.advance(100, 1, AppointmentEvent.UNASSIGN, Mock(id=9))
+
+        addon_service.unassign_member.assert_called_once()
+
+    def test_other_events_leave_the_addon_commission_alone(self, member_service, addon_service):
+        from unittest.mock import patch
+        from app.domain.appointment.models.appointment_state_machine import AppointmentEvent
+
+        with patch.object(Appointment, "handle"):
+            member_service.advance(100, 1, AppointmentEvent.PHOTOSHOOT, Mock(id=9))
+
+        addon_service.unassign_member.assert_not_called()

@@ -4,6 +4,7 @@ from sqlmodel import Session
 from app.adapters.sql_model_adapter.appointment.adapters.sql_model_appointment_repository_adapter import \
     SQLModelAppointmentRepositoryAdapter
 from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
+from app.domain.addon.service.appointment_addon_service import AppointmentAddonService
 from app.domain.appointment.guard.appointment_guard import AppointmentGuard
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
 from app.domain.appointment.service.appointment_service import AppointmentService
@@ -31,10 +32,12 @@ class AppointmentProvider(Provider):
                                 appointment_repo: AppointmentRepositoryPort,
                                 business_member_repo: BusinessMemberRepositoryPort,
                                 business_guard: BusinessGuard,
-                                appointment_addon_repo: AppointmentAddonRepositoryPort) -> AppointmentService:
+                                appointment_addon_repo: AppointmentAddonRepositoryPort,
+                                appointment_addon_service: AppointmentAddonService) -> AppointmentService:
         return AppointmentService(
             appointment_repo=appointment_repo,
             business_member_repo=business_member_repo,
             business_guard=business_guard,
             appointment_addon_repo=appointment_addon_repo,
+            appointment_addon_service=appointment_addon_service,
         )
