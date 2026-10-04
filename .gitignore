@@ -75,3 +75,6 @@ ci-artifacts/
 docker-compose.override.yml
 
 /request/
+
+# Local issue tracker and specs
+/.scratch/

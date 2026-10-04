@@ -5,6 +5,9 @@ from app.domain.Jotform.guard.jotform_guard import JotformGuard
 from app.domain.Jotform.service.jotform_webhook_parser import parse_jotform_raw_request
 from app.domain.Jotform.service.jotform_submission_assembler import resolve_booking_context
 from app.domain.Jotform.service.jotform_service import JotformService
+from app.domain.addon.models.unresolved_addon import UnresolvedAddon
+from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
+from app.domain.addon.service.addon_booking import AddonBookingResolver
 from app.domain.appointment.models.appointment_model import Appointment
 from app.domain.appointment.models.appointment_state_machine import AppointmentStatus, AppointmentEvent
 from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
@@ -24,6 +27,8 @@ class JotformWebhookService:
         member_repo: BusinessMemberRepositoryPort,
         price_repo: PackagePriceRepositoryPort,
         appointment_repo: AppointmentRepositoryPort,
+        addon_resolver: AddonBookingResolver,
+        appointment_addon_repo: AppointmentAddonRepositoryPort,
     ):
         self.jotform_guard = jotform_guard
         self.jotform_service = jotform_service
@@ -32,6 +37,8 @@ class JotformWebhookService:
         self.member_repo = member_repo
         self.price_repo = price_repo
         self.appointment_repo = appointment_repo
+        self.addon_resolver = addon_resolver
+        self.appointment_addon_repo = appointment_addon_repo
 
     def process_submission(self, webhook_token: str, raw_request: dict) -> Appointment:
         form = self.jotform_guard.ensure_webhook_token_valid(webhook_token)
@@ -49,6 +56,8 @@ class JotformWebhookService:
             jotform_guard=self.jotform_guard,
             member_repo=self.member_repo,
             price_repo=self.price_repo,
+            addon_labels=resolved.get("add_ons"),
+            addon_resolver=self.addon_resolver,
         )
 
         appointment = Appointment(
@@ -74,12 +83,10 @@ class JotformWebhookService:
 
             appointment_date=resolved.get("appointment_date") or "",
             appointment_location=resolved.get("appointment_location") or "",
-            appointment_duration=booking.package_duration,
+            appointment_duration=booking.appointment_duration,
             appointment_note=resolved.get("appointment_note") or "",
             number_of_persons=resolved.get("guest_count") or "",
             privacy_opt_out = resolved.get("privacy_opt_out") or "",
-            adds_ons=resolved.get("add_ons") or "",
-
 
             status=AppointmentStatus.NEW,
             created_at=datetime.now(),
@@ -90,4 +97,13 @@ class JotformWebhookService:
         if booking.fully_resolved:
             appointment.handle(AppointmentEvent.ASSIGN)
 
-        return self.appointment_repo.create(appointment)
+        created = self.appointment_repo.create(appointment)
+        created.addons = []
+        for line in booking.addons:
+            line.appointment_id = created.id
+            created.addons.append(self.appointment_addon_repo.add(line))
+        created.unresolved_addons = [
+            self.appointment_addon_repo.add_unresolved_addon(UnresolvedAddon(appointment_id=created.id, raw_label=label))
+            for label in booking.unresolved_addon_labels
+        ]
+        return created

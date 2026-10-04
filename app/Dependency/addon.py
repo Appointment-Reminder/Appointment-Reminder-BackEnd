@@ -1,0 +1,94 @@
+from dishka import Provider, Scope, provide
+from sqlmodel import Session
+
+from app.adapters.sql_model_adapter.addon.adapters.sql_model_addon_repository_adapter import \
+    SQLModelAddonRepositoryAdapter
+from app.adapters.sql_model_adapter.addon.adapters.sql_model_addon_price_repository_adapter import \
+    SQLModelAddonPriceRepositoryAdapter
+from app.adapters.sql_model_adapter.addon.adapters.sql_model_addon_commission_repository_adapter import (
+    SQLModelAddonCommissionRepositoryAdapter)
+from app.adapters.sql_model_adapter.addon.adapters.sql_model_appointment_addon_repository_adapter import (
+    SQLModelAppointmentAddonRepositoryAdapter)
+from app.domain.addon.guard.addon_guard import AddonGuard
+from app.domain.addon.port.addon_commission_repository_port import AddonCommissionRepositoryPort
+from app.domain.addon.port.addon_price_repository_port import AddonPriceRepositoryPort
+from app.domain.addon.port.addon_repository_port import AddonRepositoryPort
+from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
+from app.domain.addon.service.addon_booking import AddonBookingResolver
+from app.domain.addon.service.addon_service import AddonService
+from app.domain.addon.service.appointment_addon_service import AppointmentAddonService
+from app.domain.appointment.port.appointment_repository_port import AppointmentRepositoryPort
+from app.domain.business.guard.business_guard import BusinessGuard
+from app.domain.package.guard.package_guard import PackageGuard
+from app.domain.package.port.package_repository_port import PackageRepositoryPort
+
+
+class AddonProvider(Provider):
+    scope = Scope.REQUEST
+
+    @provide
+    def get_addon_repo(self, db: Session) -> AddonRepositoryPort:
+        return SQLModelAddonRepositoryAdapter(db=db)
+
+    @provide
+    def get_addon_price_repo(self, db: Session) -> AddonPriceRepositoryPort:
+        return SQLModelAddonPriceRepositoryAdapter(db=db)
+
+    @provide
+    def get_addon_commission_repo(self, db: Session) -> AddonCommissionRepositoryPort:
+        return SQLModelAddonCommissionRepositoryAdapter(db=db)
+
+    @provide
+    def get_appointment_addon_repo(self, db: Session) -> AppointmentAddonRepositoryPort:
+        return SQLModelAppointmentAddonRepositoryAdapter(db=db)
+
+    @provide
+    def get_addon_booking_resolver(self,
+                                   addon_repo: AddonRepositoryPort,
+                                   price_repo: AddonPriceRepositoryPort,
+                                   commission_repo: AddonCommissionRepositoryPort) -> AddonBookingResolver:
+        return AddonBookingResolver(addon_repo=addon_repo, price_repo=price_repo, commission_repo=commission_repo)
+
+    @provide
+    def get_addon_guard(self, addon_repo: AddonRepositoryPort) -> AddonGuard:
+        return AddonGuard(addon_repo=addon_repo)
+
+    @provide
+    def get_addon_service(self,
+                          addon_repo: AddonRepositoryPort,
+                          price_repo: AddonPriceRepositoryPort,
+                          commission_repo: AddonCommissionRepositoryPort,
+                          appointment_addon_repo: AppointmentAddonRepositoryPort,
+                          addon_guard: AddonGuard,
+                          business_guard: BusinessGuard,
+                          package_guard: PackageGuard) -> AddonService:
+        return AddonService(
+            addon_repo=addon_repo,
+            price_repo=price_repo,
+            commission_repo=commission_repo,
+            appointment_addon_repo=appointment_addon_repo,
+            addon_guard=addon_guard,
+            business_guard=business_guard,
+            package_guard=package_guard,
+        )
+
+    @provide
+    def get_appointment_addon_service(self,
+                                      appointment_repo: AppointmentRepositoryPort,
+                                      appointment_addon_repo: AppointmentAddonRepositoryPort,
+                                      addon_repo: AddonRepositoryPort,
+                                      package_repo: PackageRepositoryPort,
+                                      price_repo: AddonPriceRepositoryPort,
+                                      commission_repo: AddonCommissionRepositoryPort,
+                                      business_guard: BusinessGuard,
+                                      addon_guard: AddonGuard) -> AppointmentAddonService:
+        return AppointmentAddonService(
+            appointment_repo=appointment_repo,
+            appointment_addon_repo=appointment_addon_repo,
+            addon_repo=addon_repo,
+            package_repo=package_repo,
+            price_repo=price_repo,
+            commission_repo=commission_repo,
+            business_guard=business_guard,
+            addon_guard=addon_guard,
+        )

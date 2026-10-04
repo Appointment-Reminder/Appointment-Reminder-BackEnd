@@ -45,7 +45,6 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
             appointment_note = appointment.appointment_note,
             number_of_persons = appointment.number_of_persons,
             privacy_opt_out = appointment.privacy_opt_out,
-            adds_ons = appointment.adds_ons,
 
             status = appointment.status,
             created_at = appointment.created_at,
@@ -97,6 +96,18 @@ class SQLModelAppointmentRepositoryAdapter(AppointmentRepositoryPort):
     def update_status(self, appointment: AppointmentEntity) -> AppointmentEntity:
         row = self.db.get(AppointmentSQL, appointment.id)
         row.status = appointment.status.value
+        row.updated_at = datetime.now()
+        self.db.commit()
+        self.db.refresh(row)
+        return _to_domain(row)
+
+    def update_totals(self, appointment: AppointmentEntity) -> AppointmentEntity:
+        row = self.db.get(AppointmentSQL, appointment.id)
+        row.price_at_booking = appointment.price_at_booking
+        row.remaining_amount = appointment.remaining_amount
+        row.commision_amount_at_booking = appointment.commission_amount_at_booking
+        row.appointment_duration = appointment.appointment_duration
+        row.member_id = appointment.member_id
         row.updated_at = datetime.now()
         self.db.commit()
         self.db.refresh(row)

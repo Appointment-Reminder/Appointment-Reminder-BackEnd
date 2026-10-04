@@ -25,7 +25,7 @@ class StateMachine[S: Enum, E:Enum, C]:
         return next_state
 
     def transition(self, from_state: S | Iterable[S], event: E, to_state: S):
-        if not isinstance(from_state, Iterable):
+        if isinstance(from_state, Enum):
             from_state = (from_state,)
 
         def decorator(func: Action[C]) -> Action[C]:
@@ -91,7 +91,7 @@ def _edit(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING_REVIEW")
 @appointment_sm.transition(S.PENDING_REVIEW, E.REVIEW, S.COMPLETED)
 def _review(ctx): ctx.audit.append(f"{ctx.appointment_id} -> COMPLETED")
 
-@appointment_sm.transition(S.PENDING_REVIEW, E.REMOVE_EDITING, S.PENDING_REVIEW)
+@appointment_sm.transition(S.PENDING_REVIEW, E.REMOVE_EDITING, S.PENDING_EDITING)
 def _unedit(ctx): ctx.audit.append(f"{ctx.appointment_id} -> PENDING_REVIEW")
 
 @appointment_sm.transition(S.PENDING_EDITING, E.REMOVE_SELECTION, S.PENDING_SELECTION)
