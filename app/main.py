@@ -10,12 +10,14 @@ from sqlmodel import SQLModel
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
+from app.Dependency.addon import AddonProvider
 from app.Dependency.appointment import AppointmentProvider
 from app.Dependency.business import BusinessProvider
 from app.Dependency.infrastructure import Infrastructure, DbProvider
 from app.Dependency.jotform import JotformProvider
 from app.Dependency.package import PackageProvider
 from app.Dependency.user import UserProvider
+from app.api.v1.addon_routes import addon_router
 from app.api.v1.jotform_public_webhook import jotform_public_router
 
 from app.domain.core.config import config
@@ -39,6 +41,7 @@ container = make_container(
     BusinessProvider(),
     JotformProvider(),
     PackageProvider(),
+    AddonProvider(),
     AppointmentProvider(),
     FastapiProvider(),
 )
@@ -49,6 +52,7 @@ app.include_router(userRouter)
 app.include_router(jotform_router)
 app.include_router(appointment_router)
 app.include_router(business_router)
+app.include_router(addon_router)
 app.include_router(jotform_public_router)
 app.add_middleware(
     CORSMiddleware,

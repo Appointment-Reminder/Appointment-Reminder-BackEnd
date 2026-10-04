@@ -15,6 +15,7 @@ from app.adapters.sql_model_adapter.package.models.package import Package
 from app.adapters.sql_model_adapter.package.models.package_price import PackagePrice
 from app.adapters.sql_model_adapter.package.models.package_category import PackageCategory
 from app.adapters.sql_model_adapter.business.models.business import Business
+from app.adapters.sql_model_adapter.addon.models.addon import Addon
 from app.adapters.sql_model_adapter.jotform.models.jotform import JotformForm, JotformCredential
 from app.domain.core.config import config
 
