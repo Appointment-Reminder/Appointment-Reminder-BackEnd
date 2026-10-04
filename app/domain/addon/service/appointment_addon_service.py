@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Callable, Optional
 
-from app.domain.addon.errors.addon_errors import AddonError, AppointmentAddonsLocked, NoAddonPriceInEffect
+from app.domain.addon.errors.addon_errors import (
+    AddonError, AppointmentAddonsLocked, AppointmentNotPriced, NoAddonPriceInEffect)
 from app.domain.addon.guard.addon_guard import AddonGuard
 from app.domain.addon.models.addon import Addon
 from app.domain.addon.models.addon_commission import commission_in_effect
@@ -124,6 +125,8 @@ class AppointmentAddonService:
     # helpers
     def _book(self, appointment: Appointment, addon_id: int, quantity: int, raw_label: Optional[str] = None) -> None:
         """Freeze the add-on as an Appointment Add-on of the appointment and fold it into the totals."""
+        if appointment.price_at_booking is None:
+            raise AppointmentNotPriced()
         addon = self._ensure_bookable(addon_id, appointment.business_id, appointment)
         self._ensure_quantity_allowed(addon, quantity)
         if self.appointment_addon_repo.get(appointment.id, addon_id) is not None:

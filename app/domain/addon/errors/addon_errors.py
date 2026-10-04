@@ -11,3 +11,7 @@ class NoAddonPriceInEffect(AddonError):
 
 class AppointmentAddonsLocked(AddonError):
     """The appointment is closed out (completed, canceled or refunded): its add-ons can no longer change."""
+
+
+class AppointmentNotPriced(AddonError):
+    """The appointment has no package price yet, so add-on amounts have no total to join."""
