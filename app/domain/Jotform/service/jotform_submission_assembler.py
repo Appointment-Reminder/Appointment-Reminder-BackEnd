@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Iterable, List, Optional, Union
 
 from app.domain.addon.models.appointment_addon import AppointmentAddon
+from app.domain.addon.models.appointment_totals import fold_in_addon_amounts
 from app.domain.addon.service.addon_booking import AddonBookingResolver
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
@@ -67,11 +68,7 @@ def resolve_booking_context(
     booking.unresolved_addon_labels = resolution.unresolved_labels
     for line in resolution.lines:
         booking.addon_duration += line.line_duration
-        if booking.price_at_booking is not None:
-            booking.price_at_booking += line.line_total
-            booking.remaining_amount += line.line_total
-            if booking.commission_amount_at_booking is not None and line.line_commission is not None:
-                booking.commission_amount_at_booking += line.line_commission
+        fold_in_addon_amounts(booking, line)
     return booking
 
 
