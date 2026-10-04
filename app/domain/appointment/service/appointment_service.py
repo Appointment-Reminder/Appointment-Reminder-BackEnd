@@ -30,7 +30,7 @@ class AppointmentService:
     def _with_addons(self, appointments: List[Appointment]) -> List[Appointment]:
         ids = [a.id for a in appointments]
         addons = self.appointment_addon_repo.list_for_appointments(ids)
-        unresolved = self.appointment_addon_repo.list_unresolved_for_appointments(ids)
+        unresolved = self.appointment_addon_repo.list_unresolved_addons_for_appointments(ids)
         for appointment in appointments:
             appointment.addons = addons.get(appointment.id, [])
             appointment.unresolved_addons = unresolved.get(appointment.id, [])
@@ -80,7 +80,7 @@ class AppointmentService:
             appointments = self.appointment_repo.get_appointment_by_photographer(member.id, business_id) or []
 
         if has_unresolved_addons is not None:
-            flagged = self.appointment_addon_repo.appointment_ids_with_unresolved(business_id)
+            flagged = self.appointment_addon_repo.appointment_ids_with_unresolved_addons(business_id)
             appointments = [a for a in appointments if (a.id in flagged) == has_unresolved_addons]
         return self._with_addons(appointments)
 

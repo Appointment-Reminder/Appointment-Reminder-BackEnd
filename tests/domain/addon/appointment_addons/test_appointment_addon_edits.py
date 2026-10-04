@@ -23,8 +23,8 @@ class TestAddAddon:
 
         line = result.addons[0]
         assert (line.addon_id, line.addon_price_id, line.quantity) == (1, 10, 1)
-        assert (line.unit_price, line.line_total) == (50.0, 50.0)
-        assert (line.unit_commission_percent, line.line_commission) == (10.0, 5.0)
+        assert (line.unit_price, line.price_total) == (50.0, 50.0)
+        assert (line.unit_commission_percent, line.commission_total) == (10.0, 5.0)
         assert line.appointment_id == 1
 
     def test_updates_the_appointment_totals_and_persists_them(
@@ -43,7 +43,7 @@ class TestAddAddon:
 
         line = service.add_addon(100, 1, addon_id=1, quantity=3, current_user=user).addons[0]
 
-        assert (line.line_total, line.line_commission) == (150.0, 12.0)
+        assert (line.price_total, line.commission_total) == (150.0, 12.0)
         assert _totals(appointment) == (650.0, 550.0, 62.0, 150)
 
     def test_without_an_assigned_member_the_addon_commission_is_unset(self, service, catalogue, appointment, user):
@@ -53,7 +53,7 @@ class TestAddAddon:
 
         line = service.add_addon(100, 1, addon_id=1, quantity=1, current_user=user).addons[0]
 
-        assert (line.unit_commission_percent, line.unit_commission_amount, line.line_commission) == (None, None, None)
+        assert (line.unit_commission_percent, line.unit_commission_amount, line.commission_total) == (None, None, None)
         assert appointment.commission_amount_at_booking == 50.0
         assert appointment.price_at_booking == 550.0
 
@@ -122,7 +122,7 @@ class TestChangeQuantity:
         line = next(l for l in service.set_quantity(100, 1, addon_id=1, quantity=2, current_user=user).addons
                     if l.addon_id == 1)
 
-        assert (line.unit_price, line.line_total, line.addon_price_id) == (50.0, 100.0, 10)
+        assert (line.unit_price, line.price_total, line.addon_price_id) == (50.0, 100.0, 10)
         assert appointment.price_at_booking == 620.0
 
     def test_a_flat_commission_scales_with_quantity_and_a_percentage_follows_the_line_total(
@@ -130,11 +130,11 @@ class TestChangeQuantity:
     ):
         result = service.set_quantity(100, 1, addon_id=2, quantity=3, current_user=user)
         flat = next(l for l in result.addons if l.addon_id == 2)
-        assert flat.line_commission == 12.0
+        assert flat.commission_total == 12.0
 
         result = service.set_quantity(100, 1, addon_id=1, quantity=4, current_user=user)
         percent = next(l for l in result.addons if l.addon_id == 1)
-        assert (percent.line_total, percent.line_commission) == (200.0, 20.0)
+        assert (percent.price_total, percent.commission_total) == (200.0, 20.0)
         assert appointment.commission_amount_at_booking == 50.0 + 20.0 + 12.0
 
     def test_going_back_down_restores_the_totals(self, service, appointment, user):
@@ -304,10 +304,10 @@ class TestCategoryRestriction:
     ):
         from app.domain.addon.models.unresolved_addon import UnresolvedAddon
         catalogue.add(1, price=50, category_id=99)
-        pending = lines.add_unresolved(UnresolvedAddon(appointment_id=1, raw_label="x"))
+        pending = lines.add_unresolved_addon(UnresolvedAddon(appointment_id=1, raw_label="x"))
         with pytest.raises(AddonError):
-            service.resolve_unresolved(100, 1, pending.id, addon_id=1, current_user=user)
-        assert not lines.get_unresolved(pending.id).is_resolved
+            service.resolve_unresolved_addon(100, 1, pending.id, addon_id=1, current_user=user)
+        assert not lines.get_unresolved_addon(pending.id).is_resolved
 
 
 class TestCommissionRounding:
@@ -316,5 +316,5 @@ class TestCommissionRounding:
 
         line = service.add_addon(100, 1, addon_id=1, quantity=3, current_user=user).addons[0]
 
-        assert line.line_commission == 6.93
+        assert line.commission_total == 6.93
         assert appointment.commission_amount_at_booking == 56.93

@@ -28,8 +28,8 @@ class SQLModelAppointmentAddonRepositoryAdapter(AppointmentAddonRepositoryPort):
             unit_duration=line.unit_duration,
             unit_commission_percent=line.unit_commission_percent,
             unit_commission_amount=line.unit_commission_amount,
-            line_total=line.line_total,
-            line_commission=line.line_commission,
+            price_total=line.price_total,
+            commission_total=line.commission_total,
             raw_label=line.raw_label,
         )
         self.db.add(sql_obj)
@@ -46,8 +46,8 @@ class SQLModelAppointmentAddonRepositoryAdapter(AppointmentAddonRepositoryPort):
         self.db.refresh(existing)
         return _to_domain(existing)
 
-    def remove(self, line_id: int) -> bool:
-        existing = self.db.get(AppointmentAddonSQL, line_id)
+    def remove(self, appointment_addon_id: int) -> bool:
+        existing = self.db.get(AppointmentAddonSQL, appointment_addon_id)
         if not existing:
             return False
         self.db.delete(existing)
@@ -84,18 +84,18 @@ class SQLModelAppointmentAddonRepositoryAdapter(AppointmentAddonRepositoryPort):
             select(AppointmentAddonSQL.id).where(AppointmentAddonSQL.addon_id == addon_id).limit(1)
         ).first() is not None
 
-    def add_unresolved(self, unresolved: UnresolvedAddonEntity) -> UnresolvedAddonEntity:
+    def add_unresolved_addon(self, unresolved: UnresolvedAddonEntity) -> UnresolvedAddonEntity:
         sql_obj = UnresolvedAddonSQL(appointment_id=unresolved.appointment_id, raw_label=unresolved.raw_label)
         self.db.add(sql_obj)
         self.db.commit()
         self.db.refresh(sql_obj)
         return unresolved_to_domain(sql_obj)
 
-    def get_unresolved(self, unresolved_id: int) -> Optional[UnresolvedAddonEntity]:
+    def get_unresolved_addon(self, unresolved_id: int) -> Optional[UnresolvedAddonEntity]:
         row = self.db.get(UnresolvedAddonSQL, unresolved_id)
         return unresolved_to_domain(row) if row else None
 
-    def update_unresolved(self, unresolved: UnresolvedAddonEntity) -> Optional[UnresolvedAddonEntity]:
+    def update_unresolved_addon(self, unresolved: UnresolvedAddonEntity) -> Optional[UnresolvedAddonEntity]:
         existing = self.db.get(UnresolvedAddonSQL, unresolved.id)
         if not existing:
             return None
@@ -105,7 +105,7 @@ class SQLModelAppointmentAddonRepositoryAdapter(AppointmentAddonRepositoryPort):
         self.db.refresh(existing)
         return unresolved_to_domain(existing)
 
-    def list_unresolved_for_appointments(
+    def list_unresolved_addons_for_appointments(
         self, appointment_ids: Iterable[int]
     ) -> Dict[int, List[UnresolvedAddonEntity]]:
         ids = list(appointment_ids)
@@ -122,7 +122,7 @@ class SQLModelAppointmentAddonRepositoryAdapter(AppointmentAddonRepositoryPort):
             grouped.setdefault(row.appointment_id, []).append(unresolved_to_domain(row))
         return grouped
 
-    def appointment_ids_with_unresolved(self, business_id: int) -> Set[int]:
+    def appointment_ids_with_unresolved_addons(self, business_id: int) -> Set[int]:
         rows = self.db.exec(
             select(UnresolvedAddonSQL.appointment_id)
             .join(AppointmentSQL, AppointmentSQL.id == UnresolvedAddonSQL.appointment_id)

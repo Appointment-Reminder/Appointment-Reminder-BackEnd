@@ -2,7 +2,8 @@ from dataclasses import replace
 from datetime import datetime
 from typing import List, Optional
 
-from app.domain.addon.guard.addon_guard import AddonGuard, normalize_alias
+from app.domain.addon.guard.addon_guard import AddonGuard
+from app.domain.addon.models.addon_alias import normalize_alias
 from app.domain.addon.models.addon import Addon
 from app.domain.addon.models.addon_commission import AddonCommission, commission_in_effect
 from app.domain.addon.models.addon_price import AddonPrice, price_in_effect

@@ -5,10 +5,6 @@ from app.domain.addon.models.addon import Addon
 from app.domain.addon.port.addon_repository_port import AddonRepositoryPort
 
 
-def normalize_alias(alias: Optional[str]) -> str:
-    return (alias or "").replace(" ", " ").strip()
-
-
 class AddonGuard:
     def __init__(self, addon_repo: AddonRepositoryPort):
         self.addon_repo = addon_repo

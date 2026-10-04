@@ -110,7 +110,7 @@ def remove_appointment_addon(business_id: int, appointment_id: int, addon_id: in
 def resolve_unresolved_addon(business_id: int, appointment_id: int, unresolved_id: int, data: UnresolvedAddonResolve,
                              service: FromDishka[AppointmentAddonService], current_user: FromDishka[User]):
     """Resolve an Unresolved Add-on by picking an Add-on from the catalogue."""
-    return service.resolve_unresolved(business_id, appointment_id, unresolved_id, data.addon_id, current_user,
+    return service.resolve_unresolved_addon(business_id, appointment_id, unresolved_id, data.addon_id, current_user,
                                       quantity=data.quantity)
 
 @appointment_router.post("/business/{business_id}/appointments/{appointment_id}/{event}", response_model=AppointmentRead)

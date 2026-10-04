@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Iterable, List, Optional, Union
 
 from app.domain.addon.models.appointment_addon import AppointmentAddon
-from app.domain.addon.models.appointment_totals import fold_in_addon_amounts
+from app.domain.addon.service.appointment_totals import fold_in_addon_amounts
 from app.domain.addon.service.addon_booking import AddonBookingResolver
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
@@ -67,7 +67,7 @@ def resolve_booking_context(
     booking.addons = resolution.lines
     booking.unresolved_addon_labels = resolution.unresolved_labels
     for line in resolution.lines:
-        booking.addon_duration += line.line_duration
+        booking.addon_duration += line.duration_total
         fold_in_addon_amounts(booking, line)
     return booking
 

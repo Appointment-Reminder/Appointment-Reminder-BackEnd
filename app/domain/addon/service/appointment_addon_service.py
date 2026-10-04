@@ -9,7 +9,7 @@ from app.domain.addon.models.addon_price import price_in_effect
 from app.domain.addon.models.appointment_addon import (
     AppointmentAddon, snapshot_appointment_addon, with_commission, with_quantity,
 )
-from app.domain.addon.models.appointment_totals import fold_in_addon, fold_out_addon, swap_addon_commission
+from app.domain.addon.service.appointment_totals import fold_in_addon, fold_out_addon, swap_addon_commission
 from app.domain.addon.port.addon_commission_repository_port import AddonCommissionRepositoryPort
 from app.domain.addon.port.addon_price_repository_port import AddonPriceRepositoryPort
 from app.domain.addon.port.addon_repository_port import AddonRepositoryPort
@@ -74,7 +74,7 @@ class AppointmentAddonService:
 
     def remove_addon(self, business_id: int, appointment_id: int, addon_id: int, current_user: User) -> Appointment:
         appointment = self._load_editable(business_id, appointment_id, current_user)
-        line = self._ensure_line(appointment_id, addon_id)
+        line = self._ensure_appointment_addon(appointment_id, addon_id)
 
         self.appointment_addon_repo.remove(line.id)
         fold_out_addon(appointment, line)
@@ -83,7 +83,7 @@ class AppointmentAddonService:
     def set_quantity(self, business_id: int, appointment_id: int, addon_id: int, quantity: int,
                      current_user: User) -> Appointment:
         appointment = self._load_editable(business_id, appointment_id, current_user)
-        line = self._ensure_line(appointment_id, addon_id)
+        line = self._ensure_appointment_addon(appointment_id, addon_id)
         self._ensure_quantity_allowed(self.addon_guard.ensure_addon_exist(addon_id), quantity)
 
         updated = with_quantity(line, quantity)
@@ -92,11 +92,11 @@ class AppointmentAddonService:
         fold_in_addon(appointment, updated)
         return self._save(appointment)
 
-    def resolve_unresolved(self, business_id: int, appointment_id: int, unresolved_id: int, addon_id: int,
+    def resolve_unresolved_addon(self, business_id: int, appointment_id: int, unresolved_id: int, addon_id: int,
                            current_user: User, quantity: int = 1) -> Appointment:
         """Book the picked Add-on for an Unresolved Add-on, at today's price and the assigned member's commission."""
         appointment = self._load_editable(business_id, appointment_id, current_user)
-        unresolved = self.appointment_addon_repo.get_unresolved(unresolved_id)
+        unresolved = self.appointment_addon_repo.get_unresolved_addon(unresolved_id)
         if unresolved is None or unresolved.appointment_id != appointment_id or unresolved.is_resolved:
             raise AddonError()
 
@@ -112,7 +112,7 @@ class AppointmentAddonService:
 
         unresolved.resolved_addon_id = addon_id
         unresolved.resolved_at = self.clock()
-        self.appointment_addon_repo.update_unresolved(unresolved)
+        self.appointment_addon_repo.update_unresolved_addon(unresolved)
         return self._save(appointment)
 
     def assign_member(self, appointment: Appointment, member_id: int) -> Appointment:
@@ -173,7 +173,7 @@ class AppointmentAddonService:
         if quantity < 1 or (not addon.has_quantity and quantity != 1):
             raise AddonError()
 
-    def _ensure_line(self, appointment_id: int, addon_id: int) -> AppointmentAddon:
+    def _ensure_appointment_addon(self, appointment_id: int, addon_id: int) -> AppointmentAddon:
         line = self.appointment_addon_repo.get(appointment_id, addon_id)
         if line is None:
             raise AddonError()
@@ -196,6 +196,6 @@ class AppointmentAddonService:
     def _save(self, appointment: Appointment) -> Appointment:
         self.appointment_repo.update_totals(appointment)
         appointment.addons = self.appointment_addon_repo.list_for_appointment(appointment.id)
-        appointment.unresolved_addons = self.appointment_addon_repo.list_unresolved_for_appointments(
+        appointment.unresolved_addons = self.appointment_addon_repo.list_unresolved_addons_for_appointments(
             [appointment.id]).get(appointment.id, [])
         return appointment

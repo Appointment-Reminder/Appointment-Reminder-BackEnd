@@ -16,18 +16,18 @@ class AppointmentAddon:
     unit_duration: int
     unit_commission_percent: Optional[float]
     unit_commission_amount: Optional[float]
-    line_total: float
-    line_commission: Optional[float]
+    price_total: float
+    commission_total: Optional[float]
     appointment_id: Optional[int] = None
     raw_label: Optional[str] = None
     id: Optional[int] = None
 
     @property
-    def line_duration(self) -> int:
+    def duration_total(self) -> int:
         return self.unit_duration * self.quantity
 
 
-def _line_commission(
+def _commission_total(
     unit_price: float, quantity: int, percent: Optional[float], flat: Optional[float]
 ) -> Optional[float]:
     """A flat commission applies per unit, a percentage applies to the line total. None when unset."""
@@ -66,8 +66,8 @@ def snapshot_appointment_addon(
         unit_duration=(addon.duration_minutes or 0) if addon.has_duration else 0,
         unit_commission_percent=percent,
         unit_commission_amount=flat,
-        line_total=unit_price * quantity,
-        line_commission=_line_commission(unit_price, quantity, percent, flat),
+        price_total=unit_price * quantity,
+        commission_total=_commission_total(unit_price, quantity, percent, flat),
         raw_label=raw_label,
     )
 
@@ -79,8 +79,8 @@ def with_quantity(line: AppointmentAddon, quantity: int) -> AppointmentAddon:
         addon_price_id=line.addon_price_id, quantity=quantity, unit_price=line.unit_price,
         unit_duration=line.unit_duration, unit_commission_percent=line.unit_commission_percent,
         unit_commission_amount=line.unit_commission_amount, raw_label=line.raw_label,
-        line_total=line.unit_price * quantity,
-        line_commission=_line_commission(line.unit_price, quantity, line.unit_commission_percent,
+        price_total=line.unit_price * quantity,
+        commission_total=_commission_total(line.unit_price, quantity, line.unit_commission_percent,
                                          line.unit_commission_amount),
     )
 
@@ -91,7 +91,7 @@ def with_commission(line: AppointmentAddon, commission: Optional[AddonCommission
     return AppointmentAddon(
         id=line.id, appointment_id=line.appointment_id, addon_id=line.addon_id,
         addon_price_id=line.addon_price_id, quantity=line.quantity, unit_price=line.unit_price,
-        unit_duration=line.unit_duration, raw_label=line.raw_label, line_total=line.line_total,
+        unit_duration=line.unit_duration, raw_label=line.raw_label, price_total=line.price_total,
         unit_commission_percent=percent, unit_commission_amount=flat,
-        line_commission=_line_commission(line.unit_price, line.quantity, percent, flat),
+        commission_total=_commission_total(line.unit_price, line.quantity, percent, flat),
     )

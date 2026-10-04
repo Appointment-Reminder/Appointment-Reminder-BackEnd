@@ -12,8 +12,8 @@ class AppointmentAddonRead(BaseModel):
     unit_duration: int
     unit_commission_percent: Optional[float]
     unit_commission_amount: Optional[float]
-    line_total: float
-    line_commission: Optional[float]
+    price_total: float
+    commission_total: Optional[float]
     raw_label: Optional[str] = None
 
     class Config:
