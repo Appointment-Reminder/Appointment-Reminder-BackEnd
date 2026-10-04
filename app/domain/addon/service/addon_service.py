@@ -9,6 +9,7 @@ from app.domain.addon.models.addon_price import AddonPrice, price_in_effect
 from app.domain.addon.port.addon_commission_repository_port import AddonCommissionRepositoryPort
 from app.domain.addon.port.addon_price_repository_port import AddonPriceRepositoryPort
 from app.domain.addon.port.addon_repository_port import AddonRepositoryPort
+from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.package.guard.package_guard import PackageGuard
 from app.domain.addon.errors.addon_errors import AddonError, NoAddonPriceInEffect
@@ -23,6 +24,7 @@ class AddonService:
         addon_repo: AddonRepositoryPort,
         price_repo: AddonPriceRepositoryPort,
         commission_repo: AddonCommissionRepositoryPort,
+        appointment_addon_repo: AppointmentAddonRepositoryPort,
         business_guard: BusinessGuard,
         package_guard: PackageGuard,
         addon_guard: AddonGuard,
@@ -30,6 +32,7 @@ class AddonService:
         self.addon_repo = addon_repo
         self.price_repo = price_repo
         self.commission_repo = commission_repo
+        self.appointment_addon_repo = appointment_addon_repo
         self.business_guard = business_guard
         self.package_guard = package_guard
         self.addon_guard = addon_guard
@@ -56,6 +59,7 @@ class AddonService:
         existing = self.get(data.id, current_user)
 
         addon = self._normalized(data, business_id=existing.business_id, is_active=data.is_active)
+        self._ensure_type_not_locked(existing, addon)
         self._ensure_valid(addon)
         return self.addon_repo.update(addon)
 
@@ -122,6 +126,12 @@ class AddonService:
             has_quantity=data.has_quantity,
             duration_minutes=data.duration_minutes if data.has_duration else None,
         )
+
+    def _ensure_type_not_locked(self, existing: Addon, changed: Addon) -> None:
+        """Once an Appointment Add-on references the add-on, its type is fixed: deactivate it and create a new one."""
+        type_changed = (existing.has_duration, existing.has_quantity) != (changed.has_duration, changed.has_quantity)
+        if type_changed and self.appointment_addon_repo.exists_for_addon(existing.id):
+            raise AddonError()
 
     def _ensure_valid(self, addon: Addon) -> None:
         self.addon_guard.ensure_duration_rule(addon)

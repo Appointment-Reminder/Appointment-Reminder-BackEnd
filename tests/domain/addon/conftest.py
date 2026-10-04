@@ -31,6 +31,12 @@ def commission_repo():
     return repo
 
 @pytest.fixture
+def appointment_addon_repo():
+    repo = Mock()
+    repo.exists_for_addon.return_value = False
+    return repo
+
+@pytest.fixture
 def business_guard():
     return Mock()
 
@@ -41,11 +47,12 @@ def package_guard():
     return guard
 
 @pytest.fixture
-def service(addon_repo, price_repo, commission_repo, business_guard, package_guard):
+def service(addon_repo, price_repo, commission_repo, appointment_addon_repo, business_guard, package_guard):
     return AddonService(
         addon_repo=addon_repo,
         price_repo=price_repo,
         commission_repo=commission_repo,
+        appointment_addon_repo=appointment_addon_repo,
         business_guard=business_guard,
         package_guard=package_guard,
         addon_guard=AddonGuard(addon_repo=addon_repo),

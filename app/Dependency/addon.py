@@ -57,6 +57,7 @@ class AddonProvider(Provider):
                           addon_repo: AddonRepositoryPort,
                           price_repo: AddonPriceRepositoryPort,
                           commission_repo: AddonCommissionRepositoryPort,
+                          appointment_addon_repo: AppointmentAddonRepositoryPort,
                           addon_guard: AddonGuard,
                           business_guard: BusinessGuard,
                           package_guard: PackageGuard) -> AddonService:
@@ -64,6 +65,7 @@ class AddonProvider(Provider):
             addon_repo=addon_repo,
             price_repo=price_repo,
             commission_repo=commission_repo,
+            appointment_addon_repo=appointment_addon_repo,
             addon_guard=addon_guard,
             business_guard=business_guard,
             package_guard=package_guard,
