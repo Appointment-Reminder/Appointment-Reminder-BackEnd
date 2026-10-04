@@ -144,16 +144,27 @@ class TestMatchedAddons:
 
         assert (line.unit_commission_amount, line.unit_commission_percent, line.commission_total) == (0.0, None, 0.0)
 
-    def test_without_an_assigned_member_the_addon_commission_is_unset(self, book, catalogue, jotform_guard):
+    def test_without_an_assigned_member_nothing_is_priced_so_every_label_stays_unresolved(
+        self, book, catalogue, jotform_guard
+    ):
         jotform_guard.resolve_assignment_or_unknown.return_value = None
         catalogue.add(1, "A", price=50)
 
         result = book(["A"])
 
-        line = result.addons[0]
-        assert (line.unit_commission_percent, line.unit_commission_amount, line.commission_total) == (None, None, None)
+        assert result.addons == []
+        assert result.unresolved_addon_labels == ["A"]
         assert result.fully_resolved is False
-        assert result.member_id is None
+        assert result.price_at_booking is None
+
+    def test_a_package_without_a_price_keeps_every_label_unresolved(self, book, catalogue, price_repo):
+        price_repo.get_current_price.return_value = None
+        catalogue.add(1, "A", price=50)
+
+        result = book(["A", "B", "A"])
+
+        assert result.addons == []
+        assert result.unresolved_addon_labels == ["A", "B"]
 
     def test_a_catalogue_price_change_after_booking_does_not_alter_the_booked_line(self, book, catalogue):
         catalogue.add(1, "A", price=50)

@@ -318,3 +318,26 @@ class TestCommissionRounding:
 
         assert line.commission_total == 6.93
         assert appointment.commission_amount_at_booking == 56.93
+
+
+class TestUnpricedAppointment:
+    @pytest.fixture(autouse=True)
+    def _unpriced(self, appointment, catalogue):
+        appointment.price_at_booking = None
+        appointment.remaining_amount = None
+        appointment.commission_amount_at_booking = None
+        catalogue.add(1, price=50)
+
+    def test_adding_an_addon_is_rejected_until_the_package_has_a_price(self, service, lines, user):
+        from app.domain.addon.errors.addon_errors import AppointmentNotPriced
+        with pytest.raises(AppointmentNotPriced):
+            service.add_addon(100, 1, addon_id=1, quantity=1, current_user=user)
+        assert lines.lines == []
+
+    def test_resolving_an_unresolved_addon_is_rejected_too(self, service, lines, user):
+        from app.domain.addon.errors.addon_errors import AppointmentNotPriced
+        from app.domain.addon.models.unresolved_addon import UnresolvedAddon
+        pending = lines.add_unresolved_addon(UnresolvedAddon(appointment_id=1, raw_label="x"))
+        with pytest.raises(AppointmentNotPriced):
+            service.resolve_unresolved_addon(100, 1, pending.id, addon_id=1, current_user=user)
+        assert lines.lines == [] and not lines.get_unresolved_addon(pending.id).is_resolved

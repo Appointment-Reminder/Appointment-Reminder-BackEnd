@@ -5,7 +5,7 @@ from typing import Iterable, List, Optional, Union
 
 from app.domain.addon.models.appointment_addon import AppointmentAddon
 from app.domain.addon.service.appointment_totals import fold_in_addon_amounts
-from app.domain.addon.service.addon_booking import AddonBookingResolver
+from app.domain.addon.service.addon_booking import AddonBookingResolver, normalize_labels
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.business.port.business_member_repository_port import BusinessMemberRepositoryPort
 from app.domain.package.guard.package_guard import PackageGuard
@@ -58,6 +58,10 @@ def resolve_booking_context(
     booking = _resolve_package_context(
         business_id, form_id, package_alias_raw, package_guard, jotform_guard, member_repo, price_repo)
     if addon_resolver is None:
+        return booking
+    if booking.price_at_booking is None:
+        # No package price to add to: keep every label for staff instead of booking amounts no total includes.
+        booking.unresolved_addon_labels = normalize_labels(addon_labels)
         return booking
 
     resolution = addon_resolver.resolve(
