@@ -5,7 +5,9 @@ from dishka.integrations.fastapi import DishkaSyncRoute
 from fastapi import APIRouter, Depends
 
 from app.api.models.addon.addon_model import AddonCreate, AddonRead, AddonUpdate
+from app.api.models.addon.addon_price_model import AddonPriceCreate, AddonPriceRead
 from app.domain.addon.models.addon import Addon
+from app.domain.addon.models.addon_price import AddonPrice
 from app.domain.addon.service.addon_service import AddonService
 from app.domain.user.models.user import User
 from app.domain.user.service.user_service import oauth2_bearer
@@ -46,3 +48,21 @@ def update_addon(addon_id: int, data: AddonUpdate, service: FromDishka[AddonServ
 def deactivate_addon(addon_id: int, service: FromDishka[AddonService], current_user: FromDishka[User]):
     """Deactivate an add-on. Add-ons are never hard deleted."""
     return service.deactivate(addon_id=addon_id, current_user=current_user)
+
+
+@addon_router.post("/addons/prices", response_model=AddonPriceRead, status_code=201)
+def create_addon_price(data: AddonPriceCreate, service: FromDishka[AddonService], current_user: FromDishka[User]):
+    """Add a price version to an add-on, owner and admin only"""
+    return service.create_price(data=AddonPrice(**data.model_dump()), current_user=current_user)
+
+
+@addon_router.get("/addons/{addon_id}/prices", response_model=List[AddonPriceRead])
+def get_addon_price_history(addon_id: int, service: FromDishka[AddonService], current_user: FromDishka[User]):
+    """Every price version of the add-on, newest first"""
+    return service.get_price_history(addon_id=addon_id, current_user=current_user)
+
+
+@addon_router.get("/addons/{addon_id}/prices/current", response_model=AddonPriceRead)
+def get_addon_current_price(addon_id: int, service: FromDishka[AddonService], current_user: FromDishka[User]):
+    """The price in effect now. 400 when the add-on has no price in effect."""
+    return service.get_current_price(addon_id=addon_id, current_user=current_user)

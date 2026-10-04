@@ -1,12 +1,15 @@
 from dataclasses import replace
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 from app.domain.addon.guard.addon_guard import AddonGuard, normalize_alias
 from app.domain.addon.models.addon import Addon
+from app.domain.addon.models.addon_price import AddonPrice, price_in_effect
+from app.domain.addon.port.addon_price_repository_port import AddonPriceRepositoryPort
 from app.domain.addon.port.addon_repository_port import AddonRepositoryPort
 from app.domain.business.guard.business_guard import BusinessGuard
 from app.domain.package.guard.package_guard import PackageGuard
-from app.domain.addon.errors.addon_errors import AddonError
+from app.domain.addon.errors.addon_errors import AddonError, NoAddonPriceInEffect
 from app.domain.user.models.user import User
 
 
@@ -16,11 +19,13 @@ class AddonService:
     def __init__(
         self,
         addon_repo: AddonRepositoryPort,
+        price_repo: AddonPriceRepositoryPort,
         business_guard: BusinessGuard,
         package_guard: PackageGuard,
         addon_guard: AddonGuard,
     ):
         self.addon_repo = addon_repo
+        self.price_repo = price_repo
         self.business_guard = business_guard
         self.package_guard = package_guard
         self.addon_guard = addon_guard
@@ -53,6 +58,27 @@ class AddonService:
     def deactivate(self, addon_id: int, current_user: User) -> Addon:
         addon = self.get(addon_id, current_user)
         return self.addon_repo.update(replace(addon, is_active=False))
+
+    # PRICE
+    def create_price(self, data: AddonPrice, current_user: User) -> AddonPrice:
+        self.get(data.addon_id, current_user)
+        if data.price < 0:
+            raise AddonError()
+
+        return self.price_repo.create(
+            AddonPrice(addon_id=data.addon_id, price=data.price, effective_from=data.effective_from)
+        )
+
+    def get_current_price(self, addon_id: int, current_user: User, at: Optional[datetime] = None) -> AddonPrice:
+        self.get(addon_id, current_user)
+        price = price_in_effect(self.price_repo.get_history(addon_id), at or datetime.now())
+        if price is None:
+            raise NoAddonPriceInEffect()
+        return price
+
+    def get_price_history(self, addon_id: int, current_user: User) -> List[AddonPrice]:
+        self.get(addon_id, current_user)
+        return self.price_repo.get_history(addon_id)
 
     def _normalized(self, data: Addon, business_id: int, is_active: bool) -> Addon:
         return Addon(
