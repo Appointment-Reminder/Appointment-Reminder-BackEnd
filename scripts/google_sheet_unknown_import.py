@@ -20,6 +20,7 @@ from app.adapters.session import engine
 from app.adapters.sql_model_adapter.package.models.package import Package as PackageSQL
 from app.adapters.sql_model_adapter.package.models.package_price import PackagePrice as PackagePriceSQL
 from app.adapters.sql_model_adapter.appointment.models.appointment import Appointment as AppointmentSQL
+from app.adapters.sql_model_adapter.addon.models.unresolved_addon import UnresolvedAddon as UnresolvedAddonSQL
 from app.domain.appointment.models.appointment_state_machine import AppointmentStatus
 
 BUSINESS_ID = 7
@@ -111,13 +112,19 @@ def main(path: str):
                 appointment_note=None,
                 number_of_persons=0,
                 privacy_opt_out=None,
-                adds_ons=str(row["Add-ons"]) if row["Add-ons"] not in (None, "None") else None,
 
                 status = AppointmentStatus.NEEDS_ASSIGNMENT if needs_assignment else AppointmentStatus.PENDING,
                 created_at=parse_date(row["Submission Date"]) or datetime.now(),
                 updated_at=datetime.now(),
             )
             db.add(sql_obj)
+            # the sheet's add-ons are free text: keep each as an Unresolved Add-on for staff to resolve
+            raw_addons = row["Add-ons"]
+            if raw_addons not in (None, "None") and str(raw_addons).strip() not in ("", "nan"):
+                db.flush()
+                for label in str(raw_addons).splitlines():
+                    if label.strip():
+                        db.add(UnresolvedAddonSQL(appointment_id=sql_obj.id, raw_label=label.strip()))
             imported += 1
 
         db.commit()
