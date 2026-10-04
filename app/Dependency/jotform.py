@@ -5,6 +5,8 @@ from app.adapters.jotform.APIJotformPort import JotformClientAdapter
 from app.adapters.sql_model_adapter.jotform.adapters.sql_model_jotform_repository_adapter import \
     SQLModelJotformRepositoryAdapter
 from app.domain.Jotform.guard.jotform_guard import JotformGuard
+from app.domain.addon.port.appointment_addon_repository_port import AppointmentAddonRepositoryPort
+from app.domain.addon.service.addon_booking import AddonBookingResolver
 from app.domain.Jotform.port import jotform_port
 from app.domain.Jotform.port.jotform_port import JotformPort
 from app.domain.Jotform.port.jotform_repository_port import JotformRepositoryPort
@@ -60,6 +62,8 @@ class JotformProvider(Provider):
             member_repo: BusinessMemberRepositoryPort,
             price_repo: PackagePriceRepositoryPort,
             appointment_repo: AppointmentRepositoryPort,
+            addon_resolver: AddonBookingResolver,
+            appointment_addon_repo: AppointmentAddonRepositoryPort,
     ) -> JotformWebhookService:
         return JotformWebhookService(
             jotform_guard=jotform_guard,
@@ -69,4 +73,6 @@ class JotformProvider(Provider):
             member_repo=member_repo,
             price_repo=price_repo,
             appointment_repo=appointment_repo,
+            addon_resolver=addon_resolver,
+            appointment_addon_repo=appointment_addon_repo,
         )
