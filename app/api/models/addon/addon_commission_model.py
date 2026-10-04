@@ -11,6 +11,12 @@ class AddonCommissionCreate(BaseModel):
     effective_from: datetime
 
 
+class AddonCommissionUpdate(BaseModel):
+    id: int
+    commission_amount: int
+    commission_isPercentage: bool
+
+
 class AddonCommissionRead(BaseModel):
     id: int | None = None
     business_member_id: int

@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from sqlalchemy.orm import Session
 from sqlmodel import select
@@ -46,3 +46,15 @@ class SQLModelAddonCommissionRepositoryAdapter(AddonCommissionRepositoryPort):
         for row in rows:
             histories.setdefault(row.addon_id, []).append(_to_domain(row))
         return histories
+
+    def get_by_id(self, commission_id: int) -> Optional[AddonCommissionEntity]:
+        row = self.db.get(AddonCommissionSQL, commission_id)
+        return _to_domain(row) if row else None
+
+    def update(self, commission: AddonCommissionEntity) -> AddonCommissionEntity:
+        row = self.db.get(AddonCommissionSQL, commission.id)
+        row.commission_amount = commission.commission_amount
+        row.commission_isPercentage = commission.commission_isPercentage
+        self.db.commit()
+        self.db.refresh(row)
+        return _to_domain(row)

@@ -1,4 +1,4 @@
-from typing import Dict, Protocol, List
+from typing import Dict, List, Optional, Protocol
 
 from app.domain.addon.models.addon_commission import AddonCommission
 
@@ -9,3 +9,6 @@ class AddonCommissionRepositoryPort(Protocol):
         """Every commission version of the member for the add-on, including future-dated ones."""
     def get_histories_for_member(self, member_id: int) -> Dict[int, List[AddonCommission]]:
         """The member's commission history on every add-on in one lookup; add-ons without a row are absent."""
+    def get_by_id(self, commission_id: int) -> Optional[AddonCommission]: ...
+    def update(self, commission: AddonCommission) -> AddonCommission:
+        """Rewrite the amount and kind of the stored version; its member, add-on and date never change."""

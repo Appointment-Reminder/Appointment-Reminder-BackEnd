@@ -100,8 +100,7 @@ class AddonService:
         member = self.business_guard.ensure_member_exist(member_id=data.business_member_id)
         if member.business_id != addon.business_id:
             raise AddonError()
-        if data.commission_amount < 0 or (data.commission_isPercentage and data.commission_amount > 100):
-            raise AddonError()
+        self._ensure_commission_valid(data)
 
         return self.commission_repo.create(AddonCommission(
             business_member_id=data.business_member_id,
@@ -110,6 +109,17 @@ class AddonService:
             commission_isPercentage=data.commission_isPercentage,
             effective_from=data.effective_from,
         ))
+
+    def correct_commission(self, data: AddonCommission, current_user: User) -> AddonCommission:
+        """Fix the amount and kind of an existing version in place. Booked Appointment Add-ons keep their frozen one."""
+        stored = self.commission_repo.get_by_id(data.id) if data.id is not None else None
+        if stored is None:
+            raise AddonError()
+        self._get_for_admin(stored.addon_id, current_user)
+        self._ensure_commission_valid(data)
+
+        return self.commission_repo.update(replace(
+            stored, commission_amount=data.commission_amount, commission_isPercentage=data.commission_isPercentage))
 
     def get_current_commission(self, member_id: int, addon_id: int, current_user: User,
                                at: Optional[datetime] = None) -> AddonCommission:
@@ -170,6 +180,11 @@ class AddonService:
             has_quantity=data.has_quantity,
             duration_minutes=data.duration_minutes if data.has_duration else None,
         )
+
+    @staticmethod
+    def _ensure_commission_valid(data: AddonCommission) -> None:
+        if data.commission_amount < 0 or (data.commission_isPercentage and data.commission_amount > 100):
+            raise AddonError()
 
     def _ensure_type_not_locked(self, existing: Addon, changed: Addon) -> None:
         """Once an Appointment Add-on references the add-on, its type is fixed: deactivate it and create a new one."""

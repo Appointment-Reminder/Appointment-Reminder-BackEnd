@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from dishka import FromDishka
@@ -5,7 +6,8 @@ from dishka.integrations.fastapi import DishkaSyncRoute
 from fastapi import APIRouter, Depends
 
 from app.api.models.addon.addon_model import AddonCreate, AddonRead, AddonUpdate
-from app.api.models.addon.addon_commission_model import AddonCommissionCreate, AddonCommissionRead
+from app.api.models.addon.addon_commission_model import (
+    AddonCommissionCreate, AddonCommissionRead, AddonCommissionUpdate)
 from app.api.models.addon.addon_price_model import AddonPriceCreate, AddonPriceRead
 from app.domain.addon.models.addon import Addon
 from app.domain.addon.models.addon_commission import AddonCommission
@@ -83,6 +85,17 @@ def create_addon_commission(data: AddonCommissionCreate, service: FromDishka[Add
                             current_user: FromDishka[User]):
     """Set a member's commission on an add-on (percentage or flat), owner and admin only"""
     return service.create_commission(data=AddonCommission(**data.model_dump()), current_user=current_user)
+
+
+@addon_router.patch("/addons/commissions", response_model=AddonCommissionRead)
+def correct_addon_commission(data: AddonCommissionUpdate, service: FromDishka[AddonService],
+                             current_user: FromDishka[User]):
+    """Fix a commission version in place instead of adding a new dated one, owner and admin only"""
+    return service.correct_commission(
+        data=AddonCommission(
+            id=data.id, business_member_id=0, addon_id=0, commission_amount=data.commission_amount,
+            commission_isPercentage=data.commission_isPercentage, effective_from=datetime.min),
+        current_user=current_user)
 
 
 @addon_router.get("/addons/{addon_id}/members/{member_id}/commission", response_model=AddonCommissionRead)
