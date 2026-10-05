@@ -20,6 +20,7 @@ from app.adapters.session import engine
 from app.adapters.sql_model_adapter.package.models.package import Package as PackageSQL
 from app.adapters.sql_model_adapter.package.models.package_price import PackagePrice as PackagePriceSQL
 from app.adapters.sql_model_adapter.appointment.models.appointment import Appointment as AppointmentSQL
+from app.adapters.sql_model_adapter.addon.models.addon import Addon  # registers the addon table that unresolved_addon points to
 from app.adapters.sql_model_adapter.addon.models.unresolved_addon import UnresolvedAddon as UnresolvedAddonSQL
 from app.domain.appointment.models.appointment_state_machine import AppointmentStatus
 
@@ -32,6 +33,9 @@ PHOTOGRAPHER_MEMBER_MAP = {
     "Pinhas Cohen": 9,
     "Carolina Evanno": 10,
 }
+
+# photographers whose commission is the appointment's balance (price - deposit)
+PAID_ON_BALANCE = {"Pinhas Cohen", "Carolina Evanno"}
 
 def parse_date(raw):
     try:
@@ -86,6 +90,14 @@ def main(path: str):
 
             price_row = get_price_at_date(db, package.id, appt_date)
 
+            price = float(row["Price"])
+            deposit = float(row["depositAmount"])
+            if photographer_name in PAID_ON_BALANCE:
+                commission = price - deposit  # Pinhas and Carolina keep the whole balance
+            else:
+                commission = float(row["photographerShare"])  # photographer share is the commission
+            # the owner's income (price - commission, deposit included) is derived, never stored
+
 
             sql_obj = AppointmentSQL(
                 business_id=BUSINESS_ID,
@@ -100,11 +112,11 @@ def main(path: str):
                 client_phone=str(row["phone"]),
                 client_email=str(row["email"]),
 
-                price_at_booking=float(row["Price"]),
-                deposit_amount=float(row["depositAmount"]),
-                remaining_amount=float(row["Price"]) - float(row["depositAmount"]),
+                price_at_booking=price,
+                deposit_amount=deposit,
+                remaining_amount=price - deposit,
                 commission_percent_at_booking=None,
-                commision_amount_at_booking=float(row["businessOwnerShare"]),  # flat amount, per your earlier note
+                commision_amount_at_booking=commission,  # flat amount
 
                 appointment_date=appt_date,
                 appointment_location=None,

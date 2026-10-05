@@ -20,6 +20,7 @@ from app.adapters.session import engine
 from app.adapters.sql_model_adapter.package.models.package import Package as PackageSQL
 from app.adapters.sql_model_adapter.package.models.package_price import PackagePrice as PackagePriceSQL
 from app.adapters.sql_model_adapter.appointment.models.appointment import Appointment as AppointmentSQL
+from app.adapters.sql_model_adapter.addon.models.addon import Addon  # registers the addon table that unresolved_addon points to
 from app.adapters.sql_model_adapter.addon.models.unresolved_addon import UnresolvedAddon as UnresolvedAddonSQL
 
 BUSINESS_ID = 7
